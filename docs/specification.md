@@ -291,15 +291,16 @@ fun getChannelSetting(channelId: Long, key: String): String {
 ### 5.3 주요 설정 항목
 
 #### 5.3.1 글로벌 설정
-- `default_retention_period_days`: 기본 보존 기간 (일)
-- `max_concurrent_recordings`: 최대 동시 녹화 수
-- `polling_interval_seconds`: API 폴링 주기
-- `default_record_quality`: 기본 녹화 품질
+- `detection.polling_interval_seconds`: API 폴링 주기 (초) - 기본값: 30
+- `recorder.max_concurrent_recordings`: 최대 동시 녹화 수 - 기본값: 10
+- `retention.period_days`: 보존 기간 (일) - 기본값: 30
+- `retention.auto_cleanup_enabled`: 자동 정리 활성화 여부 - 기본값: true
 
 #### 5.3.2 채널별 설정
-- `retention_period_days`: 채널별 보존 기간
-- `record_quality`: 채널별 기본 녹화 품질
-- `is_auto_cleanup_enabled`: 자동 정리 활성화 여부
+- `retention.period_days`: 채널별 보존 기간 (일)
+- `retention.auto_cleanup_enabled`: 채널별 자동 정리 활성화 여부
+
+**참고**: 채널별 설정 값이 없거나 `null`인 경우, 글로벌 설정 값을 사용합니다.
 
 ## 6. 성능 및 확장성
 
