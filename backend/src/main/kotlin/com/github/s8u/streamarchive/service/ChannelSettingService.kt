@@ -1,15 +1,14 @@
 package com.github.s8u.streamarchive.service
 
-import com.github.s8u.streamarchive.domain.entity.ChannelSetting
-import com.github.s8u.streamarchive.domain.enums.ChannelSettingKey
-import com.github.s8u.streamarchive.domain.repository.ChannelSettingRepository
+import com.github.s8u.streamarchive.entity.ChannelSetting
+import com.github.s8u.streamarchive.enums.ChannelSettingKey
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ChannelSettingService(
-    private val channelSettingRepository: ChannelSettingRepository,
+    private val channelSettingRepository: com.github.s8u.streamarchive.repository.ChannelSettingRepository,
     private val globalSettingService: GlobalSettingService
 ) {
     private val logger = LoggerFactory.getLogger(ChannelSettingService::class.java)
@@ -57,10 +56,10 @@ class ChannelSettingService(
     @Transactional
     fun initializeDefaultSettings(channelId: Long) {
         ChannelSettingKey.values().forEach { settingKey ->
-            if (settingKey.defaultValue != null && !existsSetting(channelId, settingKey.key)) {
-                createOrUpdateSetting(channelId, settingKey.key, settingKey.defaultValue)
+            if (settingKey.defaultValue != null && !existsSetting(channelId, settingKey.name)) {
+                createOrUpdateSetting(channelId, settingKey.name, settingKey.defaultValue)
                 logger.info("Created default channel setting for channel {}: {} = {}",
-                    channelId, settingKey.key, settingKey.defaultValue)
+                    channelId, settingKey.name, settingKey.defaultValue)
             }
         }
     }

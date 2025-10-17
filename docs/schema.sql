@@ -87,7 +87,7 @@ CREATE TABLE record_schedules
     id                   BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '녹화 스케줄 ID',
     channel_id           BIGINT                                                            NOT NULL COMMENT '채널 ID',
     platform_type        ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE')                       NOT NULL COMMENT '플랫폼 유형',
-    record_schedule_type ENUM ('ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY') NOT NULL COMMENT '녹화 스케줄 유형',
+    schedule_type ENUM ('ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY') NOT NULL COMMENT '녹화 스케줄 유형',
     value                TEXT                                                              NOT NULL COMMENT '스케줄 값',
     is_active            BOOLEAN                                                           NOT NULL DEFAULT TRUE COMMENT '활성 상태',
     deleted_at           DATETIME                                                          NULL COMMENT '삭제 일시',
@@ -102,7 +102,7 @@ CREATE TABLE record_schedules
 
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
     INDEX idx_record_schedules_channel_platform (channel_id, platform_type),
-    INDEX idx_record_schedules_type (record_schedule_type),
+    INDEX idx_record_schedules_type (schedule_type),
     INDEX idx_record_schedules_is_active (is_active)
 ) COMMENT '녹화 스케줄';
 
@@ -157,7 +157,7 @@ CREATE TABLE records
 ) COMMENT '녹화 기록';
 
 -- 7. 채팅 이력 테이블
-CREATE TABLE video_chat_histories
+CREATE TABLE video_metadata_chat_histories
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '채팅 이력 ID',
     video_id      BIGINT        NOT NULL COMMENT '동영상 ID',
@@ -168,13 +168,13 @@ CREATE TABLE video_chat_histories
     created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
 
     FOREIGN KEY (video_id) REFERENCES videos (id) ON DELETE CASCADE,
-    INDEX idx_video_chat_histories_video_id (video_id),
-    INDEX idx_video_chat_histories_created_at (created_at),
-    INDEX idx_video_chat_histories_offset (offset_millis)
+    INDEX idx_video_metadata_chat_histories_video_id (video_id),
+    INDEX idx_video_metadata_chat_histories_created_at (created_at),
+    INDEX idx_video_metadata_chat_histories_offset (offset_millis)
 ) COMMENT '동영상 채팅 이력';
 
 -- 8. 시청자 수 이력 테이블
-CREATE TABLE video_viewer_histories
+CREATE TABLE video_metadata_viewer_histories
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '시청자 수 이력 ID',
     video_id      BIGINT   NOT NULL COMMENT '동영상 ID',
@@ -183,13 +183,13 @@ CREATE TABLE video_viewer_histories
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
 
     FOREIGN KEY (video_id) REFERENCES videos (id) ON DELETE CASCADE,
-    INDEX idx_video_viewer_histories_video_id (video_id),
-    INDEX idx_video_viewer_histories_created_at (created_at),
-    INDEX idx_video_viewer_histories_offset (offset_millis)
+    INDEX idx_video_metadata_viewer_histories_video_id (video_id),
+    INDEX idx_video_metadata_viewer_histories_created_at (created_at),
+    INDEX idx_video_metadata_viewer_histories_offset (offset_millis)
 ) COMMENT '동영상 시청자 수 이력';
 
 -- 9. 제목 변경 이력 테이블
-CREATE TABLE video_title_histories
+CREATE TABLE video_metadata_title_histories
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '제목 변경 이력 ID',
     video_id      BIGINT       NOT NULL COMMENT '동영상 ID',
@@ -198,13 +198,13 @@ CREATE TABLE video_title_histories
     created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
 
     FOREIGN KEY (video_id) REFERENCES videos (id) ON DELETE CASCADE,
-    INDEX idx_video_title_histories_video_id (video_id),
-    INDEX idx_video_title_histories_created_at (created_at),
-    INDEX idx_video_title_histories_offset (offset_millis)
+    INDEX idx_video_metadata_title_histories_video_id (video_id),
+    INDEX idx_video_metadata_title_histories_created_at (created_at),
+    INDEX idx_video_metadata_title_histories_offset (offset_millis)
 ) COMMENT '동영상 제목 변경 이력';
 
 -- 10. 카테고리 변경 이력 테이블
-CREATE TABLE video_category_histories
+CREATE TABLE video_metadata_category_histories
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '카테고리 변경 이력 ID',
     video_id      BIGINT       NOT NULL COMMENT '동영상 ID',
@@ -213,13 +213,13 @@ CREATE TABLE video_category_histories
     created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
 
     FOREIGN KEY (video_id) REFERENCES videos (id) ON DELETE CASCADE,
-    INDEX idx_video_category_histories_video_id (video_id),
-    INDEX idx_video_category_histories_created_at (created_at),
-    INDEX idx_video_category_histories_offset (offset_millis)
+    INDEX idx_video_metadata_category_histories_video_id (video_id),
+    INDEX idx_video_metadata_category_histories_created_at (created_at),
+    INDEX idx_video_metadata_category_histories_offset (offset_millis)
 ) COMMENT '동영상 카테고리 변경 이력';
 
 -- 11. 시청 기록 테이블
-CREATE TABLE video_watch_histories
+CREATE TABLE user_video_watch_histories
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '시청 기록 ID',
     user_id       BIGINT   NOT NULL COMMENT '사용자 ID',

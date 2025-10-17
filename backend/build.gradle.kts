@@ -37,9 +37,14 @@ dependencies {
     // Kotlin 지원
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // 개발 도구
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+
+    // Swagger/OpenAPI
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
     // 테스트
     testImplementation("org.springframework.boot:spring-boot-starter-test")

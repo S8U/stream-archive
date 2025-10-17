@@ -1,9 +1,11 @@
 package com.github.s8u.streamarchive
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 class StreamArchiveApplication
 
 fun main(args: Array<String>) {

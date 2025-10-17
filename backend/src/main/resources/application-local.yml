@@ -5,7 +5,8 @@ spring:
   # Docker Compose 설정
   docker:
     compose:
-      file: docker-compose-local.yml
+      enabled: false
+  #      file: docker-compose-local.yml
 
   # 데이터베이스 설정
   datasource:
@@ -61,3 +62,10 @@ management:
   endpoint:
     health:
       show-details: always
+
+# 플랫폼 설정
+platform:
+  twitch:
+    app-client-id: ${TWITCH_APP_CLIENT_ID:your_client_id}
+    app-client-secret: ${TWITCH_APP_CLIENT_SECRET:your_client_secret}
+    personal-oauth-token: ${TWITCH_PERSONAL_OAUTH_TOKEN:your_personal_token}

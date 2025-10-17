@@ -1,15 +1,14 @@
 package com.github.s8u.streamarchive.service
 
-import com.github.s8u.streamarchive.domain.entity.GlobalSetting
-import com.github.s8u.streamarchive.domain.enums.GlobalSettingKey
-import com.github.s8u.streamarchive.domain.repository.GlobalSettingRepository
+import com.github.s8u.streamarchive.entity.GlobalSetting
+import com.github.s8u.streamarchive.enums.GlobalSettingKey
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class GlobalSettingService(
-    private val globalSettingRepository: GlobalSettingRepository
+    private val globalSettingRepository: com.github.s8u.streamarchive.repository.GlobalSettingRepository
 ) {
     private val logger = LoggerFactory.getLogger(GlobalSettingService::class.java)
 
@@ -46,13 +45,13 @@ class GlobalSettingService(
     @Transactional
     fun initializeDefaultSettings() {
         GlobalSettingKey.values().forEach { settingKey ->
-            if (!existsSetting(settingKey.key)) {
+            if (!existsSetting(settingKey.name)) {
                 createOrUpdateSetting(
-                    settingKey.key,
+                    settingKey.name,
                     settingKey.defaultValue,
                     settingKey.description
                 )
-                logger.info("Created default setting: ${settingKey.key} = ${settingKey.defaultValue}")
+                logger.info("Created default setting: ${settingKey.name} = ${settingKey.defaultValue}")
             }
         }
     }

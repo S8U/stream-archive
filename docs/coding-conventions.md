@@ -73,6 +73,33 @@ class UserService(
 }
 ```
 
+### Import 및 패키지 사용
+
+- **패키지 전체 경로를 코드에 직접 사용하지 않음** - 항상 import 문 사용
+- 짧고 읽기 쉬운 코드 작성을 위해 클래스명만 사용
+
+**Good:**
+```kotlin
+import com.github.s8u.streamarchive.recording.model.CollectorType
+import com.github.s8u.streamarchive.recording.collector.chat.ChatCollector
+
+when (collector.type) {
+    CollectorType.CHAT -> {
+        (collector as ChatCollector).chatFlow.collect { }
+    }
+}
+```
+
+**Bad:**
+```kotlin
+when (collector.type) {
+    com.github.s8u.streamarchive.recording.model.CollectorType.CHAT -> {
+        (collector as com.github.s8u.streamarchive.recording.collector.chat.ChatCollector)
+            .chatFlow.collect { }
+    }
+}
+```
+
 ### Entity 설계
 
 1. **Column name을 명시하지 않음** - JPA가 자동으로 snake_case로 변환
