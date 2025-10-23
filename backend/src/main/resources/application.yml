@@ -2,4 +2,4 @@ spring:
   profiles:
     active: local
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:backend/.env[.properties]

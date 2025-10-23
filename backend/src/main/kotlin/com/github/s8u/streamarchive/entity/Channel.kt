@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.entity
 
+import com.github.s8u.streamarchive.enums.ContentPrivacy
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
 import org.springframework.data.annotation.CreatedDate
@@ -35,7 +36,7 @@ class Channel(
     @Enumerated(EnumType.STRING)
     @Column(name = "content_privacy", nullable = false)
     @Comment("콘텐츠 공개 범위")
-    var contentPrivacy: com.github.s8u.streamarchive.enums.ContentPrivacy,
+    var contentPrivacy: ContentPrivacy,
 
     @Column(name = "is_active", nullable = false)
     @Comment("활성 상태")

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.github.s8u.streamarchive.config.TwitchClientConfig
+import com.github.s8u.streamarchive.properties.TwitchProperties
 import org.slf4j.LoggerFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.stereotype.Component
@@ -13,7 +13,7 @@ import org.springframework.web.client.RestClientResponseException
 
 @Component
 class TwitchApiClient(
-    private val twitchClientConfig: TwitchClientConfig
+    private val twitchProperties: TwitchProperties
 ) {
 
     private val logger = LoggerFactory.getLogger(TwitchApiClient::class.java)
@@ -39,8 +39,8 @@ class TwitchApiClient(
     fun createOauthToken(): TwitchOauthResponseDto? {
         return restClient.post()
             .uri("https://id.twitch.tv/oauth2/token")
-            .header("client_id", twitchClientConfig.appClientId)
-            .header("client_secret", twitchClientConfig.appClientSecret)
+            .header("client_id", twitchProperties.appClientId)
+            .header("client_secret", twitchProperties.appClientSecret)
             .header("grant_type", "client_credentials")
             .retrieve()
             .body(TwitchOauthResponseDto::class.java)
@@ -63,7 +63,7 @@ class TwitchApiClient(
             restClient.get()
                 .uri("https://api.twitch.tv/helix/users")
                 .header("Authorization", "Bearer $appOauthToken")
-                .header("Client-Id", twitchClientConfig.appClientId)
+                .header("Client-Id", twitchProperties.appClientId)
                 .retrieve()
                 .body(TwitchUsersResponseDto::class.java)
         }
@@ -78,7 +78,7 @@ class TwitchApiClient(
             restClient.get()
                 .uri("https://api.twitch.tv/helix/streams")
                 .header("Authorization", "Bearer $appOauthToken")
-                .header("Client-Id", twitchClientConfig.appClientId)
+                .header("Client-Id", twitchProperties.appClientId)
                 .retrieve()
                 .body(TwitchStreamsResponseDto::class.java)
         }
