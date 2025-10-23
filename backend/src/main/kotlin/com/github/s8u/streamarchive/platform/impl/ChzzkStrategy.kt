@@ -1,10 +1,12 @@
-package com.github.s8u.streamarchive.platform
+package com.github.s8u.streamarchive.platform.impl
 
 import com.github.s8u.streamarchive.client.chzzk.ChzzkApiClient
 import com.github.s8u.streamarchive.enums.PlatformType
+import com.github.s8u.streamarchive.platform.PlatformChannelDto
+import com.github.s8u.streamarchive.platform.PlatformStrategy
+import com.github.s8u.streamarchive.platform.PlatformStreamDto
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Component

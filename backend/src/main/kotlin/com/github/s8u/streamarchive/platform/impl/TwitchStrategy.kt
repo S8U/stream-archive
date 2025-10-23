@@ -1,9 +1,12 @@
-package com.github.s8u.streamarchive.platform
+package com.github.s8u.streamarchive.platform.impl
 
 import com.github.s8u.streamarchive.client.twitch.TwitchApiClient
 import com.github.s8u.streamarchive.client.twitch.TwitchStreamsRequestDto
 import com.github.s8u.streamarchive.client.twitch.TwitchUsersRequestDto
 import com.github.s8u.streamarchive.enums.PlatformType
+import com.github.s8u.streamarchive.platform.PlatformChannelDto
+import com.github.s8u.streamarchive.platform.PlatformStrategy
+import com.github.s8u.streamarchive.platform.PlatformStreamDto
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.ZoneId
