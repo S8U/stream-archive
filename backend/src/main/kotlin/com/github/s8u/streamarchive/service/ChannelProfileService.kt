@@ -28,26 +28,23 @@ class ChannelProfileService(
         val channel = channelRepository.findByIdOrNull(channelId)
             ?: throw NoSuchElementException("Channel not found: $channelId")
 
-        val platforms = channelPlatformRepository.findAll()
-            .filter { it.channelId == channelId && it.isSyncProfile && it.isActive }
+        val platforms = channelPlatformRepository.findByIsSyncProfileAndIsActive(true, true)
+            .filter { it.channelId == channelId }
 
         platforms.forEach { downloadAndSave(it) }
     }
 
     fun syncProfile(channelId: Long, platformType: PlatformType) {
-        val channelPlatform = channelPlatformRepository.findAll()
-            .find { it.channelId == channelId && it.platformType == platformType }
+        val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformTypeAndIsActive(channelId, platformType, true)
             ?: throw NoSuchElementException("ChannelPlatform not found: channelId=$channelId, platformType=$platformType")
 
-        if (channelPlatform.isSyncProfile && channelPlatform.isActive) {
+        if (channelPlatform.isSyncProfile) {
             downloadAndSave(channelPlatform)
         }
     }
 
     fun syncAllProfiles() {
-        val platforms = channelPlatformRepository.findAll()
-            .filter { it.isSyncProfile && it.isActive }
-
+        val platforms = channelPlatformRepository.findByIsSyncProfileAndIsActive(true, true)
         platforms.forEach { downloadAndSave(it) }
     }
 

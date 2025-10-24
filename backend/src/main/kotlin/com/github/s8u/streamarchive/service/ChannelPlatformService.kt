@@ -17,7 +17,7 @@ class ChannelPlatformService(
 ) {
     @Transactional(readOnly = true)
     fun getAll(): List<ChannelPlatformResponse> {
-        return channelPlatformRepository.findAll()
+        return channelPlatformRepository.findByIsActive(true)
             .map { ChannelPlatformResponse.from(it) }
     }
 

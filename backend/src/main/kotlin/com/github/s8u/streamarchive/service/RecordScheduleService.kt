@@ -16,7 +16,7 @@ class RecordScheduleService(
 ) {
     @Transactional(readOnly = true)
     fun getAll(): List<RecordScheduleResponse> {
-        return recordScheduleRepository.findAll()
+        return recordScheduleRepository.findByIsActive(true)
             .map { RecordScheduleResponse.from(it) }
     }
 

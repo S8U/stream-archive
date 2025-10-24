@@ -22,7 +22,7 @@ class ChannelService(
 ) {
     @Transactional(readOnly = true)
     fun getAll(): List<ChannelResponse> {
-        return channelRepository.findAll()
+        return channelRepository.findByIsActive(true)
             .map { ChannelResponse.from(it) }
     }
 
@@ -62,18 +62,14 @@ class ChannelService(
             ?: throw NoSuchElementException("Channel not found: $id")
 
         // 연결된 모든 녹화 스케줄 삭제
-        val recordSchedules = recordScheduleRepository.findAll()
-            .filter { it.channelId == id }
-
+        val recordSchedules = recordScheduleRepository.findByChannelIdAndIsActive(id, true)
         recordSchedules.forEach { schedule ->
             schedule.deletedAt = LocalDateTime.now()
             schedule.isActive = false
         }
 
         // 연결된 모든 채널 플랫폼 삭제
-        val channelPlatforms = channelPlatformRepository.findAll()
-            .filter { it.channelId == id }
-
+        val channelPlatforms = channelPlatformRepository.findByChannelIdAndIsActive(id, true)
         channelPlatforms.forEach { platform ->
             platform.deletedAt = LocalDateTime.now()
             platform.isActive = false

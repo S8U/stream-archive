@@ -6,6 +6,8 @@ import com.github.s8u.streamarchive.enums.RecordScheduleType
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface RecordScheduleRepository : JpaRepository<RecordSchedule, Long> {
+    fun findByIsActive(isActive: Boolean): List<RecordSchedule>
+    fun findByChannelIdAndIsActive(channelId: Long, isActive: Boolean): List<RecordSchedule>
     fun existsByChannelIdAndPlatformTypeAndScheduleTypeAndIsActive(
         channelId: Long,
         platformType: PlatformType,
