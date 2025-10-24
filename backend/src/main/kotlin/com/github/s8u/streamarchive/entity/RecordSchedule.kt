@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.entity
 
 import com.github.s8u.streamarchive.enums.PlatformType
+import com.github.s8u.streamarchive.enums.RecordQuality
 import com.github.s8u.streamarchive.enums.RecordScheduleType
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
@@ -14,8 +15,9 @@ import java.time.LocalDateTime
     name = "record_schedules",
     indexes = [
         Index(name = "idx_record_schedules_channel_platform", columnList = "channelId,platformType"),
-        Index(name = "idx_record_schedules_type", columnList = "recordScheduleType"),
-        Index(name = "idx_record_schedules_is_active", columnList = "isActive")
+        Index(name = "idx_record_schedules_type", columnList = "scheduleType"),
+        Index(name = "idx_record_schedules_is_active", columnList = "isActive"),
+        Index(name = "idx_record_schedules_priority", columnList = "priority")
     ]
 )
 @EntityListeners(AuditingEntityListener::class)
@@ -33,17 +35,26 @@ class RecordSchedule(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Comment("플랫폼 유형")
-    val platformType: PlatformType,
+    var platformType: PlatformType,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Comment("녹화 스케줄 유형")
-    val scheduleType: RecordScheduleType,
+    var scheduleType: RecordScheduleType,
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     @Comment("스케줄 값")
     var value: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Comment("녹화 화질")
+    var recordQuality: RecordQuality = RecordQuality.BEST,
+
+    @Column(nullable = false)
+    @Comment("우선순위")
+    var priority: Int = 0,
 
     @Column(nullable = false)
     @Comment("활성 상태")

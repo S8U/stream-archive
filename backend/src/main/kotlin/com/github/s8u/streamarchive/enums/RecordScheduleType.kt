@@ -13,7 +13,7 @@ enum class RecordScheduleType(
         true
     }),
 
-    EVERYDAY("매일", {
+    ALWAYS("항상", {
         true
     }),
 

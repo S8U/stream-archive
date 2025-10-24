@@ -87,8 +87,10 @@ CREATE TABLE record_schedules
     id                   BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '녹화 스케줄 ID',
     channel_id           BIGINT                                                            NOT NULL COMMENT '채널 ID',
     platform_type        ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE')                       NOT NULL COMMENT '플랫폼 유형',
-    schedule_type ENUM ('ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY') NOT NULL COMMENT '녹화 스케줄 유형',
+    schedule_type        ENUM ('ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY')   NOT NULL COMMENT '녹화 스케줄 유형',
     value                TEXT                                                              NOT NULL COMMENT '스케줄 값',
+    record_quality       ENUM ('BEST', 'P2160_60', 'P2160', 'P1440_60', 'P1440', 'P1080_60', 'P1080', 'P720_60', 'P720', 'P480', 'P240', 'P144', 'WORST') NOT NULL DEFAULT 'BEST' COMMENT '녹화 화질',
+    priority             INT                                                               NOT NULL DEFAULT 0 COMMENT '우선순위',
     is_active            BOOLEAN                                                           NOT NULL DEFAULT TRUE COMMENT '활성 상태',
     deleted_at           DATETIME                                                          NULL COMMENT '삭제 일시',
     deleted_by           BIGINT                                                            NULL COMMENT '삭제한 사용자 ID',
@@ -103,7 +105,8 @@ CREATE TABLE record_schedules
     FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
     INDEX idx_record_schedules_channel_platform (channel_id, platform_type),
     INDEX idx_record_schedules_type (schedule_type),
-    INDEX idx_record_schedules_is_active (is_active)
+    INDEX idx_record_schedules_is_active (is_active),
+    INDEX idx_record_schedules_priority (priority)
 ) COMMENT '녹화 스케줄';
 
 -- 5. 동영상 테이블 (녹화 세션)

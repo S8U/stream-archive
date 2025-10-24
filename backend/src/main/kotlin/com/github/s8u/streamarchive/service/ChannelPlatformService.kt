@@ -11,16 +11,17 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Transactional(readOnly = true)
 class ChannelPlatformService(
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val channelProfileService: ChannelProfileService
 ) {
+    @Transactional(readOnly = true)
     fun getAll(): List<ChannelPlatformResponse> {
         return channelPlatformRepository.findAll()
             .map { ChannelPlatformResponse.from(it) }
     }
 
+    @Transactional(readOnly = true)
     fun getById(id: Long): ChannelPlatformResponse {
         val channelPlatform = channelPlatformRepository.findByIdOrNull(id)
             ?: throw NoSuchElementException("ChannelPlatform not found: $id")

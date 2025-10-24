@@ -6,6 +6,7 @@ import com.github.s8u.streamarchive.dto.ChannelUpdateRequest
 import com.github.s8u.streamarchive.entity.Channel
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.repository.RecordScheduleRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,17 +14,19 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-@Transactional(readOnly = true)
 class ChannelService(
     private val channelRepository: ChannelRepository,
     private val channelPlatformRepository: ChannelPlatformRepository,
-    private val channelProfileService: ChannelProfileService
+    private val channelProfileService: ChannelProfileService,
+    private val recordScheduleRepository: RecordScheduleRepository
 ) {
+    @Transactional(readOnly = true)
     fun getAll(): List<ChannelResponse> {
         return channelRepository.findAll()
             .map { ChannelResponse.from(it) }
     }
 
+    @Transactional(readOnly = true)
     fun getById(id: Long): ChannelResponse {
         val channel = channelRepository.findByIdOrNull(id)
             ?: throw NoSuchElementException("Channel not found: $id")
@@ -57,6 +60,15 @@ class ChannelService(
     fun delete(id: Long) {
         val channel = channelRepository.findByIdOrNull(id)
             ?: throw NoSuchElementException("Channel not found: $id")
+
+        // 연결된 모든 녹화 스케줄 삭제
+        val recordSchedules = recordScheduleRepository.findAll()
+            .filter { it.channelId == id }
+
+        recordSchedules.forEach { schedule ->
+            schedule.deletedAt = LocalDateTime.now()
+            schedule.isActive = false
+        }
 
         // 연결된 모든 채널 플랫폼 삭제
         val channelPlatforms = channelPlatformRepository.findAll()
