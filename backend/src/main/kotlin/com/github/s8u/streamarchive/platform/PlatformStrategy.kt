@@ -12,4 +12,6 @@ interface PlatformStrategy {
 
     fun getStream(username: String): PlatformStreamDto?
 
+    fun getStreamHeaders(): Map<String, String> = emptyMap()
+
 }

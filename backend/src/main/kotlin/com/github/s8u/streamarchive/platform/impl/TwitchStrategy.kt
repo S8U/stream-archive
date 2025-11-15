@@ -7,13 +7,15 @@ import com.github.s8u.streamarchive.enums.PlatformType
 import com.github.s8u.streamarchive.platform.PlatformChannelDto
 import com.github.s8u.streamarchive.platform.PlatformStrategy
 import com.github.s8u.streamarchive.platform.PlatformStreamDto
+import com.github.s8u.streamarchive.properties.TwitchProperties
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.ZoneId
 
 @Component
 class TwitchStrategy(
-    private val apiClient: TwitchApiClient
+    private val apiClient: TwitchApiClient,
+    private val twitchProperties: TwitchProperties
 ) : PlatformStrategy {
 
     override val platformType: PlatformType
@@ -63,6 +65,12 @@ class TwitchStrategy(
             viewerCount = responseFirst.viewerCount,
             thumbnailUrl = responseFirst.thumbnailUrl,
             startedAt = Instant.parse(responseFirst.startedAt).atZone(ZoneId.systemDefault()).toLocalDateTime()
+        )
+    }
+
+    override fun getStreamHeaders(): Map<String, String> {
+        return mapOf(
+            "Authorization" to "OAuth ${twitchProperties.personalOauthToken}"
         )
     }
 

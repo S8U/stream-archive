@@ -1,11 +1,197 @@
 package com.github.s8u.streamarchive.service
 
+import com.github.s8u.streamarchive.dto.RecordResponse
+import com.github.s8u.streamarchive.entity.Record
+import com.github.s8u.streamarchive.entity.Video
+import com.github.s8u.streamarchive.enums.ContentPrivacy
+import com.github.s8u.streamarchive.enums.RecordQuality
+import com.github.s8u.streamarchive.exception.BusinessException
+import com.github.s8u.streamarchive.platform.PlatformStreamDto
+import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
+import com.github.s8u.streamarchive.recorder.RecordProcessManager
+import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.RecordRepository
+import com.github.s8u.streamarchive.repository.VideoRepository
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class RecordService(
-    private val recordRepository: RecordRepository
+    private val recordRepository: RecordRepository,
+    private val videoRepository: VideoRepository,
+    private val recordProcessManager: RecordProcessManager,
+    private val platformStrategyFactory: PlatformStrategyFactory,
+    private val channelPlatformRepository: ChannelPlatformRepository,
+    private val videoMetadataService: VideoMetadataService
 ) {
+    private val logger = LoggerFactory.getLogger(RecordService::class.java)
+
+    @Transactional(readOnly = true)
+    fun getAll(): List<RecordResponse> {
+        return recordRepository.findAllByOrderByCreatedAtDesc()
+            .map { RecordResponse.from(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getById(id: Long): RecordResponse {
+        val record = recordRepository.findById(id).orElseThrow {
+            BusinessException("Record not found: $id", HttpStatus.NOT_FOUND)
+        }
+        return RecordResponse.from(record)
+    }
+
+    @Transactional
+    fun startRecording(
+        channelId: Long,
+        stream: PlatformStreamDto,
+        recordQuality: RecordQuality
+    ): Record? {
+        // 사용자가 취소한 방송인지 체크
+        val wasCancelled = recordRepository.existsByPlatformTypeAndPlatformStreamIdAndIsCancelled(
+            platformType = stream.platformType,
+            platformStreamId = stream.id,
+            isCancelled = true
+        )
+
+        if (wasCancelled) {
+            logger.debug("Stream was manually cancelled, skipping: platformType={}, streamId={}", stream.platformType, stream.id)
+            return null
+        }
+
+        // 중복 녹화 체크 (현재 녹화 중인지)
+        val isAlreadyRecording = recordRepository.existsByPlatformTypeAndPlatformStreamIdAndIsEndedAndIsCancelled(
+            platformType = stream.platformType,
+            platformStreamId = stream.id,
+            isEnded = false,
+            isCancelled = false
+        )
+
+        if (isAlreadyRecording) {
+            logger.debug("Already recording stream: platformType={}, streamId={}", stream.platformType, stream.id)
+            return null
+        }
+
+        // Video 생성
+        val video = Video(
+            uuid = UUID.randomUUID().toString(),
+            channelId = channelId,
+            title = stream.title ?: "Untitled",
+            contentPrivacy = ContentPrivacy.PUBLIC
+        )
+        val savedVideo = videoRepository.save(video)
+
+        // Record 생성
+        val record = Record(
+            channelId = channelId,
+            videoId = savedVideo.id!!,
+            platformType = stream.platformType,
+            platformStreamId = stream.id,
+            recordQuality = recordQuality.streamlinkValue
+        )
+        val savedRecord = recordRepository.save(record)
+
+        // 프로세스 시작
+        try {
+            val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformTypeAndIsActive(
+                channelId = channelId,
+                platformType = stream.platformType,
+                isActive = true
+            ) ?: throw BusinessException(
+                "활성화된 채널 플랫폼을 찾을 수 없습니다: channelId=$channelId, platformType=${stream.platformType}",
+                HttpStatus.NOT_FOUND
+            )
+
+            val strategy = platformStrategyFactory.getPlatformStrategy(stream.platformType)
+            val streamUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
+            val streamHeaders = strategy.getStreamHeaders()
+
+            recordProcessManager.startRecording(
+                recordId = savedRecord.id!!,
+                streamUrl = streamUrl,
+                quality = recordQuality.streamlinkValue,
+                videoUuid = savedVideo.uuid,
+                platformHeaders = streamHeaders
+            )
+
+            logger.info(
+                "Started recording: recordId={}, channelId={}, platformType={}, streamId={}, quality={}",
+                savedRecord.id,
+                channelId,
+                stream.platformType,
+                stream.id,
+                recordQuality
+            )
+        } catch (e: Exception) {
+            // 프로세스 시작 실패 시 Record를 취소 상태로 변경
+            savedRecord.isEnded = true
+            savedRecord.isCancelled = true
+            savedRecord.endedAt = LocalDateTime.now()
+            recordRepository.save(savedRecord)
+
+            logger.error("Failed to start recording process: recordId={}", savedRecord.id, e)
+            throw BusinessException("녹화 프로세스 시작 실패: ${e.message}", HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return savedRecord
+    }
+
+    @Transactional
+    fun endRecording(recordId: Long, isCancel: Boolean = false) {
+        val record = recordRepository.findById(recordId).orElseThrow {
+            BusinessException("녹화를 찾을 수 없습니다: $recordId", HttpStatus.NOT_FOUND)
+        }
+
+        // 이미 종료된 녹화인지 확인
+        if (record.isEnded) {
+            logger.warn("Record already ended: recordId={}", recordId)
+            return
+        }
+
+        // 수동 취소일 경우 프로세스 강제 종료
+        if (isCancel) {
+            recordProcessManager.stopRecording(recordId)
+        }
+
+        // DB 업데이트
+        record.isEnded = true
+        record.isCancelled = isCancel
+        record.endedAt = LocalDateTime.now()
+        recordRepository.save(record)
+
+        logger.info(
+            "Ended recording: recordId={}, channelId={}, platformType={}, streamId={}, cancelled={}",
+            recordId,
+            record.channelId,
+            record.platformType,
+            record.platformStreamId,
+            isCancel
+        )
+
+        // Video 메타데이터 업데이트
+        try {
+            val video = videoRepository.findById(record.videoId).orElseThrow {
+                BusinessException("Video not found: ${record.videoId}", HttpStatus.NOT_FOUND)
+            }
+
+            video.fileSize = videoMetadataService.calculateFileSize(video.uuid)
+            video.duration = videoMetadataService.calculateDuration(video.uuid)
+            videoRepository.save(video)
+
+            logger.info(
+                "Updated video metadata: videoId={}, videoUuid={}, fileSize={} bytes, duration={} seconds",
+                video.id,
+                video.uuid,
+                video.fileSize,
+                video.duration
+            )
+        } catch (e: Exception) {
+            logger.error("Failed to update video metadata: recordId={}", recordId, e)
+            // 메타데이터 업데이트 실패는 녹화 종료를 막지 않음
+        }
+    }
 
 }
