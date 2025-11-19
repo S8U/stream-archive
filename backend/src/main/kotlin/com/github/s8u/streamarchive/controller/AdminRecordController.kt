@@ -1,6 +1,6 @@
 package com.github.s8u.streamarchive.controller
 
-import com.github.s8u.streamarchive.dto.RecordResponse
+import com.github.s8u.streamarchive.dto.AdminRecordResponse
 import com.github.s8u.streamarchive.service.RecordService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -15,13 +15,13 @@ class AdminRecordController(
 ) {
     @Operation(summary = "녹화 기록 조회")
     @GetMapping
-    fun getAll(): List<RecordResponse> {
+    fun getAll(): List<AdminRecordResponse> {
         return recordService.getAll()
     }
 
     @Operation(summary = "녹화 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): RecordResponse {
+    fun getById(@PathVariable id: Long): AdminRecordResponse {
         return recordService.getById(id)
     }
 

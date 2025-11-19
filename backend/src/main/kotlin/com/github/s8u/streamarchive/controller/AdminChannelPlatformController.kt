@@ -1,8 +1,8 @@
 package com.github.s8u.streamarchive.controller
 
-import com.github.s8u.streamarchive.dto.ChannelPlatformCreateRequest
-import com.github.s8u.streamarchive.dto.ChannelPlatformResponse
-import com.github.s8u.streamarchive.dto.ChannelPlatformUpdateRequest
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformCreateRequest
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformResponse
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformUpdateRequest
 import com.github.s8u.streamarchive.service.ChannelPlatformService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -17,20 +17,20 @@ class AdminChannelPlatformController(
 ) {
     @Operation(summary = "채널 플랫폼 목록 조회")
     @GetMapping
-    fun getAll(): List<ChannelPlatformResponse> {
+    fun getAll(): List<AdminChannelPlatformResponse> {
         return channelPlatformService.getAll()
     }
 
     @Operation(summary = "채널 플랫폼 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): ChannelPlatformResponse {
+    fun getById(@PathVariable id: Long): AdminChannelPlatformResponse {
         return channelPlatformService.getById(id)
     }
 
     @Operation(summary = "채널 플랫폼 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: ChannelPlatformCreateRequest): ChannelPlatformResponse {
+    fun create(@RequestBody request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
         return channelPlatformService.create(request)
     }
 
@@ -38,8 +38,8 @@ class AdminChannelPlatformController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: Long,
-        @RequestBody request: ChannelPlatformUpdateRequest
-    ): ChannelPlatformResponse {
+        @RequestBody request: AdminChannelPlatformUpdateRequest
+    ): AdminChannelPlatformResponse {
         return channelPlatformService.update(id, request)
     }
 

@@ -6,7 +6,7 @@ import com.github.s8u.streamarchive.enums.RecordQuality
 import com.github.s8u.streamarchive.enums.RecordScheduleType
 import java.time.LocalDateTime
 
-data class RecordScheduleCreateRequest(
+data class AdminRecordScheduleCreateRequest(
     val channelId: Long,
     val platformType: PlatformType,
     val scheduleType: RecordScheduleType,
@@ -15,16 +15,15 @@ data class RecordScheduleCreateRequest(
     val priority: Int = 0
 )
 
-data class RecordScheduleUpdateRequest(
+data class AdminRecordScheduleUpdateRequest(
     val platformType: PlatformType?,
     val scheduleType: RecordScheduleType?,
     val value: String?,
     val recordQuality: RecordQuality?,
-    val priority: Int?,
-    val isActive: Boolean?
+    val priority: Int?
 )
 
-data class RecordScheduleResponse(
+data class AdminRecordScheduleResponse(
     val id: Long,
     val channelId: Long,
     val platformType: PlatformType,
@@ -32,13 +31,12 @@ data class RecordScheduleResponse(
     val value: String,
     val recordQuality: RecordQuality,
     val priority: Int,
-    val isActive: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
     companion object {
-        fun from(recordSchedule: RecordSchedule): RecordScheduleResponse {
-            return RecordScheduleResponse(
+        fun from(recordSchedule: RecordSchedule): AdminRecordScheduleResponse {
+            return AdminRecordScheduleResponse(
                 id = recordSchedule.id!!,
                 channelId = recordSchedule.channelId,
                 platformType = recordSchedule.platformType,
@@ -46,7 +44,6 @@ data class RecordScheduleResponse(
                 value = recordSchedule.value,
                 recordQuality = recordSchedule.recordQuality,
                 priority = recordSchedule.priority,
-                isActive = recordSchedule.isActive,
                 createdAt = recordSchedule.createdAt,
                 updatedAt = recordSchedule.updatedAt
             )

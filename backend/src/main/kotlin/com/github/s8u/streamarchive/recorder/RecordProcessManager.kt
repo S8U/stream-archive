@@ -31,7 +31,7 @@ class RecordProcessManager(
         platformHeaders: Map<String, String> = emptyMap()
     ) {
         try {
-            // 비디오 디렉토리 생성
+            // 동영상 디렉토리 생성
             val videoPath = storageProperties.videosPath.resolve(videoUuid)
             Files.createDirectories(videoPath)
 

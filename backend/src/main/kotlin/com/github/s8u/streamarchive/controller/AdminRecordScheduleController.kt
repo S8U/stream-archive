@@ -1,8 +1,8 @@
 package com.github.s8u.streamarchive.controller
 
-import com.github.s8u.streamarchive.dto.RecordScheduleCreateRequest
-import com.github.s8u.streamarchive.dto.RecordScheduleResponse
-import com.github.s8u.streamarchive.dto.RecordScheduleUpdateRequest
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleCreateRequest
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleResponse
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleUpdateRequest
 import com.github.s8u.streamarchive.service.RecordScheduleService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -17,20 +17,20 @@ class AdminRecordScheduleController(
 ) {
     @Operation(summary = "녹화 스케줄 목록 조회")
     @GetMapping
-    fun getAll(): List<RecordScheduleResponse> {
+    fun getAll(): List<AdminRecordScheduleResponse> {
         return recordScheduleService.getAll()
     }
 
     @Operation(summary = "녹화 스케줄 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): RecordScheduleResponse {
+    fun getById(@PathVariable id: Long): AdminRecordScheduleResponse {
         return recordScheduleService.getById(id)
     }
 
     @Operation(summary = "녹화 스케줄 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: RecordScheduleCreateRequest): RecordScheduleResponse {
+    fun create(@RequestBody request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
         return recordScheduleService.create(request)
     }
 
@@ -38,8 +38,8 @@ class AdminRecordScheduleController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: Long,
-        @RequestBody request: RecordScheduleUpdateRequest
-    ): RecordScheduleResponse {
+        @RequestBody request: AdminRecordScheduleUpdateRequest
+    ): AdminRecordScheduleResponse {
         return recordScheduleService.update(id, request)
     }
 

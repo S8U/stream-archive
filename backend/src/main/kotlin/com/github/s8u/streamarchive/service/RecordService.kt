@@ -1,6 +1,6 @@
 package com.github.s8u.streamarchive.service
 
-import com.github.s8u.streamarchive.dto.RecordResponse
+import com.github.s8u.streamarchive.dto.AdminRecordResponse
 import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
@@ -31,17 +31,17 @@ class RecordService(
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
 
     @Transactional(readOnly = true)
-    fun getAll(): List<RecordResponse> {
+    fun getAll(): List<AdminRecordResponse> {
         return recordRepository.findAllByOrderByCreatedAtDesc()
-            .map { RecordResponse.from(it) }
+            .map { AdminRecordResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): RecordResponse {
+    fun getById(id: Long): AdminRecordResponse {
         val record = recordRepository.findById(id).orElseThrow {
             BusinessException("Record not found: $id", HttpStatus.NOT_FOUND)
         }
-        return RecordResponse.from(record)
+        return AdminRecordResponse.from(record)
     }
 
     @Transactional

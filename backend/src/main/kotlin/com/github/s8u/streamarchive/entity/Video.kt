@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.entity
 import com.github.s8u.streamarchive.enums.ContentPrivacy
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -19,6 +20,7 @@ import java.time.LocalDateTime
     ]
 )
 @EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("is_active = true")
 @Comment("동영상")
 class Video(
     @Id

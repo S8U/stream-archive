@@ -1,11 +1,12 @@
 package com.github.s8u.streamarchive.service
 
-import com.github.s8u.streamarchive.dto.ChannelPlatformCreateRequest
-import com.github.s8u.streamarchive.dto.ChannelPlatformResponse
-import com.github.s8u.streamarchive.dto.ChannelPlatformUpdateRequest
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformCreateRequest
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformResponse
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformUpdateRequest
 import com.github.s8u.streamarchive.entity.ChannelPlatform
+import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
-import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -16,20 +17,21 @@ class ChannelPlatformService(
     private val channelProfileService: ChannelProfileService
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<ChannelPlatformResponse> {
-        return channelPlatformRepository.findByIsActive(true)
-            .map { ChannelPlatformResponse.from(it) }
+    fun getAll(): List<AdminChannelPlatformResponse> {
+        return channelPlatformRepository.findAll()
+            .map { AdminChannelPlatformResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): ChannelPlatformResponse {
-        val channelPlatform = channelPlatformRepository.findByIdOrNull(id)
-            ?: throw NoSuchElementException("ChannelPlatform not found: $id")
-        return ChannelPlatformResponse.from(channelPlatform)
+    fun getById(id: Long): AdminChannelPlatformResponse {
+        val channelPlatform = channelPlatformRepository.findById(id).orElseThrow {
+            BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+        return AdminChannelPlatformResponse.from(channelPlatform)
     }
 
     @Transactional
-    fun create(request: ChannelPlatformCreateRequest): ChannelPlatformResponse {
+    fun create(request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
         val channelPlatform = ChannelPlatform(
             channelId = request.channelId,
             platformType = request.platformType,
@@ -42,28 +44,29 @@ class ChannelPlatformService(
             channelProfileService.syncProfile(saved.channelId, saved.platformType)
         }
 
-        return ChannelPlatformResponse.from(saved)
+        return AdminChannelPlatformResponse.from(saved)
     }
 
     @Transactional
-    fun update(id: Long, request: ChannelPlatformUpdateRequest): ChannelPlatformResponse {
-        val channelPlatform = channelPlatformRepository.findByIdOrNull(id)
-            ?: throw NoSuchElementException("ChannelPlatform not found: $id")
+    fun update(id: Long, request: AdminChannelPlatformUpdateRequest): AdminChannelPlatformResponse {
+        val channelPlatform = channelPlatformRepository.findById(id).orElseThrow {
+            BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
 
         request.isSyncProfile?.let { channelPlatform.isSyncProfile = it }
-        request.isActive?.let { channelPlatform.isActive = it }
 
-        return ChannelPlatformResponse.from(channelPlatform)
+        return AdminChannelPlatformResponse.from(channelPlatform)
     }
 
     @Transactional
     fun delete(id: Long) {
-        val channelPlatform = channelPlatformRepository.findByIdOrNull(id)
-            ?: throw NoSuchElementException("ChannelPlatform not found: $id")
+        val channelPlatform = channelPlatformRepository.findById(id).orElseThrow {
+            BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
 
         channelProfileService.deleteProfile(channelPlatform.channelId, channelPlatform.platformType)
 
-        channelPlatform.deletedAt = LocalDateTime.now()
         channelPlatform.isActive = false
+        channelPlatform.deletedAt = LocalDateTime.now()
     }
 }

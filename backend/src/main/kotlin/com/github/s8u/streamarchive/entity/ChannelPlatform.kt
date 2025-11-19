@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.entity
 import com.github.s8u.streamarchive.enums.PlatformType
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -20,6 +21,7 @@ import java.time.LocalDateTime
     ]
 )
 @EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("is_active = true")
 @Comment("채널-플랫폼 연동")
 class ChannelPlatform(
     @Id

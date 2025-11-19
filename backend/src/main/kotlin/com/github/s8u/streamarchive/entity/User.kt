@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.entity
 import com.github.s8u.streamarchive.enums.Role
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -19,6 +20,7 @@ import java.time.LocalDateTime
     ]
 )
 @EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("is_active = true")
 @Comment("사용자")
 class User(
     @Id
@@ -34,18 +36,22 @@ class User(
     @Comment("사용자명")
     val username: String,
 
+    @Column(nullable = false, length = 100)
+    @Comment("이름")
+    var name: String,
+
     @Column(nullable = false, length = 255)
     @Comment("비밀번호")
     var password: String,
 
     @Column(nullable = false, unique = true, length = 255)
     @Comment("이메일")
-    val email: String,
+    var email: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Comment("역할")
-    val role: Role = Role.USER,
+    var role: Role = Role.USER,
 
     @Column
     @Comment("마지막 로그인 일시")

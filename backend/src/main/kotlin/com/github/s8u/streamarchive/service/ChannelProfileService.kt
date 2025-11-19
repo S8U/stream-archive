@@ -2,12 +2,13 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.entity.ChannelPlatform
 import com.github.s8u.streamarchive.enums.PlatformType
+import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
 import org.slf4j.LoggerFactory
-import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 import java.io.InputStream
@@ -25,8 +26,9 @@ class ChannelProfileService(
     private val restClient = RestClient.create()
 
     fun syncProfile(channelId: Long) {
-        val channel = channelRepository.findByIdOrNull(channelId)
-            ?: throw NoSuchElementException("Channel not found: $channelId")
+        val channel = channelRepository.findById(channelId).orElseThrow {
+            BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
 
         val platforms = channelPlatformRepository.findByIsSyncProfileAndIsActive(true, true)
             .filter { it.channelId == channelId }
@@ -36,7 +38,7 @@ class ChannelProfileService(
 
     fun syncProfile(channelId: Long, platformType: PlatformType) {
         val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformTypeAndIsActive(channelId, platformType, true)
-            ?: throw NoSuchElementException("ChannelPlatform not found: channelId=$channelId, platformType=$platformType")
+            ?: throw BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
 
         if (channelPlatform.isSyncProfile) {
             downloadAndSave(channelPlatform)

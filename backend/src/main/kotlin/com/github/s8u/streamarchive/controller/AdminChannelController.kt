@@ -1,8 +1,8 @@
 package com.github.s8u.streamarchive.controller
 
-import com.github.s8u.streamarchive.dto.ChannelCreateRequest
-import com.github.s8u.streamarchive.dto.ChannelResponse
-import com.github.s8u.streamarchive.dto.ChannelUpdateRequest
+import com.github.s8u.streamarchive.dto.AdminChannelCreateRequest
+import com.github.s8u.streamarchive.dto.AdminChannelResponse
+import com.github.s8u.streamarchive.dto.AdminChannelUpdateRequest
 import com.github.s8u.streamarchive.service.ChannelService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -17,20 +17,20 @@ class AdminChannelController(
 ) {
     @Operation(summary = "채널 목록 조회")
     @GetMapping
-    fun getAll(): List<ChannelResponse> {
+    fun getAll(): List<AdminChannelResponse> {
         return channelService.getAll()
     }
 
     @Operation(summary = "채널 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): ChannelResponse {
+    fun getById(@PathVariable id: Long): AdminChannelResponse {
         return channelService.getById(id)
     }
 
     @Operation(summary = "채널 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: ChannelCreateRequest): ChannelResponse {
+    fun create(@RequestBody request: AdminChannelCreateRequest): AdminChannelResponse {
         return channelService.create(request)
     }
 
@@ -38,8 +38,8 @@ class AdminChannelController(
     @PutMapping("/{id}")
     fun update(
         @PathVariable id: Long,
-        @RequestBody request: ChannelUpdateRequest
-    ): ChannelResponse {
+        @RequestBody request: AdminChannelUpdateRequest
+    ): AdminChannelResponse {
         return channelService.update(id, request)
     }
 

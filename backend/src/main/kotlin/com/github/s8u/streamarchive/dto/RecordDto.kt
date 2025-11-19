@@ -4,7 +4,7 @@ import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.enums.PlatformType
 import java.time.LocalDateTime
 
-data class RecordResponse(
+data class AdminRecordResponse(
     val id: Long,
     val channelId: Long,
     val videoId: Long,
@@ -17,8 +17,8 @@ data class RecordResponse(
     val endedAt: LocalDateTime?
 ) {
     companion object {
-        fun from(record: Record): RecordResponse {
-            return RecordResponse(
+        fun from(record: Record): AdminRecordResponse {
+            return AdminRecordResponse(
                 id = record.id!!,
                 channelId = record.channelId,
                 videoId = record.videoId,

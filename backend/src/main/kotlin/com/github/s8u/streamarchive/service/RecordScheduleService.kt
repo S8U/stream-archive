@@ -1,34 +1,37 @@
 package com.github.s8u.streamarchive.service
 
-import com.github.s8u.streamarchive.dto.RecordScheduleCreateRequest
-import com.github.s8u.streamarchive.dto.RecordScheduleResponse
-import com.github.s8u.streamarchive.dto.RecordScheduleUpdateRequest
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleCreateRequest
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleResponse
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleUpdateRequest
 import com.github.s8u.streamarchive.entity.RecordSchedule
 import com.github.s8u.streamarchive.enums.RecordScheduleType
+import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
-import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class RecordScheduleService(
     private val recordScheduleRepository: RecordScheduleRepository
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<RecordScheduleResponse> {
-        return recordScheduleRepository.findByIsActive(true)
-            .map { RecordScheduleResponse.from(it) }
+    fun getAll(): List<AdminRecordScheduleResponse> {
+        return recordScheduleRepository.findAll()
+            .map { AdminRecordScheduleResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): RecordScheduleResponse {
-        val recordSchedule = recordScheduleRepository.findByIdOrNull(id)
-            ?: throw NoSuchElementException("RecordSchedule not found: $id")
-        return RecordScheduleResponse.from(recordSchedule)
+    fun getById(id: Long): AdminRecordScheduleResponse {
+        val recordSchedule = recordScheduleRepository.findById(id).orElseThrow {
+            BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+        return AdminRecordScheduleResponse.from(recordSchedule)
     }
 
     @Transactional
-    fun create(request: RecordScheduleCreateRequest): RecordScheduleResponse {
+    fun create(request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
         // ONCE, ALWAYS는 채널+플랫폼당 하나만 허용
         if (request.scheduleType == RecordScheduleType.ONCE ||
             request.scheduleType == RecordScheduleType.ALWAYS) {
@@ -39,8 +42,9 @@ class RecordScheduleService(
                 isActive = true
             )
             if (exists) {
-                throw IllegalStateException(
-                    "Active ${request.scheduleType} schedule already exists for channel ${request.channelId} and platform ${request.platformType}"
+                throw BusinessException(
+                    "해당 채널과 플랫폼에 이미 ${request.scheduleType} 스케줄이 존재합니다.",
+                    HttpStatus.CONFLICT
                 )
             }
         }
@@ -54,13 +58,14 @@ class RecordScheduleService(
             priority = request.priority
         )
         val saved = recordScheduleRepository.save(recordSchedule)
-        return RecordScheduleResponse.from(saved)
+        return AdminRecordScheduleResponse.from(saved)
     }
 
     @Transactional
-    fun update(id: Long, request: RecordScheduleUpdateRequest): RecordScheduleResponse {
-        val recordSchedule = recordScheduleRepository.findByIdOrNull(id)
-            ?: throw NoSuchElementException("RecordSchedule not found: $id")
+    fun update(id: Long, request: AdminRecordScheduleUpdateRequest): AdminRecordScheduleResponse {
+        val recordSchedule = recordScheduleRepository.findById(id).orElseThrow {
+            BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
 
         // platformType 또는 scheduleType 변경 시 중복 체크
         val newPlatformType = request.platformType ?: recordSchedule.platformType
@@ -80,8 +85,9 @@ class RecordScheduleService(
                 // 자기 자신이 아닌 다른 스케줄이 있는지 확인
                 if (exists && (recordSchedule.platformType != newPlatformType ||
                               recordSchedule.scheduleType != newScheduleType)) {
-                    throw IllegalStateException(
-                        "Active $newScheduleType schedule already exists for channel ${recordSchedule.channelId} and platform $newPlatformType"
+                    throw BusinessException(
+                        "해당 채널과 플랫폼에 이미 $newScheduleType 스케줄이 존재합니다.",
+                        HttpStatus.CONFLICT
                     )
                 }
             }
@@ -92,16 +98,17 @@ class RecordScheduleService(
         request.value?.let { recordSchedule.value = it }
         request.recordQuality?.let { recordSchedule.recordQuality = it }
         request.priority?.let { recordSchedule.priority = it }
-        request.isActive?.let { recordSchedule.isActive = it }
 
-        return RecordScheduleResponse.from(recordSchedule)
+        return AdminRecordScheduleResponse.from(recordSchedule)
     }
 
     @Transactional
     fun delete(id: Long) {
-        val recordSchedule = recordScheduleRepository.findByIdOrNull(id)
-            ?: throw NoSuchElementException("RecordSchedule not found: $id")
+        val recordSchedule = recordScheduleRepository.findById(id).orElseThrow {
+            BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
 
         recordSchedule.isActive = false
+        recordSchedule.deletedAt = LocalDateTime.now()
     }
 }

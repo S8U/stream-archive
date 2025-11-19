@@ -13,7 +13,7 @@ class VideoMetadataService(
     private val logger = LoggerFactory.getLogger(VideoMetadataService::class.java)
 
     /**
-     * 비디오 디렉토리의 전체 파일 크기 계산 (바이트)
+     * 동영상 디렉토리의 전체 파일 크기 계산 (바이트)
      */
     fun calculateFileSize(videoUuid: String): Long {
         val videoPath = storageProperties.videosPath.resolve(videoUuid)
