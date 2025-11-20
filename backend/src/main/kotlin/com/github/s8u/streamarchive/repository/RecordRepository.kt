@@ -4,7 +4,7 @@ import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.enums.PlatformType
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface RecordRepository : JpaRepository<Record, Long> {
+interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom {
     fun existsByPlatformTypeAndPlatformStreamIdAndIsEndedAndIsCancelled(
         platformType: PlatformType,
         platformStreamId: String,

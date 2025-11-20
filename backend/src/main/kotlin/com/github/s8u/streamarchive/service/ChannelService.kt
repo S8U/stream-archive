@@ -2,12 +2,15 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.AdminChannelCreateRequest
 import com.github.s8u.streamarchive.dto.AdminChannelResponse
+import com.github.s8u.streamarchive.dto.AdminChannelSearchRequest
 import com.github.s8u.streamarchive.dto.AdminChannelUpdateRequest
 import com.github.s8u.streamarchive.entity.Channel
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,8 +24,8 @@ class ChannelService(
     private val recordScheduleRepository: RecordScheduleRepository
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<AdminChannelResponse> {
-        return channelRepository.findAll()
+    fun search(condition: AdminChannelSearchRequest, pageable: Pageable): Page<AdminChannelResponse> {
+        return channelRepository.search(condition, pageable)
             .map { AdminChannelResponse.from(it) }
     }
 

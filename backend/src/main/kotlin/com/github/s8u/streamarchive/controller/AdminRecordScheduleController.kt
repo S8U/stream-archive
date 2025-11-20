@@ -2,10 +2,14 @@ package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.AdminRecordScheduleCreateRequest
 import com.github.s8u.streamarchive.dto.AdminRecordScheduleResponse
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleSearchRequest
 import com.github.s8u.streamarchive.dto.AdminRecordScheduleUpdateRequest
 import com.github.s8u.streamarchive.service.RecordScheduleService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -17,8 +21,11 @@ class AdminRecordScheduleController(
 ) {
     @Operation(summary = "녹화 스케줄 목록 조회")
     @GetMapping
-    fun getAll(): List<AdminRecordScheduleResponse> {
-        return recordScheduleService.getAll()
+    fun search(
+        request: AdminRecordScheduleSearchRequest,
+        @PageableDefault(size = 20) pageable: Pageable
+    ): Page<AdminRecordScheduleResponse> {
+        return recordScheduleService.search(request, pageable)
     }
 
     @Operation(summary = "녹화 스케줄 단건 조회")

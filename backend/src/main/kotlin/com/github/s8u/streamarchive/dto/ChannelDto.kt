@@ -14,6 +14,11 @@ data class AdminChannelUpdateRequest(
     val contentPrivacy: ContentPrivacy?
 )
 
+data class AdminChannelSearchRequest(
+    val name: String? = null,
+    val contentPrivacy: ContentPrivacy? = null
+)
+
 data class AdminChannelResponse(
     val id: Long,
     val uuid: String,

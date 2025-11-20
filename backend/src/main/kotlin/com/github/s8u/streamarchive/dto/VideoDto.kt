@@ -4,6 +4,14 @@ import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
 import java.time.LocalDateTime
 
+data class AdminVideoSearchRequest(
+    val title: String? = null,
+    val channelName: String? = null,
+    val contentPrivacy: ContentPrivacy? = null,
+    val createdAtFrom: LocalDateTime? = null,
+    val createdAtTo: LocalDateTime? = null
+)
+
 data class AdminVideoUpdateRequest(
     val title: String?,
     val contentPrivacy: ContentPrivacy?

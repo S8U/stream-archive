@@ -1,11 +1,14 @@
 package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.AdminVideoResponse
+import com.github.s8u.streamarchive.dto.AdminVideoSearchRequest
 import com.github.s8u.streamarchive.dto.AdminVideoUpdateRequest
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.VideoRepository
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,9 +22,10 @@ class VideoService(
     private val storageProperties: StorageProperties
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
+
     @Transactional(readOnly = true)
-    fun getAll(): List<AdminVideoResponse> {
-        return videoRepository.findAll()
+    fun search(request: AdminVideoSearchRequest, pageable: Pageable): Page<AdminVideoResponse> {
+        return videoRepository.search(request, pageable)
             .map { AdminVideoResponse.from(it) }
     }
 

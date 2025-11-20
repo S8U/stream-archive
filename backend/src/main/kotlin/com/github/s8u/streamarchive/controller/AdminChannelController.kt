@@ -2,10 +2,14 @@ package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.AdminChannelCreateRequest
 import com.github.s8u.streamarchive.dto.AdminChannelResponse
+import com.github.s8u.streamarchive.dto.AdminChannelSearchRequest
 import com.github.s8u.streamarchive.dto.AdminChannelUpdateRequest
 import com.github.s8u.streamarchive.service.ChannelService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -17,8 +21,11 @@ class AdminChannelController(
 ) {
     @Operation(summary = "채널 목록 조회")
     @GetMapping
-    fun getAll(): List<AdminChannelResponse> {
-        return channelService.getAll()
+    fun search(
+        request: AdminChannelSearchRequest,
+        @PageableDefault(size = 20) pageable: Pageable
+    ): Page<AdminChannelResponse> {
+        return channelService.search(request, pageable)
     }
 
     @Operation(summary = "채널 단건 조회")

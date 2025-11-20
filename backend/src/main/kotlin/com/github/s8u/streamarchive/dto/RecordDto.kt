@@ -4,6 +4,15 @@ import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.enums.PlatformType
 import java.time.LocalDateTime
 
+data class AdminRecordSearchRequest(
+    val channelName: String? = null,
+    val platformType: PlatformType? = null,
+    val isEnded: Boolean? = null,
+    val isCancelled: Boolean? = null,
+    val createdAtFrom: LocalDateTime? = null,
+    val createdAtTo: LocalDateTime? = null
+)
+
 data class AdminRecordResponse(
     val id: Long,
     val channelId: Long,

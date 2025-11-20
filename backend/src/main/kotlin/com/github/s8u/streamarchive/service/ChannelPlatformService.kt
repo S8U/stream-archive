@@ -2,10 +2,13 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.AdminChannelPlatformCreateRequest
 import com.github.s8u.streamarchive.dto.AdminChannelPlatformResponse
+import com.github.s8u.streamarchive.dto.AdminChannelPlatformSearchRequest
 import com.github.s8u.streamarchive.dto.AdminChannelPlatformUpdateRequest
 import com.github.s8u.streamarchive.entity.ChannelPlatform
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,8 +20,8 @@ class ChannelPlatformService(
     private val channelProfileService: ChannelProfileService
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<AdminChannelPlatformResponse> {
-        return channelPlatformRepository.findAll()
+    fun search(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<AdminChannelPlatformResponse> {
+        return channelPlatformRepository.search(request, pageable)
             .map { AdminChannelPlatformResponse.from(it) }
     }
 

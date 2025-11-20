@@ -1,10 +1,14 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.AdminVideoResponse
+import com.github.s8u.streamarchive.dto.AdminVideoSearchRequest
 import com.github.s8u.streamarchive.dto.AdminVideoUpdateRequest
 import com.github.s8u.streamarchive.service.VideoService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -16,8 +20,11 @@ class AdminVideoController(
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
-    fun getAll(): List<AdminVideoResponse> {
-        return videoService.getAll()
+    fun search(
+        request: AdminVideoSearchRequest,
+        @PageableDefault(size = 20) pageable: Pageable
+    ): Page<AdminVideoResponse> {
+        return videoService.search(request, pageable)
     }
 
     @Operation(summary = "동영상 단건 조회")

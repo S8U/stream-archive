@@ -1,9 +1,12 @@
 package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.AdminUserResponse
+import com.github.s8u.streamarchive.dto.AdminUserSearchRequest
 import com.github.s8u.streamarchive.dto.AdminUserUpdateRequest
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.UserRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,8 +17,8 @@ class UserService(
     private val userRepository: UserRepository
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<AdminUserResponse> {
-        return userRepository.findAll()
+    fun search(request: AdminUserSearchRequest, pageable: Pageable): Page<AdminUserResponse> {
+        return userRepository.search(request, pageable)
             .map { AdminUserResponse.from(it) }
     }
 

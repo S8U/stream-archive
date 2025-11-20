@@ -1,10 +1,14 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.AdminUserResponse
+import com.github.s8u.streamarchive.dto.AdminUserSearchRequest
 import com.github.s8u.streamarchive.dto.AdminUserUpdateRequest
 import com.github.s8u.streamarchive.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -16,8 +20,11 @@ class AdminUserController(
 ) {
     @Operation(summary = "사용자 목록 조회")
     @GetMapping
-    fun getAll(): List<AdminUserResponse> {
-        return userService.getAll()
+    fun search(
+        request: AdminUserSearchRequest,
+        @PageableDefault(size = 20) pageable: Pageable
+    ): Page<AdminUserResponse> {
+        return userService.search(request, pageable)
     }
 
     @Operation(summary = "사용자 상세 조회")

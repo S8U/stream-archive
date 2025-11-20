@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.AdminRecordResponse
+import com.github.s8u.streamarchive.dto.AdminRecordSearchRequest
 import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
@@ -13,6 +14,8 @@ import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.RecordRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,8 +34,8 @@ class RecordService(
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
 
     @Transactional(readOnly = true)
-    fun getAll(): List<AdminRecordResponse> {
-        return recordRepository.findAllByOrderByCreatedAtDesc()
+    fun search(request: AdminRecordSearchRequest, pageable: Pageable): Page<AdminRecordResponse> {
+        return recordRepository.search(request, pageable)
             .map { AdminRecordResponse.from(it) }
     }
 

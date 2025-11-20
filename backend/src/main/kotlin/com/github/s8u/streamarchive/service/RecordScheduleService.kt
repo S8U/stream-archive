@@ -2,11 +2,14 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.AdminRecordScheduleCreateRequest
 import com.github.s8u.streamarchive.dto.AdminRecordScheduleResponse
+import com.github.s8u.streamarchive.dto.AdminRecordScheduleSearchRequest
 import com.github.s8u.streamarchive.dto.AdminRecordScheduleUpdateRequest
 import com.github.s8u.streamarchive.entity.RecordSchedule
 import com.github.s8u.streamarchive.enums.RecordScheduleType
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,8 +20,8 @@ class RecordScheduleService(
     private val recordScheduleRepository: RecordScheduleRepository
 ) {
     @Transactional(readOnly = true)
-    fun getAll(): List<AdminRecordScheduleResponse> {
-        return recordScheduleRepository.findAll()
+    fun search(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<AdminRecordScheduleResponse> {
+        return recordScheduleRepository.search(request, pageable)
             .map { AdminRecordScheduleResponse.from(it) }
     }
 

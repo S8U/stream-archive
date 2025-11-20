@@ -1,9 +1,13 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.AdminRecordResponse
+import com.github.s8u.streamarchive.dto.AdminRecordSearchRequest
 import com.github.s8u.streamarchive.service.RecordService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -15,8 +19,11 @@ class AdminRecordController(
 ) {
     @Operation(summary = "녹화 기록 조회")
     @GetMapping
-    fun getAll(): List<AdminRecordResponse> {
-        return recordService.getAll()
+    fun search(
+        request: AdminRecordSearchRequest,
+        @PageableDefault(size = 20) pageable: Pageable
+    ): Page<AdminRecordResponse> {
+        return recordService.search(request, pageable)
     }
 
     @Operation(summary = "녹화 단건 조회")
