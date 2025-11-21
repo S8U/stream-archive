@@ -20,13 +20,13 @@ class RecordScheduleService(
     private val recordScheduleRepository: RecordScheduleRepository
 ) {
     @Transactional(readOnly = true)
-    fun search(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<AdminRecordScheduleResponse> {
-        return recordScheduleRepository.search(request, pageable)
+    fun searchForAdmin(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<AdminRecordScheduleResponse> {
+        return recordScheduleRepository.searchForAdmin(request, pageable)
             .map { AdminRecordScheduleResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): AdminRecordScheduleResponse {
+    fun getForAdmin(id: Long): AdminRecordScheduleResponse {
         val recordSchedule = recordScheduleRepository.findById(id).orElseThrow {
             BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -34,15 +34,14 @@ class RecordScheduleService(
     }
 
     @Transactional
-    fun create(request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
+    fun createForAdmin(request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
         // ONCE, ALWAYS는 채널+플랫폼당 하나만 허용
         if (request.scheduleType == RecordScheduleType.ONCE ||
             request.scheduleType == RecordScheduleType.ALWAYS) {
-            val exists = recordScheduleRepository.existsByChannelIdAndPlatformTypeAndScheduleTypeAndIsActive(
+            val exists = recordScheduleRepository.existsByChannelIdAndPlatformTypeAndScheduleType(
                 channelId = request.channelId,
                 platformType = request.platformType,
-                scheduleType = request.scheduleType,
-                isActive = true
+                scheduleType = request.scheduleType
             )
             if (exists) {
                 throw BusinessException(
@@ -65,7 +64,7 @@ class RecordScheduleService(
     }
 
     @Transactional
-    fun update(id: Long, request: AdminRecordScheduleUpdateRequest): AdminRecordScheduleResponse {
+    fun updateForAdmin(id: Long, request: AdminRecordScheduleUpdateRequest): AdminRecordScheduleResponse {
         val recordSchedule = recordScheduleRepository.findById(id).orElseThrow {
             BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -79,11 +78,10 @@ class RecordScheduleService(
             newScheduleType == RecordScheduleType.ALWAYS) {
             // platformType이나 scheduleType이 변경되는 경우만 체크
             if (request.platformType != null || request.scheduleType != null) {
-                val exists = recordScheduleRepository.existsByChannelIdAndPlatformTypeAndScheduleTypeAndIsActive(
+                val exists = recordScheduleRepository.existsByChannelIdAndPlatformTypeAndScheduleType(
                     channelId = recordSchedule.channelId,
                     platformType = newPlatformType,
-                    scheduleType = newScheduleType,
-                    isActive = true
+                    scheduleType = newScheduleType
                 )
                 // 자기 자신이 아닌 다른 스케줄이 있는지 확인
                 if (exists && (recordSchedule.platformType != newPlatformType ||
@@ -114,4 +112,15 @@ class RecordScheduleService(
         recordSchedule.isActive = false
         recordSchedule.deletedAt = LocalDateTime.now()
     }
+
+    @Transactional
+    fun deleteAllByChannelId(channelId: Long) {
+        val recordSchedules = recordScheduleRepository.findByChannelId(channelId)
+
+        recordSchedules.forEach { recordSchedule ->
+            recordSchedule.isActive = false
+            recordSchedule.deletedAt = LocalDateTime.now()
+        }
+    }
+
 }

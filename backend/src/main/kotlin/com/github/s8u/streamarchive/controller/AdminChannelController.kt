@@ -25,20 +25,20 @@ class AdminChannelController(
         request: AdminChannelSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): Page<AdminChannelResponse> {
-        return channelService.search(request, pageable)
+        return channelService.searchForAdmin(request, pageable)
     }
 
     @Operation(summary = "채널 단건 조회")
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AdminChannelResponse {
-        return channelService.getById(id)
+        return channelService.getForAdmin(id)
     }
 
     @Operation(summary = "채널 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: AdminChannelCreateRequest): AdminChannelResponse {
-        return channelService.create(request)
+        return channelService.createForAdmin(request)
     }
 
     @Operation(summary = "채널 수정")
@@ -47,7 +47,7 @@ class AdminChannelController(
         @PathVariable id: Long,
         @RequestBody request: AdminChannelUpdateRequest
     ): AdminChannelResponse {
-        return channelService.update(id, request)
+        return channelService.updateForAdmin(id, request)
     }
 
     @Operation(summary = "채널 삭제")

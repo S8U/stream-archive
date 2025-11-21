@@ -20,7 +20,7 @@ class RecordRepositoryImpl(
     private val video = QVideo.video
     private val channel = QChannel.channel
 
-    override fun search(request: AdminRecordSearchRequest, pageable: Pageable): Page<Record> {
+    override fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<Record> {
         val results = queryFactory
             .selectFrom(record)
             .leftJoin(video).on(record.videoId.eq(video.id))

@@ -13,17 +13,17 @@ class GlobalSettingService(
     private val logger = LoggerFactory.getLogger(GlobalSettingService::class.java)
 
     @Transactional(readOnly = true)
-    fun getSetting(key: String): GlobalSetting? {
+    fun get(key: String): GlobalSetting? {
         return globalSettingRepository.findBySettingKey(key)
     }
 
     @Transactional(readOnly = true)
-    fun getSettingValue(key: String): String? {
+    fun getValue(key: String): String? {
         return globalSettingRepository.findBySettingKey(key)?.settingValue
     }
 
     @Transactional
-    fun createOrUpdateSetting(key: String, value: String, description: String? = null): GlobalSetting {
+    fun createOrUpdate(key: String, value: String, description: String? = null): GlobalSetting {
         val setting = globalSettingRepository.findBySettingKey(key)
             ?: GlobalSetting(
                 settingKey = key,
@@ -38,15 +38,15 @@ class GlobalSettingService(
     }
 
     @Transactional(readOnly = true)
-    fun existsSetting(key: String): Boolean {
+    fun exists(key: String): Boolean {
         return globalSettingRepository.existsBySettingKey(key)
     }
 
     @Transactional
-    fun initializeDefaultSettings() {
+    fun initialize() {
         GlobalSettingKey.values().forEach { settingKey ->
-            if (!existsSetting(settingKey.name)) {
-                createOrUpdateSetting(
+            if (!exists(settingKey.name)) {
+                createOrUpdate(
                     settingKey.name,
                     settingKey.defaultValue,
                     settingKey.description

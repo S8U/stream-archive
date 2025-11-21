@@ -20,13 +20,13 @@ class ChannelPlatformService(
     private val channelProfileService: ChannelProfileService
 ) {
     @Transactional(readOnly = true)
-    fun search(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<AdminChannelPlatformResponse> {
-        return channelPlatformRepository.search(request, pageable)
+    fun searchForAdmin(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<AdminChannelPlatformResponse> {
+        return channelPlatformRepository.searchForAdmin(request, pageable)
             .map { AdminChannelPlatformResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): AdminChannelPlatformResponse {
+    fun getForAdmin(id: Long): AdminChannelPlatformResponse {
         val channelPlatform = channelPlatformRepository.findById(id).orElseThrow {
             BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -34,7 +34,7 @@ class ChannelPlatformService(
     }
 
     @Transactional
-    fun create(request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
+    fun createForAdmin(request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
         val channelPlatform = ChannelPlatform(
             channelId = request.channelId,
             platformType = request.platformType,
@@ -51,7 +51,7 @@ class ChannelPlatformService(
     }
 
     @Transactional
-    fun update(id: Long, request: AdminChannelPlatformUpdateRequest): AdminChannelPlatformResponse {
+    fun updateForAdmin(id: Long, request: AdminChannelPlatformUpdateRequest): AdminChannelPlatformResponse {
         val channelPlatform = channelPlatformRepository.findById(id).orElseThrow {
             BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -67,9 +67,24 @@ class ChannelPlatformService(
             BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
-        channelProfileService.deleteProfile(channelPlatform.channelId, channelPlatform.platformType)
+        channelProfileService.deleteProfile(channelPlatform.channelId)
 
         channelPlatform.isActive = false
         channelPlatform.deletedAt = LocalDateTime.now()
     }
+
+    @Transactional
+    fun deleteAllByChannelId(channelId: Long) {
+        val channelPlatforms = channelPlatformRepository.findByChannelId(channelId)
+
+        channelPlatforms.forEach { channelPlatform ->
+            channelPlatform.isActive = false
+            channelPlatform.deletedAt = LocalDateTime.now()
+        }
+
+        if (channelPlatforms.isNotEmpty()) {
+            channelProfileService.deleteProfile(channelId)
+        }
+    }
+
 }

@@ -24,13 +24,13 @@ class AdminUserController(
         request: AdminUserSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): Page<AdminUserResponse> {
-        return userService.search(request, pageable)
+        return userService.searchForAdmin(request, pageable)
     }
 
     @Operation(summary = "사용자 상세 조회")
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AdminUserResponse {
-        return userService.getById(id)
+        return userService.getForAdmin(id)
     }
 
     @Operation(summary = "사용자 수정")
@@ -39,7 +39,7 @@ class AdminUserController(
         @PathVariable id: Long,
         @RequestBody request: AdminUserUpdateRequest
     ): AdminUserResponse {
-        return userService.update(id, request)
+        return userService.updateForAdmin(id, request)
     }
 
     @Operation(summary = "사용자 삭제")

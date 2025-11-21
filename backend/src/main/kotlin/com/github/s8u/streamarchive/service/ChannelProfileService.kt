@@ -6,7 +6,6 @@ import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
-import com.github.s8u.streamarchive.repository.ChannelRepository
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -17,7 +16,6 @@ import java.nio.file.StandardCopyOption
 
 @Service
 class ChannelProfileService(
-    private val channelRepository: ChannelRepository,
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val platformStrategyFactory: PlatformStrategyFactory,
     private val storageProperties: StorageProperties
@@ -25,19 +23,8 @@ class ChannelProfileService(
     private val logger = LoggerFactory.getLogger(ChannelProfileService::class.java)
     private val restClient = RestClient.create()
 
-    fun syncProfile(channelId: Long) {
-        val channel = channelRepository.findById(channelId).orElseThrow {
-            BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
-
-        val platforms = channelPlatformRepository.findByIsSyncProfileAndIsActive(true, true)
-            .filter { it.channelId == channelId }
-
-        platforms.forEach { downloadAndSave(it) }
-    }
-
     fun syncProfile(channelId: Long, platformType: PlatformType) {
-        val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformTypeAndIsActive(channelId, platformType, true)
+        val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformType(channelId, platformType)
             ?: throw BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
 
         if (channelPlatform.isSyncProfile) {
@@ -46,23 +33,12 @@ class ChannelProfileService(
     }
 
     fun syncAllProfiles() {
-        val platforms = channelPlatformRepository.findByIsSyncProfileAndIsActive(true, true)
+        val platforms = channelPlatformRepository.findByIsSyncProfile(true)
         platforms.forEach { downloadAndSave(it) }
     }
 
     fun deleteProfile(channelId: Long) {
-        val channelDir = storageProperties.getChannelPath(channelId)
-        if (Files.exists(channelDir)) {
-            Files.walk(channelDir)
-                .sorted(Comparator.reverseOrder())
-                .forEach { Files.delete(it) }
-        }
-    }
-
-    fun deleteProfile(channelId: Long, platformType: PlatformType) {
-        val fileName = "profile-${platformType.name.lowercase()}.jpg"
-        val filePath = storageProperties.getChannelPath(channelId).resolve(fileName)
-
+        val filePath = storageProperties.getChannelPath(channelId).resolve("profile.jpg")
         if (Files.exists(filePath)) {
             Files.delete(filePath)
         }
@@ -89,8 +65,7 @@ class ChannelProfileService(
             val channelDir = storageProperties.getChannelPath(channelPlatform.channelId)
             Files.createDirectories(channelDir)
 
-            val fileName = "profile-${channelPlatform.platformType.name.lowercase()}.jpg"
-            val filePath = channelDir.resolve(fileName)
+            val filePath = channelDir.resolve("profile.png")
 
             inputStream.use {
                 Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)

@@ -25,20 +25,20 @@ class AdminChannelPlatformController(
         request: AdminChannelPlatformSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): Page<AdminChannelPlatformResponse> {
-        return channelPlatformService.search(request, pageable)
+        return channelPlatformService.searchForAdmin(request, pageable)
     }
 
     @Operation(summary = "채널 플랫폼 단건 조회")
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AdminChannelPlatformResponse {
-        return channelPlatformService.getById(id)
+        return channelPlatformService.getForAdmin(id)
     }
 
     @Operation(summary = "채널 플랫폼 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
-        return channelPlatformService.create(request)
+        return channelPlatformService.createForAdmin(request)
     }
 
     @Operation(summary = "채널 플랫폼 수정")
@@ -47,7 +47,7 @@ class AdminChannelPlatformController(
         @PathVariable id: Long,
         @RequestBody request: AdminChannelPlatformUpdateRequest
     ): AdminChannelPlatformResponse {
-        return channelPlatformService.update(id, request)
+        return channelPlatformService.updateForAdmin(id, request)
     }
 
     @Operation(summary = "채널 플랫폼 삭제")

@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface ChannelPlatformRepositoryCustom {
-    fun search(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<ChannelPlatform>
+    fun searchForAdmin(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<ChannelPlatform>
 }

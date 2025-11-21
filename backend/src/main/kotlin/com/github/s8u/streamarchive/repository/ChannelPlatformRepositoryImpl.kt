@@ -18,7 +18,7 @@ class ChannelPlatformRepositoryImpl(
     private val channelPlatform = QChannelPlatform.channelPlatform
     private val channel = QChannel.channel
 
-    override fun search(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<ChannelPlatform> {
+    override fun searchForAdmin(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<ChannelPlatform> {
         val results = queryFactory
             .selectFrom(channelPlatform)
             .leftJoin(channel).on(channelPlatform.channelId.eq(channel.id))

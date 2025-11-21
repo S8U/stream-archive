@@ -13,10 +13,10 @@
 ### 1.1 인증/인가
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| POST | `/api/auth/login` | 로그인 (JWT 발급) | ❌ |
-| POST | `/api/auth/signup` | 회원가입 | ❌ |
-| POST | `/api/auth/logout` | 로그아웃 | ❌ |
-| POST | `/api/auth/refresh` | 토큰 갱신 | ❌ |
+| POST | `/auth/login` | 로그인 (JWT 발급) | ❌ |
+| POST | `/auth/signup` | 회원가입 | ❌ |
+| POST | `/auth/logout` | 로그아웃 | ❌ |
+| POST | `/auth/refresh` | 토큰 갱신 | ❌ |
 
 ---
 
@@ -25,24 +25,24 @@
 ### 2.1 채널
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/api/channels` | 공개 채널 목록 | ❌ |
-| GET | `/api/channels/{uuid}` | 채널 상세 정보 | ❌ |
+| GET | `/channels` | 공개 채널 목록 | ❌ |
+| GET | `/channels/{uuid}` | 채널 상세 정보 | ❌ |
 
 ### 2.2 비디오
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/api/videos` | 공개 비디오 목록 (페이징) | ❌ |
-| GET | `/api/videos/{uuid}` | 비디오 상세 정보 | ❌ |
-| GET | `/api/videos/{uuid}/playlist.m3u8` | HLS 플레이리스트 | ❌ |
-| GET | `/api/videos/{uuid}/segments/{filename}` | HLS 세그먼트 파일 (.ts) | ❌ |
+| GET | `/videos` | 공개 비디오 목록 (페이징) | ❌ |
+| GET | `/videos/{uuid}` | 비디오 상세 정보 | ❌ |
+| GET | `/videos/{uuid}/playlist.m3u8` | HLS 플레이리스트 | ❌ |
+| GET | `/videos/{uuid}/segments/{filename}` | HLS 세그먼트 파일 (.ts) | ❌ |
 
 ### 2.3 메타데이터
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/api/videos/{uuid}/chat` | 채팅 히스토리 | ❌ |
-| GET | `/api/videos/{uuid}/viewer-history` | 시청자 수 히스토리 | ❌ |
-| GET | `/api/videos/{uuid}/title-history` | 제목 변경 히스토리 | ❌ |
-| GET | `/api/videos/{uuid}/category-history` | 카테고리 변경 히스토리 | ❌ |
+| GET | `/videos/{uuid}/chat` | 채팅 히스토리 | ❌ |
+| GET | `/videos/{uuid}/viewer-history` | 시청자 수 히스토리 | ❌ |
+| GET | `/videos/{uuid}/title-history` | 제목 변경 히스토리 | ❌ |
+| GET | `/videos/{uuid}/category-history` | 카테고리 변경 히스토리 | ❌ |
 
 ---
 
@@ -51,18 +51,18 @@
 ### 3.1 시청 기록
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/api/history` | 시청 기록 목록 (페이징) | ❌ |
-| GET | `/api/videos/{uuid}/watch-history` | 개별 영상 시청 기록 조회 | ❌ |
-| POST | `/api/videos/{uuid}/watch-history` | 시청 위치 저장 (UPSERT) | ❌ |
-| DELETE | `/api/history/{videoUuid}` | 개별 시청 기록 삭제 | ❌ |
-| DELETE | `/api/history` | 전체 시청 기록 삭제 | ❌ |
+| GET | `/history` | 시청 기록 목록 (페이징) | ❌ |
+| GET | `/videos/{uuid}/watch-history` | 개별 영상 시청 기록 조회 | ❌ |
+| POST | `/videos/{uuid}/watch-history` | 시청 위치 저장 (UPSERT) | ❌ |
+| DELETE | `/history/{videoUuid}` | 개별 시청 기록 삭제 | ❌ |
+| DELETE | `/history` | 전체 시청 기록 삭제 | ❌ |
 
 ### 3.2 마이페이지
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/api/users/me` | 내 정보 조회 | ❌ |
-| PUT | `/api/users/me` | 내 정보 수정 | ❌ |
-| PUT | `/api/users/me/password` | 비밀번호 변경 | ❌ |
+| GET | `/users/me` | 내 정보 조회 | ❌ |
+| PUT | `/users/me` | 내 정보 수정 | ❌ |
+| PUT | `/users/me/password` | 비밀번호 변경 | ❌ |
 
 ---
 

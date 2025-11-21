@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface RecordRepositoryCustom {
-    fun search(request: AdminRecordSearchRequest, pageable: Pageable): Page<Record>
+    fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<Record>
 }

@@ -16,7 +16,7 @@ class UserRepositoryImpl(
 
     private val user = QUser.user
 
-    override fun search(request: AdminUserSearchRequest, pageable: Pageable): Page<User> {
+    override fun searchForAdmin(request: AdminUserSearchRequest, pageable: Pageable): Page<User> {
         val results = queryFactory
             .selectFrom(user)
             .where(

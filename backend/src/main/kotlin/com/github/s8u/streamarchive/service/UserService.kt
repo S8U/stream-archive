@@ -17,13 +17,13 @@ class UserService(
     private val userRepository: UserRepository
 ) {
     @Transactional(readOnly = true)
-    fun search(request: AdminUserSearchRequest, pageable: Pageable): Page<AdminUserResponse> {
-        return userRepository.search(request, pageable)
+    fun searchForAdmin(request: AdminUserSearchRequest, pageable: Pageable): Page<AdminUserResponse> {
+        return userRepository.searchForAdmin(request, pageable)
             .map { AdminUserResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): AdminUserResponse {
+    fun getForAdmin(id: Long): AdminUserResponse {
         val user = userRepository.findById(id).orElseThrow {
             BusinessException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -31,7 +31,7 @@ class UserService(
     }
 
     @Transactional
-    fun update(id: Long, request: AdminUserUpdateRequest): AdminUserResponse {
+    fun updateForAdmin(id: Long, request: AdminUserUpdateRequest): AdminUserResponse {
         val user = userRepository.findById(id).orElseThrow {
             BusinessException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }

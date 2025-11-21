@@ -16,7 +16,7 @@ class ChannelRepositoryImpl(
 
     private val channel = QChannel.channel
 
-    override fun search(request: AdminChannelSearchRequest, pageable: Pageable): Page<Channel> {
+    override fun searchForAdmin(request: AdminChannelSearchRequest, pageable: Pageable): Page<Channel> {
         val results = queryFactory
             .selectFrom(channel)
             .where(

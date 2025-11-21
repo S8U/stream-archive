@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.service
 import com.github.s8u.streamarchive.dto.AdminVideoResponse
 import com.github.s8u.streamarchive.dto.AdminVideoSearchRequest
 import com.github.s8u.streamarchive.dto.AdminVideoUpdateRequest
+import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.VideoRepository
@@ -24,13 +25,13 @@ class VideoService(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @Transactional(readOnly = true)
-    fun search(request: AdminVideoSearchRequest, pageable: Pageable): Page<AdminVideoResponse> {
-        return videoRepository.search(request, pageable)
+    fun searchForAdmin(request: AdminVideoSearchRequest, pageable: Pageable): Page<AdminVideoResponse> {
+        return videoRepository.searchForAdmin(request, pageable)
             .map { AdminVideoResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): AdminVideoResponse {
+    fun getForAdmin(id: Long): AdminVideoResponse {
         val video = videoRepository.findById(id).orElseThrow {
             BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -38,7 +39,7 @@ class VideoService(
     }
 
     @Transactional
-    fun update(id: Long, request: AdminVideoUpdateRequest): AdminVideoResponse {
+    fun updateForAdmin(id: Long, request: AdminVideoUpdateRequest): AdminVideoResponse {
         val video = videoRepository.findById(id).orElseThrow {
             BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
@@ -55,20 +56,36 @@ class VideoService(
             BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
-        // 동영상 파일 삭제
+        deleteVideoFiles(video)
+
+        video.isActive = false
+        video.deletedAt = LocalDateTime.now()
+    }
+
+    @Transactional
+    fun deleteAllByChannelId(channelId: Long) {
+        val videos = videoRepository.findByChannelId(channelId)
+
+        videos.forEach { video ->
+            deleteVideoFiles(video)
+
+            video.isActive = false
+            video.deletedAt = LocalDateTime.now()
+        }
+    }
+
+    private fun deleteVideoFiles(video: Video) {
         val videoDir = storageProperties.videosPath.resolve(video.uuid)
         if (Files.exists(videoDir)) {
             try {
                 Files.walk(videoDir)
                     .sorted(Comparator.reverseOrder())
                     .forEach { Files.delete(it) }
-                logger.info("Video files deleted: videoId={}, uuid={}", id, video.uuid)
+                logger.info("Video files deleted: videoId={}, uuid={}", video.id, video.uuid)
             } catch (e: Exception) {
-                logger.error("Failed to delete video files: videoId={}, uuid={}", id, video.uuid, e)
+                logger.error("Failed to delete video files: videoId={}, uuid={}", video.id, video.uuid, e)
             }
         }
-
-        video.isActive = false
-        video.deletedAt = LocalDateTime.now()
     }
+
 }

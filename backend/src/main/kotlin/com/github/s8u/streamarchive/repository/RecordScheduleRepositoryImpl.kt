@@ -20,7 +20,7 @@ class RecordScheduleRepositoryImpl(
     private val channelPlatform = QChannelPlatform.channelPlatform
     private val channel = QChannel.channel
 
-    override fun search(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<RecordSchedule> {
+    override fun searchForAdmin(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<RecordSchedule> {
         val results = queryFactory
             .selectFrom(recordSchedule)
             .leftJoin(channelPlatform).on(

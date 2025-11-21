@@ -6,5 +6,5 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface VideoRepositoryCustom {
-    fun search(request: AdminVideoSearchRequest, pageable: Pageable): Page<Video>
+    fun searchForAdmin(request: AdminVideoSearchRequest, pageable: Pageable): Page<Video>
 }

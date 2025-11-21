@@ -25,20 +25,20 @@ class AdminRecordScheduleController(
         request: AdminRecordScheduleSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): Page<AdminRecordScheduleResponse> {
-        return recordScheduleService.search(request, pageable)
+        return recordScheduleService.searchForAdmin(request, pageable)
     }
 
     @Operation(summary = "녹화 스케줄 단건 조회")
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AdminRecordScheduleResponse {
-        return recordScheduleService.getById(id)
+        return recordScheduleService.getForAdmin(id)
     }
 
     @Operation(summary = "녹화 스케줄 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@RequestBody request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
-        return recordScheduleService.create(request)
+        return recordScheduleService.createForAdmin(request)
     }
 
     @Operation(summary = "녹화 스케줄 수정")
@@ -47,7 +47,7 @@ class AdminRecordScheduleController(
         @PathVariable id: Long,
         @RequestBody request: AdminRecordScheduleUpdateRequest
     ): AdminRecordScheduleResponse {
-        return recordScheduleService.update(id, request)
+        return recordScheduleService.updateForAdmin(id, request)
     }
 
     @Operation(summary = "녹화 스케줄 삭제")

@@ -4,17 +4,17 @@ import com.github.s8u.streamarchive.entity.User
 import com.github.s8u.streamarchive.enums.Role
 import java.time.LocalDateTime
 
+data class AdminUserUpdateRequest(
+    val name: String?,
+    val email: String?,
+    val role: Role?
+)
+
 data class AdminUserSearchRequest(
     val keyword: String? = null,
     val role: Role? = null,
     val createdAtFrom: LocalDateTime? = null,
     val createdAtTo: LocalDateTime? = null
-)
-
-data class AdminUserUpdateRequest(
-    val name: String?,
-    val email: String?,
-    val role: Role?
 )
 
 data class AdminUserResponse(

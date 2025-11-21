@@ -24,13 +24,13 @@ class AdminVideoController(
         request: AdminVideoSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): Page<AdminVideoResponse> {
-        return videoService.search(request, pageable)
+        return videoService.searchForAdmin(request, pageable)
     }
 
     @Operation(summary = "동영상 단건 조회")
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AdminVideoResponse {
-        return videoService.getById(id)
+        return videoService.getForAdmin(id)
     }
 
     @Operation(summary = "동영상 수정")
@@ -39,7 +39,7 @@ class AdminVideoController(
         @PathVariable id: Long,
         @RequestBody request: AdminVideoUpdateRequest
     ): AdminVideoResponse {
-        return videoService.update(id, request)
+        return videoService.updateForAdmin(id, request)
     }
 
     @Operation(summary = "동영상 삭제")

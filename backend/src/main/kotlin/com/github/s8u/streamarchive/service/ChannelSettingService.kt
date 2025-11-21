@@ -14,23 +14,23 @@ class ChannelSettingService(
     private val logger = LoggerFactory.getLogger(ChannelSettingService::class.java)
 
     @Transactional(readOnly = true)
-    fun getSetting(channelId: Long, key: String): ChannelSetting? {
+    fun getAllByChannelId(channelId: Long): List<ChannelSetting> {
+        return channelSettingRepository.findAllByChannelId(channelId)
+    }
+
+    @Transactional(readOnly = true)
+    fun get(channelId: Long, key: String): ChannelSetting? {
         return channelSettingRepository.findByChannelIdAndSettingKey(channelId, key)
     }
 
     @Transactional(readOnly = true)
-    fun getSettingValue(channelId: Long, key: String): String? {
+    fun getValue(channelId: Long, key: String): String? {
         return channelSettingRepository.findByChannelIdAndSettingKey(channelId, key)?.settingValue
-            ?: globalSettingService.getSettingValue(key)
-    }
-
-    @Transactional(readOnly = true)
-    fun getAllSettings(channelId: Long): List<ChannelSetting> {
-        return channelSettingRepository.findAllByChannelId(channelId)
+            ?: globalSettingService.getValue(key)
     }
 
     @Transactional
-    fun createOrUpdateSetting(channelId: Long, key: String, value: String): ChannelSetting {
+    fun createOrUpdate(channelId: Long, key: String, value: String): ChannelSetting {
         val setting = channelSettingRepository.findByChannelIdAndSettingKey(channelId, key)
             ?: ChannelSetting(
                 channelId = channelId,
@@ -44,20 +44,20 @@ class ChannelSettingService(
     }
 
     @Transactional
-    fun deleteSetting(channelId: Long, key: String) {
+    fun delete(channelId: Long, key: String) {
         channelSettingRepository.deleteByChannelIdAndSettingKey(channelId, key)
     }
 
     @Transactional(readOnly = true)
-    fun existsSetting(channelId: Long, key: String): Boolean {
+    fun exists(channelId: Long, key: String): Boolean {
         return channelSettingRepository.existsByChannelIdAndSettingKey(channelId, key)
     }
 
     @Transactional
-    fun initializeDefaultSettings(channelId: Long) {
+    fun initialize(channelId: Long) {
         ChannelSettingKey.values().forEach { settingKey ->
-            if (settingKey.defaultValue != null && !existsSetting(channelId, settingKey.name)) {
-                createOrUpdateSetting(channelId, settingKey.name, settingKey.defaultValue)
+            if (settingKey.defaultValue != null && !exists(channelId, settingKey.name)) {
+                createOrUpdate(channelId, settingKey.name, settingKey.defaultValue)
                 logger.info("Created default channel setting for channel {}: {} = {}",
                     channelId, settingKey.name, settingKey.defaultValue)
             }

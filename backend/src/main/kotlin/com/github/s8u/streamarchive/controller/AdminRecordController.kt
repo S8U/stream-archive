@@ -23,13 +23,13 @@ class AdminRecordController(
         request: AdminRecordSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): Page<AdminRecordResponse> {
-        return recordService.search(request, pageable)
+        return recordService.searchForAdmin(request, pageable)
     }
 
     @Operation(summary = "녹화 단건 조회")
     @GetMapping("/{id}")
     fun getById(@PathVariable id: Long): AdminRecordResponse {
-        return recordService.getById(id)
+        return recordService.getForAdmin(id)
     }
 
     @Operation(summary = "녹화 취소")

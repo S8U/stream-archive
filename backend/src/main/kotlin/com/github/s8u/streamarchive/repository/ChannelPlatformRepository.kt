@@ -5,12 +5,7 @@ import com.github.s8u.streamarchive.enums.PlatformType
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface ChannelPlatformRepository : JpaRepository<ChannelPlatform, Long>, ChannelPlatformRepositoryCustom {
-    fun findByIsActive(isActive: Boolean): List<ChannelPlatform>
-    fun findByChannelIdAndIsActive(channelId: Long, isActive: Boolean): List<ChannelPlatform>
-    fun findByChannelIdAndPlatformTypeAndIsActive(
-        channelId: Long,
-        platformType: PlatformType,
-        isActive: Boolean
-    ): ChannelPlatform?
-    fun findByIsSyncProfileAndIsActive(isSyncProfile: Boolean, isActive: Boolean): List<ChannelPlatform>
+    fun findByChannelId(channelId: Long): List<ChannelPlatform>
+    fun findByChannelIdAndPlatformType(channelId: Long, platformType: PlatformType): ChannelPlatform?
+    fun findByIsSyncProfile(isSyncProfile: Boolean): List<ChannelPlatform>
 }

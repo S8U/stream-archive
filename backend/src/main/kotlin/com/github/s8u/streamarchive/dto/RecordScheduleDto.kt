@@ -6,13 +6,6 @@ import com.github.s8u.streamarchive.enums.RecordQuality
 import com.github.s8u.streamarchive.enums.RecordScheduleType
 import java.time.LocalDateTime
 
-data class AdminRecordScheduleSearchRequest(
-    val channelName: String? = null,
-    val platformType: PlatformType? = null,
-    val scheduleType: RecordScheduleType? = null,
-    val recordQuality: RecordQuality? = null
-)
-
 data class AdminRecordScheduleCreateRequest(
     val channelId: Long,
     val platformType: PlatformType,
@@ -28,6 +21,13 @@ data class AdminRecordScheduleUpdateRequest(
     val value: String?,
     val recordQuality: RecordQuality?,
     val priority: Int?
+)
+
+data class AdminRecordScheduleSearchRequest(
+    val channelName: String? = null,
+    val platformType: PlatformType? = null,
+    val scheduleType: RecordScheduleType? = null,
+    val recordQuality: RecordQuality? = null
 )
 
 data class AdminRecordScheduleResponse(

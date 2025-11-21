@@ -6,17 +6,21 @@ import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.enums.RecordQuality
+import com.github.s8u.streamarchive.event.StreamDetectedEvent
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStreamDto
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.recorder.RecordProcessManager
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.RecordRepository
+import com.github.s8u.streamarchive.repository.RecordScheduleRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
 import org.slf4j.LoggerFactory
+import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -29,18 +33,19 @@ class RecordService(
     private val recordProcessManager: RecordProcessManager,
     private val platformStrategyFactory: PlatformStrategyFactory,
     private val channelPlatformRepository: ChannelPlatformRepository,
-    private val videoMetadataService: VideoMetadataService
+    private val videoMetadataService: VideoMetadataService,
+    private val recordScheduleRepository: RecordScheduleRepository
 ) {
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
 
     @Transactional(readOnly = true)
-    fun search(request: AdminRecordSearchRequest, pageable: Pageable): Page<AdminRecordResponse> {
-        return recordRepository.search(request, pageable)
+    fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<AdminRecordResponse> {
+        return recordRepository.searchForAdmin(request, pageable)
             .map { AdminRecordResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
-    fun getById(id: Long): AdminRecordResponse {
+    fun getForAdmin(id: Long): AdminRecordResponse {
         val record = recordRepository.findById(id).orElseThrow {
             BusinessException("Record not found: $id", HttpStatus.NOT_FOUND)
         }
@@ -99,12 +104,11 @@ class RecordService(
 
         // 프로세스 시작
         try {
-            val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformTypeAndIsActive(
+            val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformType(
                 channelId = channelId,
-                platformType = stream.platformType,
-                isActive = true
+                platformType = stream.platformType
             ) ?: throw BusinessException(
-                "활성화된 채널 플랫폼을 찾을 수 없습니다: channelId=$channelId, platformType=${stream.platformType}",
+                "채널 플랫폼을 찾을 수 없습니다: channelId=$channelId, platformType=${stream.platformType}",
                 HttpStatus.NOT_FOUND
             )
 
@@ -194,6 +198,59 @@ class RecordService(
         } catch (e: Exception) {
             logger.error("Failed to update video metadata: recordId={}", recordId, e)
             // 메타데이터 업데이트 실패는 녹화 종료를 막지 않음
+        }
+    }
+
+    @Async
+    @EventListener
+    @Transactional
+    fun handleStreamDetected(event: StreamDetectedEvent) {
+        try {
+            // 해당 채널+플랫폼의 활성 스케줄 조회
+            val schedules = recordScheduleRepository.findByChannelIdAndPlatformType(
+                channelId = event.channelPlatform.channelId,
+                platformType = event.channelPlatform.platformType
+            )
+
+            if (schedules.isEmpty()) {
+                logger.debug(
+                    "No active schedules found: channelId={}, platformType={}",
+                    event.channelPlatform.channelId,
+                    event.channelPlatform.platformType
+                )
+                return
+            }
+
+            // 오늘 녹화해야 하는 스케줄 필터링
+            val todaySchedules = schedules.filter { it.scheduleType.calculateIsToday(it.value) }
+
+            if (todaySchedules.isEmpty()) {
+                logger.debug(
+                    "No schedules match today: channelId={}, platformType={}",
+                    event.channelPlatform.channelId,
+                    event.channelPlatform.platformType
+                )
+                return
+            }
+
+            // 우선순위가 가장 높은 스케줄 선택 (priority가 높을수록 우선)
+            val topSchedule = todaySchedules.maxByOrNull { it.priority }
+
+            if (topSchedule != null) {
+                startRecording(
+                    channelId = event.channelPlatform.channelId,
+                    stream = event.stream,
+                    recordQuality = topSchedule.recordQuality
+                )
+            }
+        } catch (e: Exception) {
+            logger.error(
+                "Failed to handle stream detected event: channelId={}, platformType={}, streamId={}",
+                event.channelPlatform.channelId,
+                event.channelPlatform.platformType,
+                event.stream.id,
+                e
+            )
         }
     }
 

@@ -15,7 +15,7 @@ class GlobalSettingInitRunner(
     override fun run(args: ApplicationArguments) {
         logger.info("Initializing global settings")
 
-        globalSettingService.initializeDefaultSettings()
+        globalSettingService.initialize()
 
         logger.info("Global settings initialization completed")
     }
