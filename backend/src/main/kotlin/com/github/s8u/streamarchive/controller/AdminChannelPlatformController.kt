@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -23,7 +22,7 @@ class AdminChannelPlatformController(
     @GetMapping
     fun search(
         request: AdminChannelPlatformSearchRequest,
-        @PageableDefault(size = 20) pageable: Pageable
+        pageable: Pageable
     ): Page<AdminChannelPlatformResponse> {
         return channelPlatformService.searchForAdmin(request, pageable)
     }
