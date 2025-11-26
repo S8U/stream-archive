@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class RecordService(
@@ -37,6 +38,7 @@ class RecordService(
     private val recordScheduleRepository: RecordScheduleRepository
 ) {
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
+    private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
 
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<AdminRecordResponse> {
@@ -125,8 +127,9 @@ class RecordService(
             )
 
             logger.info(
-                "Started recording: recordId={}, channelId={}, platformType={}, streamId={}, quality={}",
+                "Started recording: recordId={}, videoId={}, channelId={}, platformType={}, streamId={}, quality={}",
                 savedRecord.id,
+                video.id,
                 channelId,
                 stream.platformType,
                 stream.id,
@@ -148,56 +151,66 @@ class RecordService(
 
     @Transactional
     fun endRecording(recordId: Long, isCancel: Boolean = false) {
-        val record = recordRepository.findById(recordId).orElseThrow {
-            BusinessException("녹화를 찾을 수 없습니다: $recordId", HttpStatus.NOT_FOUND)
-        }
-
-        // 이미 종료된 녹화인지 확인
-        if (record.isEnded) {
-            logger.warn("Record already ended: recordId={}", recordId)
+        // 중복 호출 방지: 이미 처리 중이면 스킵
+        if (!endingRecords.add(recordId)) {
+            logger.debug("Record already being ended by another thread: recordId={}", recordId)
             return
         }
 
-        // 수동 취소일 경우 프로세스 강제 종료
-        if (isCancel) {
-            recordProcessManager.stopRecording(recordId)
-        }
-
-        // DB 업데이트
-        record.isEnded = true
-        record.isCancelled = isCancel
-        record.endedAt = LocalDateTime.now()
-        recordRepository.save(record)
-
-        logger.info(
-            "Ended recording: recordId={}, channelId={}, platformType={}, streamId={}, cancelled={}",
-            recordId,
-            record.channelId,
-            record.platformType,
-            record.platformStreamId,
-            isCancel
-        )
-
-        // Video 메타데이터 업데이트
         try {
-            val video = videoRepository.findById(record.videoId).orElseThrow {
-                BusinessException("Video not found: ${record.videoId}", HttpStatus.NOT_FOUND)
+            val record = recordRepository.findById(recordId).orElseThrow {
+                BusinessException("녹화를 찾을 수 없습니다: $recordId", HttpStatus.NOT_FOUND)
             }
 
-            video.fileSize = videoMetadataService.calculateFileSize(video.uuid)
-            video.duration = videoMetadataService.calculateDuration(video.uuid)
-            videoRepository.save(video)
+            // 이미 종료된 녹화인지 확인
+            if (record.isEnded) {
+                logger.warn("Record already ended: recordId={}", recordId)
+                return
+            }
+
+            // 수동 취소일 경우 프로세스 강제 종료
+            if (isCancel) {
+                recordProcessManager.stopRecording(recordId)
+            }
+
+            // DB 업데이트
+            record.isEnded = true
+            record.isCancelled = isCancel
+            record.endedAt = LocalDateTime.now()
+            recordRepository.save(record)
 
             logger.info(
-                "Updated video metadata: videoId={}, videoUuid={}, fileSize={} bytes, duration={} seconds",
-                video.id,
-                video.uuid,
-                video.fileSize,
-                video.duration
+                "Ended recording: recordId={}, channelId={}, platformType={}, streamId={}, cancelled={}",
+                recordId,
+                record.channelId,
+                record.platformType,
+                record.platformStreamId,
+                isCancel
             )
-        } catch (e: Exception) {
-            logger.error("Failed to update video metadata: recordId={}", recordId, e)
-            // 메타데이터 업데이트 실패는 녹화 종료를 막지 않음
+
+            // Video 메타데이터 업데이트
+            try {
+                val video = videoRepository.findById(record.videoId).orElseThrow {
+                    BusinessException("동영상을 찾을 수 없습니다: ${record.videoId}", HttpStatus.NOT_FOUND)
+                }
+
+                video.fileSize = videoMetadataService.calculateFileSize(video.uuid)
+                video.duration = videoMetadataService.calculateDuration(video.uuid)
+                videoRepository.save(video)
+
+                logger.info(
+                    "Updated video metadata: videoId={}, videoUuid={}, fileSize={} bytes, duration={} seconds",
+                    video.id,
+                    video.uuid,
+                    video.fileSize,
+                    video.duration
+                )
+            } catch (e: Exception) {
+                // 메타데이터 업데이트 실패는 녹화 종료를 막지 않음
+                logger.error("Failed to update video metadata: recordId={}", recordId, e)
+            }
+        } finally {
+            endingRecords.remove(recordId)
         }
     }
 

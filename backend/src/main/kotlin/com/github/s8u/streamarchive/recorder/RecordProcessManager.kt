@@ -7,18 +7,30 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 @Component
 class RecordProcessManager(
     @Lazy private val recordService: RecordService,
-    private val storageProperties: StorageProperties,
-    private val executorService: ExecutorService
+    private val storageProperties: StorageProperties
 ) {
     private val logger = LoggerFactory.getLogger(RecordProcessManager::class.java)
 
     private val processes = ConcurrentHashMap<Long, List<Process>>() // <RecordId, List<Process>>
+
+    /**
+     * 현재 녹화 중인 모든 recordId 조회
+     */
+    fun getActiveRecordIds(): List<Long> {
+        return processes.keys.toList()
+    }
+
+    /**
+     * 프로세스 실행 여부 확인
+     */
+    fun isProcessAlive(recordId: Long): Boolean {
+        return processes[recordId]?.any { it.isAlive } ?: false
+    }
 
     /**
      * 녹화 프로세스 시작
@@ -74,14 +86,12 @@ class RecordProcessManager(
             )
 
             // 백그라운드 스레드에서 프로세스 종료 감지
-            executorService.submit {
+            Thread {
                 try {
-                    val exitCode = recordProcesses.last().waitFor()
+                    // 모든 프로세스가 종료될 때까지 대기
+                    recordProcesses.forEach { it.waitFor() }
 
-                    logger.info(
-                        "Recording process ended: recordId={}, exitCode={}",
-                        recordId, exitCode
-                    )
+                    logger.info("Recording process ended: recordId={}", recordId)
 
                     // 프로세스 종료 시 자동으로 녹화 종료 처리
                     recordService.endRecording(recordId, isCancel = false)
@@ -94,7 +104,7 @@ class RecordProcessManager(
                 } finally {
                     processes.remove(recordId)
                 }
-            }
+            }.start()
 
         } catch (e: Exception) {
             logger.error("Failed to start recording process: recordId={}", recordId, e)
@@ -135,10 +145,4 @@ class RecordProcessManager(
         logger.info("Recording process stopped: recordId={}", recordId)
     }
 
-    /**
-     * 프로세스 실행 여부 확인
-     */
-    fun isProcessAlive(recordId: Long): Boolean {
-        return processes[recordId]?.any { it.isAlive } ?: false
-    }
 }
