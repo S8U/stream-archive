@@ -44,7 +44,7 @@ class ChannelController(
     @Operation(summary = "채널 프로필 이미지 조회")
     @GetMapping("/{uuid}/profile")
     fun getProfile(@PathVariable uuid: String): ResponseEntity<Resource> {
-        val resource = channelProfileService.getProfileImage(uuid)
+        val resource = channelProfileService.getProfileImageByUuid(uuid)
 
         return ResponseEntity.ok()
             .contentType(MediaType.IMAGE_PNG)

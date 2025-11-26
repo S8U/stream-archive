@@ -39,17 +39,17 @@ class RecordProcessManager(
         recordId: Long,
         streamUrl: String,
         quality: String,
-        videoUuid: String,
+        videoId: Long,
         platformHeaders: Map<String, String> = emptyMap()
     ) {
         try {
             // 동영상 디렉토리 생성
-            val videoPath = storageProperties.videosPath.resolve(videoUuid)
+            val videoPath = storageProperties.getVideoPath(videoId)
             Files.createDirectories(videoPath)
 
             // 파일 경로 설정
-            val playlistPath = videoPath.resolve("playlist.m3u8")
-            val segmentPattern = videoPath.resolve("segment_%d.ts").toString()
+            val playlistPath = storageProperties.getVideoPlaylistPath(videoId)
+            val segmentPattern = storageProperties.getVideoSegmentPattern(videoId)
 
             // Streamlink 프로세스 빌더
             val streamlinkArgs = mutableListOf("streamlink", streamUrl, quality, "-O")
@@ -81,8 +81,8 @@ class RecordProcessManager(
             processes[recordId] = recordProcesses
 
             logger.info(
-                "Recording process started: recordId={}, videoUuid={}, quality={}, streamUrl={}",
-                recordId, videoUuid, quality, streamUrl
+                "Recording process started: recordId={}, videoId={}, quality={}, streamUrl={}",
+                recordId, videoId, quality, streamUrl
             )
 
             // 백그라운드 스레드에서 프로세스 종료 감지

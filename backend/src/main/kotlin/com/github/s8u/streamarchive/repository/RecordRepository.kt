@@ -18,6 +18,13 @@ interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom
         isCancelled: Boolean
     ): Boolean
 
+    fun findByPlatformTypeAndPlatformStreamIdAndIsEndedAndIsCancelled(
+        platformType: PlatformType,
+        platformStreamId: String,
+        isEnded: Boolean,
+        isCancelled: Boolean
+    ): Record?
+
     fun findByChannelId(channelId: Long): List<Record>
 
     fun findByVideoId(videoId: Long): List<Record>

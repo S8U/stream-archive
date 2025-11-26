@@ -15,11 +15,11 @@ class VideoMetadataService(
     /**
      * 동영상 디렉토리의 전체 파일 크기 계산 (바이트)
      */
-    fun calculateFileSize(videoUuid: String): Long {
-        val videoPath = storageProperties.videosPath.resolve(videoUuid)
+    fun calculateFileSize(videoId: Long): Long {
+        val videoPath = storageProperties.getVideoPath(videoId)
 
         if (!Files.exists(videoPath)) {
-            logger.warn("Video directory not found: videoUuid={}", videoUuid)
+            logger.warn("Video directory not found: videoId={}", videoId)
             return 0L
         }
 
@@ -29,7 +29,7 @@ class VideoMetadataService(
                 .mapToLong { Files.size(it) }
                 .sum()
         } catch (e: Exception) {
-            logger.error("Failed to calculate file size: videoUuid={}", videoUuid, e)
+            logger.error("Failed to calculate file size: videoId={}", videoId, e)
             0L
         }
     }
@@ -37,11 +37,11 @@ class VideoMetadataService(
     /**
      * M3U8 플레이리스트 파일을 파싱하여 총 재생 시간 계산 (초)
      */
-    fun calculateDuration(videoUuid: String): Int {
-        val playlistPath = storageProperties.videosPath.resolve(videoUuid).resolve("playlist.m3u8")
+    fun calculateDuration(videoId: Long): Int {
+        val playlistPath = storageProperties.getVideoPlaylistPath(videoId)
 
         if (!Files.exists(playlistPath)) {
-            logger.warn("Playlist file not found: videoUuid={}", videoUuid)
+            logger.warn("Playlist file not found: videoId={}", videoId)
             return 0
         }
 
@@ -57,7 +57,7 @@ class VideoMetadataService(
 
             totalDuration.toInt()
         } catch (e: Exception) {
-            logger.error("Failed to calculate duration: videoUuid={}", videoUuid, e)
+            logger.error("Failed to calculate duration: videoId={}", videoId, e)
             0
         }
     }

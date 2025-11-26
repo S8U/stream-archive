@@ -35,7 +35,8 @@ class RecordService(
     private val platformStrategyFactory: PlatformStrategyFactory,
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val videoMetadataService: VideoMetadataService,
-    private val recordScheduleRepository: RecordScheduleRepository
+    private val recordScheduleRepository: RecordScheduleRepository,
+    private val videoThumbnailService: VideoThumbnailService
 ) {
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
     private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
@@ -94,6 +95,9 @@ class RecordService(
         )
         val savedVideo = videoRepository.save(video)
 
+        // 썸네일 저장
+        videoThumbnailService.saveThumbnail(stream.thumbnailUrl, savedVideo.id!!)
+
         // Record 생성
         val record = Record(
             channelId = channelId,
@@ -122,7 +126,7 @@ class RecordService(
                 recordId = savedRecord.id!!,
                 streamUrl = streamUrl,
                 quality = recordQuality.streamlinkValue,
-                videoUuid = savedVideo.uuid,
+                videoId = savedVideo.id!!,
                 platformHeaders = streamHeaders
             )
 
@@ -194,14 +198,13 @@ class RecordService(
                     BusinessException("동영상을 찾을 수 없습니다: ${record.videoId}", HttpStatus.NOT_FOUND)
                 }
 
-                video.fileSize = videoMetadataService.calculateFileSize(video.uuid)
-                video.duration = videoMetadataService.calculateDuration(video.uuid)
+                video.fileSize = videoMetadataService.calculateFileSize(video.id!!)
+                video.duration = videoMetadataService.calculateDuration(video.id!!)
                 videoRepository.save(video)
 
                 logger.info(
-                    "Updated video metadata: videoId={}, videoUuid={}, fileSize={} bytes, duration={} seconds",
+                    "Updated video metadata: videoId={}, fileSize={} bytes, duration={} seconds",
                     video.id,
-                    video.uuid,
                     video.fileSize,
                     video.duration
                 )

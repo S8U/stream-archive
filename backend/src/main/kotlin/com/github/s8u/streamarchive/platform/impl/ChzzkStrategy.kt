@@ -62,7 +62,7 @@ class ChzzkStrategy(
             title = content.liveTitle,
             category = content.liveCategoryValue,
             viewerCount = content.concurrentUserCount,
-            thumbnailUrl = content.liveImageUrl?.replace("{type}", "1080"),
+            thumbnailUrl = content.liveImageUrl?.replace("{type}", "720"),
             startedAt = content.openDate?.let {
                 LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             } ?: LocalDateTime.now()

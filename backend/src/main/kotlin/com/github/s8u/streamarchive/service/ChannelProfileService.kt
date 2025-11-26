@@ -7,13 +7,12 @@ import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.util.ImageDownloadUtil
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestClient
-import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
@@ -25,20 +24,19 @@ class ChannelProfileService(
     private val storageProperties: StorageProperties
 ) {
     private val logger = LoggerFactory.getLogger(ChannelProfileService::class.java)
-    private val restClient = RestClient.create()
 
     fun syncProfile(channelId: Long, platformType: PlatformType) {
         val channelPlatform = channelPlatformRepository.findByChannelIdAndPlatformType(channelId, platformType)
             ?: throw BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
 
         if (channelPlatform.isSyncProfile) {
-            downloadAndSave(channelPlatform)
+            saveProfile(channelPlatform)
         }
     }
 
     fun syncAllProfiles() {
         val platforms = channelPlatformRepository.findByIsSyncProfile(true)
-        platforms.forEach { downloadAndSave(it) }
+        platforms.forEach { saveProfile(it) }
     }
 
     fun deleteProfile(channelId: Long) {
@@ -48,7 +46,7 @@ class ChannelProfileService(
         }
     }
 
-    fun getProfileImage(channelUuid: String): Resource {
+    fun getProfileImageByUuid(channelUuid: String): Resource {
         val channel = channelRepository.findByUuid(channelUuid) ?: throw BusinessException(
             "채널을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND
@@ -63,23 +61,23 @@ class ChannelProfileService(
         return FileSystemResource(profilePath)
     }
 
-    private fun downloadAndSave(channelPlatform: ChannelPlatform) {
+    private fun saveProfile(channelPlatform: ChannelPlatform) {
         try {
             val strategy = platformStrategyFactory.getPlatformStrategy(channelPlatform.platformType)
             val channel = strategy.getChannel(channelPlatform.platformChannelId)
 
             if (channel == null) {
-                logger.warn("Channel not found: ${channelPlatform.platformType} - ${channelPlatform.platformChannelId}")
+                logger.warn("Channel not found: platformType={}, platformChannelId={}", channelPlatform.platformType, channelPlatform.platformChannelId)
                 return
             }
 
             val thumbnailUrl = channel.thumbnailUrl
             if (thumbnailUrl == null) {
-                logger.warn("Thumbnail URL is null: ${channelPlatform.platformType} - ${channelPlatform.platformChannelId}")
+                logger.warn("Thumbnail URL is null: platformType={}, platformChannelId={}", channelPlatform.platformType, channelPlatform.platformChannelId)
                 return
             }
 
-            val inputStream = downloadImage(thumbnailUrl) ?: return
+            val inputStream = ImageDownloadUtil.downloadImage(thumbnailUrl) ?: return
 
             val filePath = storageProperties.getChannelProfilePath(channelPlatform.channelId)
             Files.createDirectories(filePath.parent)
@@ -88,23 +86,9 @@ class ChannelProfileService(
                 Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)
             }
 
-            logger.info("Profile synced: ${channelPlatform.channelId} - ${channelPlatform.platformType}")
+            logger.debug("Profile synced: channelId={}, platformType={}", channelPlatform.channelId, channelPlatform.platformType)
         } catch (e: Exception) {
-            logger.error("Failed to sync profile: ${channelPlatform.channelId} - ${channelPlatform.platformType}", e)
-        }
-    }
-
-    private fun downloadImage(url: String): InputStream? {
-        return try {
-            val bytes = restClient.get()
-                .uri(url)
-                .retrieve()
-                .body(ByteArray::class.java)
-
-            bytes?.inputStream()
-        } catch (e: Exception) {
-            logger.error("Failed to download image from $url", e)
-            null
+            logger.error("Failed to sync profile: channelId={}, platformType={}", channelPlatform.channelId, channelPlatform.platformType, e)
         }
     }
 }

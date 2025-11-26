@@ -28,7 +28,16 @@ class StorageProperties {
         return videosPath.resolve(videoId.toString())
     }
 
-    fun getVideoSegmentsPath(videoId: Long): Path {
-        return getVideoPath(videoId).resolve("segments")
+    fun getVideoThumbnailPath(videoId: Long): Path {
+        return getVideoPath(videoId).resolve("thumbnail.png")
     }
+
+    fun getVideoPlaylistPath(videoId: Long): Path {
+        return getVideoPath(videoId).resolve("playlist.m3u8")
+    }
+
+    fun getVideoSegmentPattern(videoId: Long): String {
+        return getVideoPath(videoId).resolve("segment_%d.ts").toString()
+    }
+
 }
