@@ -51,7 +51,15 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 
     // Swagger/OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.12.3")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
+
+    // Configuration Processor
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
 
     // 테스트
     testImplementation("org.springframework.boot:spring-boot-starter-test")
