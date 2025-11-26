@@ -23,4 +23,6 @@ interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom
     fun findByVideoId(videoId: Long): List<Record>
 
     fun findAllByOrderByCreatedAtDesc(): List<Record>
+
+    fun findByIsEndedFalseAndIsCancelledFalse(): List<Record>
 }
