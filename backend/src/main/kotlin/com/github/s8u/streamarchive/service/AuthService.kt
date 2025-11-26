@@ -1,11 +1,15 @@
 package com.github.s8u.streamarchive.service
 
+import com.github.s8u.streamarchive.config.properties.JwtProperties
 import com.github.s8u.streamarchive.dto.*
+import com.github.s8u.streamarchive.entity.RefreshToken
 import com.github.s8u.streamarchive.entity.User
 import com.github.s8u.streamarchive.enums.Role
 import com.github.s8u.streamarchive.exception.BusinessException
+import com.github.s8u.streamarchive.repository.RefreshTokenRepository
 import com.github.s8u.streamarchive.repository.UserRepository
 import com.github.s8u.streamarchive.security.JwtTokenProvider
+import com.github.s8u.streamarchive.util.RequestUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -18,8 +22,10 @@ import java.util.*
 @Service
 class AuthService(
     private val userRepository: UserRepository,
+    private val refreshTokenRepository: RefreshTokenRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtTokenProvider: JwtTokenProvider,
+    private val jwtProperties: JwtProperties,
     private val userDetailsService: UserDetailsService
 ) {
 
@@ -42,6 +48,19 @@ class AuthService(
         val userDetails = userDetailsService.loadUserByUsername(user.username)
         val accessToken = jwtTokenProvider.generateAccessToken(userDetails)
         val refreshToken = jwtTokenProvider.generateRefreshToken(userDetails)
+
+        // 새로운 리프레시 토큰 DB에 저장
+        val clientIp = RequestUtils.getClientIp()
+        val expiresAt = LocalDateTime.now().plusSeconds(jwtProperties.refreshTokenExpiration / 1000)
+        refreshTokenRepository.save(
+            RefreshToken(
+                userId = user.id!!,
+                token = refreshToken,
+                expiresAt = expiresAt,
+                createdBy = user.id,
+                createdIp = clientIp
+            )
+        )
 
         logger.info("Login successful for username: {}", request.username)
 
@@ -79,18 +98,47 @@ class AuthService(
         return SignupResponse.from(savedUser)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun refresh(request: RefreshTokenRequest): RefreshTokenResponse {
         logger.debug("Refresh token request received")
 
+        // JWT 토큰 자체의 유효성 검증
         if (!jwtTokenProvider.validateToken(request.refreshToken)) {
             throw BusinessException("유효하지 않거나 만료된 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED)
         }
 
+        // DB에서 리프레시 토큰 조회
+        val storedToken = refreshTokenRepository.findByToken(request.refreshToken)
+            ?: throw BusinessException("유효하지 않은 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED)
+
+        // 만료 시간 확인
+        if (storedToken.expiresAt.isBefore(LocalDateTime.now())) {
+            throw BusinessException("만료된 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED)
+        }
+
         val username = jwtTokenProvider.getUsernameFromToken(request.refreshToken)
+        val user = userRepository.findByUsername(username)
+            ?: throw BusinessException("사용자를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED)
+
+        // 기존 리프레시 토큰 무효화
+        storedToken.isActive = false
+
         val userDetails = userDetailsService.loadUserByUsername(username)
         val newAccessToken = jwtTokenProvider.generateAccessToken(userDetails)
         val newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails)
+
+        // 새로운 리프레시 토큰 DB에 저장
+        val clientIp = RequestUtils.getClientIp()
+        val expiresAt = LocalDateTime.now().plusSeconds(jwtProperties.refreshTokenExpiration / 1000)
+        refreshTokenRepository.save(
+            RefreshToken(
+                userId = user.id!!,
+                token = newRefreshToken,
+                expiresAt = expiresAt,
+                createdBy = user.id,
+                createdIp = clientIp
+            )
+        )
 
         logger.debug("Access token and refresh token refreshed for username: {}", username)
 
@@ -98,5 +146,20 @@ class AuthService(
             accessToken = newAccessToken,
             refreshToken = newRefreshToken
         )
+    }
+
+    @Transactional
+    fun logout(refreshToken: String) {
+        logger.debug("Logout request received")
+
+        // DB에서 리프레시 토큰 조회 및 무효화
+        val storedToken = refreshTokenRepository.findByToken(refreshToken)
+        if (storedToken != null) {
+            storedToken.isActive = false
+            storedToken.deletedAt = LocalDateTime.now()
+            storedToken.deletedBy = storedToken.userId
+            storedToken.deletedIp = RequestUtils.getClientIp()
+            logger.debug("Refresh token revoked for userId: {}", storedToken.userId)
+        }
     }
 }

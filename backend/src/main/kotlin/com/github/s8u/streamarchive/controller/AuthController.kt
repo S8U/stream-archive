@@ -62,7 +62,19 @@ class AuthController(
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun logout(response: HttpServletResponse) {
+    fun logout(
+        @CookieValue(name = "RT", required = false) cookieRefreshToken: String?,
+        @RequestBody(required = false) request: LogoutRequest?,
+        response: HttpServletResponse
+    ) {
+        // 쿠키 우선, 없으면 body에서 읽기
+        val refreshToken = cookieRefreshToken ?: request?.refreshToken
+
+        // DB의 Refresh Token 무효화
+        if (refreshToken != null) {
+            authService.logout(refreshToken)
+        }
+
         // Refresh Token 쿠키 삭제
         clearRefreshTokenCookie(response)
     }

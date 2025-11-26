@@ -263,3 +263,24 @@ CREATE TABLE channel_settings
     UNIQUE KEY uk_channel_setting (channel_id, setting_key),
     INDEX idx_channel_settings_channel_id (channel_id)
 ) COMMENT '채널별 설정';
+
+-- 14. 리프레시 토큰 테이블
+CREATE TABLE refresh_tokens
+(
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '리프레시 토큰 ID',
+    user_id    BIGINT       NOT NULL COMMENT '사용자 ID',
+    token      VARCHAR(500) NOT NULL UNIQUE COMMENT '토큰',
+    expires_at DATETIME     NOT NULL COMMENT '만료 일시',
+    is_active  BOOLEAN      NOT NULL DEFAULT TRUE COMMENT '활성 상태',
+    deleted_at DATETIME     NULL COMMENT '삭제 일시',
+    deleted_by BIGINT       NULL COMMENT '삭제한 사용자 ID',
+    deleted_ip VARCHAR(45)  NULL COMMENT '삭제 시 IP',
+    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
+    created_by BIGINT       NULL COMMENT '생성한 사용자 ID',
+    created_ip VARCHAR(45)  NULL COMMENT '생성 시 IP',
+
+    INDEX idx_refresh_tokens_user_id (user_id),
+    INDEX idx_refresh_tokens_token (token),
+    INDEX idx_refresh_tokens_expires_at (expires_at),
+    INDEX idx_refresh_tokens_is_active (is_active)
+) COMMENT '리프레시 토큰';

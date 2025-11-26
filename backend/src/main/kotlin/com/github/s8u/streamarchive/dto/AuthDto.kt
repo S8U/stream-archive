@@ -55,6 +55,10 @@ data class RefreshTokenResponse(
     val refreshToken: String
 )
 
+data class LogoutRequest(
+    val refreshToken: String
+)
+
 data class UserInfo(
     val id: Long,
     val uuid: String,
