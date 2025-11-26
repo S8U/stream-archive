@@ -45,3 +45,21 @@ data class AdminChannelPlatformResponse(
         }
     }
 }
+
+data class ChannelPlatformResponse(
+    val platformType: PlatformType,
+    val platformChannelId: String,
+    val streamUrl: String,
+    val isSyncProfile: Boolean
+) {
+    companion object {
+        fun from(channelPlatform: ChannelPlatform, streamUrl: String): ChannelPlatformResponse {
+            return ChannelPlatformResponse(
+                platformType = channelPlatform.platformType,
+                platformChannelId = channelPlatform.platformChannelId,
+                streamUrl = streamUrl,
+                isSyncProfile = channelPlatform.isSyncProfile
+            )
+        }
+    }
+}

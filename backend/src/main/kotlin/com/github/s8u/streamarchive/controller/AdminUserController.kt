@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "사용자", description = "사용자 관리 API (관리자)")
+@Tag(name = "사용자 관리")
 @RestController
 @RequestMapping("/admin/users")
 class AdminUserController(

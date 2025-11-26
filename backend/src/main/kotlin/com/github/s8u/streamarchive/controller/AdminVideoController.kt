@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "동영상", description = "동영상 관리 API (관리자)")
+@Tag(name = "동영상 관리")
 @RestController
 @RequestMapping("/admin/videos")
 class AdminVideoController(

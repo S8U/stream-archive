@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "녹화", description = "녹화 관리 API (관리자)")
+@Tag(name = "녹화 관리")
 @RestController
 @RequestMapping("/admin/records")
 class AdminRecordController(

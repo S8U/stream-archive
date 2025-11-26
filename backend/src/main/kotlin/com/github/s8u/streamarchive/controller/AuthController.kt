@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "인증", description = "인증 API")
+@Tag(name = "인증")
 @RestController
 @RequestMapping("/auth")
 class AuthController(

@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "채널", description = "채널 관리 API (관리자)")
+@Tag(name = "채널 관리")
 @RestController
 @RequestMapping("/admin/channels")
 class AdminChannelController(

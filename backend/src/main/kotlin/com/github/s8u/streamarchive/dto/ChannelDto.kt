@@ -40,3 +40,27 @@ data class AdminChannelResponse(
         }
     }
 }
+
+data class ChannelSearchRequest(
+    val name: String? = null
+)
+
+data class ChannelResponse(
+    val uuid: String,
+    val name: String,
+    val contentPrivacy: ContentPrivacy,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime
+) {
+    companion object {
+        fun from(channel: Channel): ChannelResponse {
+            return ChannelResponse(
+                uuid = channel.uuid,
+                name = channel.name,
+                contentPrivacy = channel.contentPrivacy,
+                createdAt = channel.createdAt,
+                updatedAt = channel.updatedAt
+            )
+        }
+    }
+}
