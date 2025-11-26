@@ -20,6 +20,10 @@ class StorageProperties {
         return channelsPath.resolve(channelId.toString())
     }
 
+    fun getChannelProfilePath(channelId: Long): Path {
+        return getChannelPath(channelId).resolve("profile.png")
+    }
+
     fun getVideoPath(videoId: Long): Path {
         return videosPath.resolve(videoId.toString())
     }

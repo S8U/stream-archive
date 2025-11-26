@@ -42,7 +42,7 @@ class ChannelProfileService(
     }
 
     fun deleteProfile(channelId: Long) {
-        val filePath = storageProperties.getChannelPath(channelId).resolve("profile.jpg")
+        val filePath = storageProperties.getChannelProfilePath(channelId)
         if (Files.exists(filePath)) {
             Files.delete(filePath)
         }
@@ -54,7 +54,7 @@ class ChannelProfileService(
             HttpStatus.NOT_FOUND
         )
 
-        val profilePath = storageProperties.getChannelPath(channel.id!!).resolve("profile.png")
+        val profilePath = storageProperties.getChannelProfilePath(channel.id!!)
 
         if (!Files.exists(profilePath)) {
             throw BusinessException("프로필 이미지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
@@ -81,10 +81,8 @@ class ChannelProfileService(
 
             val inputStream = downloadImage(thumbnailUrl) ?: return
 
-            val channelDir = storageProperties.getChannelPath(channelPlatform.channelId)
-            Files.createDirectories(channelDir)
-
-            val filePath = channelDir.resolve("profile.png")
+            val filePath = storageProperties.getChannelProfilePath(channelPlatform.channelId)
+            Files.createDirectories(filePath.parent)
 
             inputStream.use {
                 Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)
