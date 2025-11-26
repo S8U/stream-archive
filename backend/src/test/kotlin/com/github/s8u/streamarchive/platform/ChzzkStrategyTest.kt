@@ -43,7 +43,7 @@ class ChzzkStrategyTest {
 
     @Test
     fun testGetStream() {
-        val channelId = "0d027498b18371674fac3ed17247e6b8"
+        val channelId = "6e06f5e1907f17eff543abd06cb62891"
         val stream = chzzkStrategy.getStream(channelId)
 
         println("Stream: ${objectMapper.writeValueAsString(stream)}")
