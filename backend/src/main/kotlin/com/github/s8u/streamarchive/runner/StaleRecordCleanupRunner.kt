@@ -5,9 +5,11 @@ import com.github.s8u.streamarchive.service.RecordService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
+@Profile("!test")
 class StaleRecordCleanupRunner(
     private val recordRepository: RecordRepository,
     private val recordService: RecordService

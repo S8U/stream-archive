@@ -2,12 +2,14 @@ package com.github.s8u.streamarchive.scheduler
 
 import com.github.s8u.streamarchive.repository.RefreshTokenRepository
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Component
+@Profile("!test")
 class RefreshTokenCleanupScheduler(
     private val refreshTokenRepository: RefreshTokenRepository
 ) {
