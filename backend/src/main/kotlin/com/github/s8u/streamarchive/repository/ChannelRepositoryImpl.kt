@@ -1,7 +1,7 @@
 package com.github.s8u.streamarchive.repository
 
 import com.github.s8u.streamarchive.dto.AdminChannelSearchRequest
-import com.github.s8u.streamarchive.dto.ChannelSearchRequest
+import com.github.s8u.streamarchive.dto.PublicChannelSearchRequest
 import com.github.s8u.streamarchive.entity.Channel
 import com.github.s8u.streamarchive.entity.QChannel
 import com.github.s8u.streamarchive.enums.ContentPrivacy
@@ -42,7 +42,7 @@ class ChannelRepositoryImpl(
         return PageImpl(results, pageable, total)
     }
 
-    override fun searchForPublic(request: ChannelSearchRequest, pageable: Pageable): Page<Channel> {
+    override fun searchForPublic(request: PublicChannelSearchRequest, pageable: Pageable): Page<Channel> {
         val results = queryFactory
             .selectFrom(channel)
             .where(

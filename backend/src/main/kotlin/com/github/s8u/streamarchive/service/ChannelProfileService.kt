@@ -6,11 +6,8 @@ import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
-import com.github.s8u.streamarchive.repository.ChannelRepository
 import com.github.s8u.streamarchive.util.ImageDownloadUtil
 import org.slf4j.LoggerFactory
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.nio.file.Files
@@ -19,7 +16,6 @@ import java.nio.file.StandardCopyOption
 @Service
 class ChannelProfileService(
     private val channelPlatformRepository: ChannelPlatformRepository,
-    private val channelRepository: ChannelRepository,
     private val platformStrategyFactory: PlatformStrategyFactory,
     private val storageProperties: StorageProperties
 ) {
@@ -44,21 +40,6 @@ class ChannelProfileService(
         if (Files.exists(filePath)) {
             Files.delete(filePath)
         }
-    }
-
-    fun getProfileImageByUuid(channelUuid: String): Resource {
-        val channel = channelRepository.findByUuid(channelUuid) ?: throw BusinessException(
-            "채널을 찾을 수 없습니다.",
-            HttpStatus.NOT_FOUND
-        )
-
-        val profilePath = storageProperties.getChannelProfilePath(channel.id!!)
-
-        if (!Files.exists(profilePath)) {
-            throw BusinessException("프로필 이미지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
-
-        return FileSystemResource(profilePath)
     }
 
     private fun saveProfile(channelPlatform: ChannelPlatform) {

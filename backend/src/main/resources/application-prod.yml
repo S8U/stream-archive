@@ -83,3 +83,7 @@ platform:
 # 스토리지 설정
 storage:
   base-path: ${STORAGE_BASE_PATH:/var/stream-archive/storage}
+
+# API URL 설정
+api:
+  base-url: ${API_BASE_URL:http://localhost:8080}

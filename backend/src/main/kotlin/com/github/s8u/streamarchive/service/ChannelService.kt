@@ -4,13 +4,18 @@ import com.github.s8u.streamarchive.dto.*
 import com.github.s8u.streamarchive.entity.Channel
 import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.exception.BusinessException
+import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.util.UrlBuilder
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.Resource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.nio.file.Files
 import java.time.LocalDateTime
 import java.util.*
 
@@ -22,19 +27,31 @@ class ChannelService(
     private val channelProfileService: ChannelProfileService,
     private val recordScheduleService: RecordScheduleService,
     private val authenticationService: AuthenticationService,
-    private val videoService: VideoService
+    private val videoService: VideoService,
+    private val storageProperties: StorageProperties,
+    private val urlBuilder: UrlBuilder
 ) {
 
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminChannelSearchRequest, pageable: Pageable): Page<AdminChannelResponse> {
         return channelRepository.searchForAdmin(request, pageable)
-            .map { AdminChannelResponse.from(it) }
+            .map { channel ->
+                AdminChannelResponse.from(
+                    channel = channel,
+                    profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
+                )
+            }
     }
 
     @Transactional(readOnly = true)
-    fun searchForPublic(request: ChannelSearchRequest, pageable: Pageable): Page<ChannelResponse> {
+    fun searchForPublic(request: PublicChannelSearchRequest, pageable: Pageable): Page<PublicChannelResponse> {
         return channelRepository.searchForPublic(request, pageable)
-            .map { ChannelResponse.from(it) }
+            .map { channel ->
+                PublicChannelResponse.from(
+                    channel = channel,
+                    profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
+                )
+            }
     }
 
     @Transactional(readOnly = true)
@@ -42,11 +59,14 @@ class ChannelService(
         val channel = channelRepository.findById(id).orElseThrow {
             BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
-        return AdminChannelResponse.from(channel)
+        return AdminChannelResponse.from(
+            channel = channel,
+            profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
+        )
     }
 
     @Transactional(readOnly = true)
-    fun getByUuidForPublic(uuid: String): ChannelResponse {
+    fun getByUuidForPublic(uuid: String): PublicChannelResponse {
         val channel = channelRepository.findByUuid(uuid) ?: throw BusinessException(
             "채널을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND
@@ -56,7 +76,10 @@ class ChannelService(
             throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
-        return ChannelResponse.from(channel)
+        return PublicChannelResponse.from(
+            channel = channel,
+            profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
+        )
     }
 
     @Transactional
@@ -67,7 +90,10 @@ class ChannelService(
             contentPrivacy = request.contentPrivacy
         )
         val saved = channelRepository.save(channel)
-        return AdminChannelResponse.from(saved)
+        return AdminChannelResponse.from(
+            channel = saved,
+            profileUrl = urlBuilder.channelProfileUrl(saved.uuid)
+        )
     }
 
     @Transactional
@@ -79,7 +105,10 @@ class ChannelService(
         request.name?.let { channel.name = it }
         request.contentPrivacy?.let { channel.contentPrivacy = it }
 
-        return AdminChannelResponse.from(channel)
+        return AdminChannelResponse.from(
+            channel = channel,
+            profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
+        )
     }
 
     @Transactional
@@ -103,5 +132,20 @@ class ChannelService(
         // 채널 삭제
         channel.isActive = false
         channel.deletedAt = LocalDateTime.now()
+    }
+
+    fun getProfileImageByUuid(uuid: String): Resource {
+        val channel = channelRepository.findByUuid(uuid) ?: throw BusinessException(
+            "채널을 찾을 수 없습니다.",
+            HttpStatus.NOT_FOUND
+        )
+
+        val profilePath = storageProperties.getChannelProfilePath(channel.id!!)
+
+        if (!Files.exists(profilePath)) {
+            throw BusinessException("프로필 이미지를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+
+        return FileSystemResource(profilePath)
     }
 }

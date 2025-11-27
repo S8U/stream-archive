@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface VideoRepository : JpaRepository<Video, Long>, VideoRepositoryCustom {
     fun findByChannelId(channelId: Long): List<Video>
+    fun findByUuid(uuid: String): Video?
 }

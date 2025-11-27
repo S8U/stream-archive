@@ -23,16 +23,18 @@ data class AdminChannelResponse(
     val id: Long,
     val uuid: String,
     val name: String,
+    val profileUrl: String,
     val contentPrivacy: ContentPrivacy,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
     companion object {
-        fun from(channel: Channel): AdminChannelResponse {
+        fun from(channel: Channel, profileUrl: String): AdminChannelResponse {
             return AdminChannelResponse(
                 id = channel.id!!,
                 uuid = channel.uuid,
                 name = channel.name,
+                profileUrl = profileUrl,
                 contentPrivacy = channel.contentPrivacy,
                 createdAt = channel.createdAt,
                 updatedAt = channel.updatedAt
@@ -41,22 +43,24 @@ data class AdminChannelResponse(
     }
 }
 
-data class ChannelSearchRequest(
+data class PublicChannelSearchRequest(
     val name: String? = null
 )
 
-data class ChannelResponse(
+data class PublicChannelResponse(
     val uuid: String,
     val name: String,
+    val profileUrl: String,
     val contentPrivacy: ContentPrivacy,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
     companion object {
-        fun from(channel: Channel): ChannelResponse {
-            return ChannelResponse(
+        fun from(channel: Channel, profileUrl: String): PublicChannelResponse {
+            return PublicChannelResponse(
                 uuid = channel.uuid,
                 name = channel.name,
+                profileUrl = profileUrl,
                 contentPrivacy = channel.contentPrivacy,
                 createdAt = channel.createdAt,
                 updatedAt = channel.updatedAt

@@ -1,10 +1,9 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.ChannelPlatformResponse
-import com.github.s8u.streamarchive.dto.ChannelResponse
-import com.github.s8u.streamarchive.dto.ChannelSearchRequest
+import com.github.s8u.streamarchive.dto.PublicChannelResponse
+import com.github.s8u.streamarchive.dto.PublicChannelSearchRequest
 import com.github.s8u.streamarchive.service.ChannelPlatformService
-import com.github.s8u.streamarchive.service.ChannelProfileService
 import com.github.s8u.streamarchive.service.ChannelService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -23,28 +22,27 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/channels")
 class ChannelController(
     private val channelService: ChannelService,
-    private val channelProfileService: ChannelProfileService,
     private val channelPlatformService: ChannelPlatformService
 ) {
     @Operation(summary = "채널 목록 조회")
     @GetMapping
     fun search(
-        request: ChannelSearchRequest,
+        request: PublicChannelSearchRequest,
         pageable: Pageable
-    ): Page<ChannelResponse> {
+    ): Page<PublicChannelResponse> {
         return channelService.searchForPublic(request, pageable)
     }
 
     @Operation(summary = "채널 단건 조회")
     @GetMapping("/{uuid}")
-    fun getByUuid(@PathVariable uuid: String): ChannelResponse {
+    fun getByUuid(@PathVariable uuid: String): PublicChannelResponse {
         return channelService.getByUuidForPublic(uuid)
     }
 
     @Operation(summary = "채널 프로필 이미지 조회")
     @GetMapping("/{uuid}/profile")
     fun getProfile(@PathVariable uuid: String): ResponseEntity<Resource> {
-        val resource = channelProfileService.getProfileImageByUuid(uuid)
+        val resource = channelService.getProfileImageByUuid(uuid)
 
         return ResponseEntity.ok()
             .contentType(MediaType.IMAGE_PNG)

@@ -41,6 +41,10 @@ class Video(
     @Comment("채널")
     val channel: Channel? = null,
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", referencedColumnName = "videoId", insertable = false, updatable = false)
+    val record: Record? = null,
+
     @Column(nullable = false, length = 500)
     @Comment("제목")
     var title: String,
