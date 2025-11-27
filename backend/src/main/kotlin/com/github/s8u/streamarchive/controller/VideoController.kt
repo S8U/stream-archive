@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "동영상")
+@Tag(name = "Video", description = "동영상")
 @RestController
 @RequestMapping("/videos")
 class VideoController(
@@ -23,7 +23,7 @@ class VideoController(
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
-    fun search(
+    fun searchVideos(
         request: PublicVideoSearchRequest,
         pageable: Pageable
     ): Page<PublicVideoResponse> {
@@ -32,22 +32,20 @@ class VideoController(
 
     @Operation(summary = "동영상 단건 조회")
     @GetMapping("/{uuid}")
-    fun getByUuid(@PathVariable uuid: String): PublicVideoResponse {
+    fun getVideoByUuid(@PathVariable uuid: String): PublicVideoResponse {
         return videoService.getByUuidForPublic(uuid)
     }
 
     @Operation(summary = "동영상 썸네일 조회")
     @GetMapping("/{uuid}/thumbnail")
-    fun getThumbnail(@PathVariable uuid: String): ResponseEntity<Resource> {
+    fun getVideoThumbnail(@PathVariable uuid: String): ResponseEntity<Resource> {
         val resource = videoService.getThumbnailByUuid(uuid)
-        return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_PNG)
-            .body(resource)
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(resource)
     }
 
     @Operation(summary = "HLS 플레이리스트 조회")
     @GetMapping("/{uuid}/playlist.m3u8")
-    fun getPlaylist(@PathVariable uuid: String): ResponseEntity<Resource> {
+    fun getVideoPlaylist(@PathVariable uuid: String): ResponseEntity<Resource> {
         val resource = videoService.getPlaylistByUuid(uuid)
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("application/vnd.apple.mpegurl"))
@@ -56,7 +54,7 @@ class VideoController(
 
     @Operation(summary = "HLS 세그먼트 파일 조회")
     @GetMapping("/{uuid}/{filename:segment_\\d+\\.ts}")
-    fun getSegment(
+    fun getVideoSegment(
         @PathVariable uuid: String,
         @PathVariable filename: String
     ): ResponseEntity<Resource> {

@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "녹화 관리")
+@Tag(name = "AdminRecord", description = "녹화 기록 관리")
 @RestController
 @RequestMapping("/admin/records")
 class AdminRecordController(
@@ -18,7 +18,7 @@ class AdminRecordController(
 ) {
     @Operation(summary = "녹화 기록 조회")
     @GetMapping
-    fun search(
+    fun searchAdminRecords(
         request: AdminRecordSearchRequest,
         pageable: Pageable
     ): Page<AdminRecordResponse> {
@@ -27,14 +27,14 @@ class AdminRecordController(
 
     @Operation(summary = "녹화 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): AdminRecordResponse {
+    fun getAdminRecordById(@PathVariable id: Long): AdminRecordResponse {
         return recordService.getForAdmin(id)
     }
 
     @Operation(summary = "녹화 취소")
     @PostMapping("/{id}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun cancel(@PathVariable id: Long) {
+    fun cancelAdminRecord(@PathVariable id: Long) {
         recordService.endRecording(id, isCancel = true)
     }
 }

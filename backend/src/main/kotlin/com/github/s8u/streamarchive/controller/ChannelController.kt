@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "채널")
+@Tag(name = "Channel", description = "채널")
 @RestController
 @RequestMapping("/channels")
 class ChannelController(
@@ -26,7 +26,7 @@ class ChannelController(
 ) {
     @Operation(summary = "채널 목록 조회")
     @GetMapping
-    fun search(
+    fun searchChannels(
         request: PublicChannelSearchRequest,
         pageable: Pageable
     ): Page<PublicChannelResponse> {
@@ -35,23 +35,21 @@ class ChannelController(
 
     @Operation(summary = "채널 단건 조회")
     @GetMapping("/{uuid}")
-    fun getByUuid(@PathVariable uuid: String): PublicChannelResponse {
+    fun getChannelByUuid(@PathVariable uuid: String): PublicChannelResponse {
         return channelService.getByUuidForPublic(uuid)
     }
 
     @Operation(summary = "채널 프로필 이미지 조회")
     @GetMapping("/{uuid}/profile")
-    fun getProfile(@PathVariable uuid: String): ResponseEntity<Resource> {
+    fun getChannelProfile(@PathVariable uuid: String): ResponseEntity<Resource> {
         val resource = channelService.getProfileImageByUuid(uuid)
 
-        return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_PNG)
-            .body(resource)
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(resource)
     }
 
     @Operation(summary = "채널의 플랫폼 목록 조회")
     @GetMapping("/{uuid}/platforms")
-    fun getPlatforms(@PathVariable uuid: String): List<ChannelPlatformResponse> {
+    fun getChannelPlatforms(@PathVariable uuid: String): List<ChannelPlatformResponse> {
         return channelPlatformService.getByChannelUuidForPublic(uuid)
     }
 }

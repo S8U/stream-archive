@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "채널 플랫폼 관리")
+@Tag(name = "AdminChannelPlatform", description = "채널 플랫폼 관리")
 @RestController
 @RequestMapping("/admin/channel-platforms")
 class AdminChannelPlatformController(
@@ -20,7 +20,7 @@ class AdminChannelPlatformController(
 ) {
     @Operation(summary = "채널 플랫폼 목록 조회")
     @GetMapping
-    fun search(
+    fun searchAdminChannelPlatforms(
         request: AdminChannelPlatformSearchRequest,
         pageable: Pageable
     ): Page<AdminChannelPlatformResponse> {
@@ -29,20 +29,22 @@ class AdminChannelPlatformController(
 
     @Operation(summary = "채널 플랫폼 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): AdminChannelPlatformResponse {
+    fun getAdminChannelPlatformById(@PathVariable id: Long): AdminChannelPlatformResponse {
         return channelPlatformService.getForAdmin(id)
     }
 
     @Operation(summary = "채널 플랫폼 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
+    fun createAdminChannelPlatform(
+        @RequestBody request: AdminChannelPlatformCreateRequest
+    ): AdminChannelPlatformResponse {
         return channelPlatformService.createForAdmin(request)
     }
 
     @Operation(summary = "채널 플랫폼 수정")
     @PutMapping("/{id}")
-    fun update(
+    fun updateAdminChannelPlatform(
         @PathVariable id: Long,
         @RequestBody request: AdminChannelPlatformUpdateRequest
     ): AdminChannelPlatformResponse {
@@ -52,7 +54,7 @@ class AdminChannelPlatformController(
     @Operation(summary = "채널 플랫폼 삭제")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@PathVariable id: Long) {
+    fun deleteAdminChannelPlatform(@PathVariable id: Long) {
         channelPlatformService.delete(id)
     }
 }

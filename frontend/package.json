@@ -5,19 +5,27 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "orval": "orval",
+    "orval:watch": "orval --watch"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.11",
+    "axios": "^1.7.9",
+    "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "next": "15.5.4"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "openapi-typescript": "^7.4.4",
+    "orval": "^7.17.0",
+    "prettier": "^3.7.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

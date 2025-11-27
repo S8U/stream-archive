@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "동영상 관리")
+@Tag(name = "AdminVideo", description = "동영상 관리")
 @RestController
 @RequestMapping("/admin/videos")
 class AdminVideoController(
@@ -19,7 +19,7 @@ class AdminVideoController(
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
-    fun search(
+    fun searchAdminVideos(
         request: AdminVideoSearchRequest,
         pageable: Pageable
     ): Page<AdminVideoResponse> {
@@ -28,13 +28,13 @@ class AdminVideoController(
 
     @Operation(summary = "동영상 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): AdminVideoResponse {
+    fun getAdminVideoById(@PathVariable id: Long): AdminVideoResponse {
         return videoService.getForAdmin(id)
     }
 
     @Operation(summary = "동영상 수정")
     @PutMapping("/{id}")
-    fun update(
+    fun updateAdminVideo(
         @PathVariable id: Long,
         @RequestBody request: AdminVideoUpdateRequest
     ): AdminVideoResponse {
@@ -44,7 +44,7 @@ class AdminVideoController(
     @Operation(summary = "동영상 삭제")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@PathVariable id: Long) {
+    fun deleteAdminVideo(@PathVariable id: Long) {
         videoService.delete(id)
     }
 }

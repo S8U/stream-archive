@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
-@Tag(name = "녹화 스케줄 관리")
+@Tag(name = "AdminRecordSchedule", description = "녹화 스케줄 관리")
 @RestController
 @RequestMapping("/admin/record-schedules")
 class AdminRecordScheduleController(
@@ -20,7 +20,7 @@ class AdminRecordScheduleController(
 ) {
     @Operation(summary = "녹화 스케줄 목록 조회")
     @GetMapping
-    fun search(
+    fun searchAdminRecordSchedules(
         request: AdminRecordScheduleSearchRequest,
         pageable: Pageable
     ): Page<AdminRecordScheduleResponse> {
@@ -29,20 +29,22 @@ class AdminRecordScheduleController(
 
     @Operation(summary = "녹화 스케줄 단건 조회")
     @GetMapping("/{id}")
-    fun getById(@PathVariable id: Long): AdminRecordScheduleResponse {
+    fun getAdminRecordScheduleById(@PathVariable id: Long): AdminRecordScheduleResponse {
         return recordScheduleService.getForAdmin(id)
     }
 
     @Operation(summary = "녹화 스케줄 생성")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun create(@RequestBody request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
+    fun createAdminRecordSchedule(
+        @RequestBody request: AdminRecordScheduleCreateRequest
+    ): AdminRecordScheduleResponse {
         return recordScheduleService.createForAdmin(request)
     }
 
     @Operation(summary = "녹화 스케줄 수정")
     @PutMapping("/{id}")
-    fun update(
+    fun updateAdminRecordSchedule(
         @PathVariable id: Long,
         @RequestBody request: AdminRecordScheduleUpdateRequest
     ): AdminRecordScheduleResponse {
@@ -52,7 +54,7 @@ class AdminRecordScheduleController(
     @Operation(summary = "녹화 스케줄 삭제")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@PathVariable id: Long) {
+    fun deleteAdminRecordSchedule(@PathVariable id: Long) {
         recordScheduleService.delete(id)
     }
 }

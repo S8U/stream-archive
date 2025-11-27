@@ -10,4 +10,8 @@
 # MacOS
 .DS_Store
 
+# Environment variables
+backend/.env
+frontend/.env
+
 storage/
