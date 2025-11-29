@@ -1,5 +1,3 @@
-'use client';
-
 import Link from "next/link";
 import {Clock, HomeIcon, Library, Menu, Search, ThumbsUp} from "lucide-react";
 import {Separator} from "@/components/ui/separator";
@@ -7,15 +5,15 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
 import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
 import {Input} from "@/components/ui/input";
-import {useSearchChannels} from "@/lib/api/endpoints/channel/channel";
+import {searchChannels} from "@/lib/api/endpoints/channel/channel";
 
-export default function AppLayout({
+export default async function AppLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
     // API 호출
-    const { data } = useSearchChannels({
+    const data = await searchChannels({
         request: {},
         pageable: {
             page: 0,
