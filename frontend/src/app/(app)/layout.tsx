@@ -149,7 +149,7 @@ export default function AppLayout({
             </div>
 
             {/* 내용 */}
-            <div className="md:ml-60 p-4">
+            <div className="md:ml-60">
                 {children}
             </div>
         </div>
