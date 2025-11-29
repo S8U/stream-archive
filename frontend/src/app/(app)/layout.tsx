@@ -108,7 +108,7 @@ export default function AppLayout({
                             </SheetContent>
                         </Sheet>
 
-                        <Link href="/public" className="text-xl font-bold text-primary">
+                        <Link href="/" className="text-xl font-bold text-primary">
                             <span className="md:hidden">S</span>
                             <span className="hidden md:inline">StreamArchive</span>
                         </Link>
