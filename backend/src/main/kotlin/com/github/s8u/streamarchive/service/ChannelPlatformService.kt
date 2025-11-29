@@ -84,6 +84,10 @@ class ChannelPlatformService(
 
         request.isSyncProfile?.let { channelPlatform.isSyncProfile = it }
 
+        if (channelPlatform.isSyncProfile) {
+            channelProfileService.syncProfile(channelPlatform.channelId, channelPlatform.platformType)
+        }
+
         return AdminChannelPlatformResponse.from(channelPlatform)
     }
 
