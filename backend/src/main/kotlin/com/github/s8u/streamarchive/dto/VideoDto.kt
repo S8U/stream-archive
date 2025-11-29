@@ -56,7 +56,8 @@ data class AdminVideoResponse(
 
 data class PublicVideoSearchRequest(
     val title: String? = null,
-    val channelName: String? = null
+    val channelName: String? = null,
+    val channelUuid: String? = null
 )
 
 data class PublicVideoResponse(

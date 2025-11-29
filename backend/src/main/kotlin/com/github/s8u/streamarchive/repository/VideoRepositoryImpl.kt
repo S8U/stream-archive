@@ -63,7 +63,8 @@ class VideoRepositoryImpl(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 video.isActive.eq(true),
                 request.title?.let { video.title.containsIgnoreCase(it) },
-                request.channelName?.let { channel.name.containsIgnoreCase(it) }
+                request.channelName?.let { channel.name.containsIgnoreCase(it) },
+                request.channelUuid?.let { channel.uuid.eq(it) }
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
@@ -78,7 +79,8 @@ class VideoRepositoryImpl(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 video.isActive.eq(true),
                 request.title?.let { video.title.containsIgnoreCase(it) },
-                request.channelName?.let { channel.name.containsIgnoreCase(it) }
+                request.channelName?.let { channel.name.containsIgnoreCase(it) },
+                request.channelUuid?.let { channel.uuid.eq(it) }
             )
             .fetchOne() ?: 0L
 

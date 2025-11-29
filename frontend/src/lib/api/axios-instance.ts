@@ -33,8 +33,31 @@ export const customAxiosInstance = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
+  // params가 중첩된 객체인 경우 플랫하게 변환
+  let params = config.params;
+  if (params && typeof params === 'object') {
+    const flatParams: Record<string, unknown> = {};
+
+    // request, pageable 등의 중첩 객체를 플랫하게 펼침
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // 중첩 객체를 플랫하게 펼침
+        Object.entries(value as Record<string, unknown>).forEach(([nestedKey, nestedValue]) => {
+          if (nestedValue !== undefined && nestedValue !== null) {
+            flatParams[nestedKey] = nestedValue;
+          }
+        });
+      } else if (value !== undefined && value !== null) {
+        flatParams[key] = value;
+      }
+    });
+
+    params = flatParams;
+  }
+
   const promise = AXIOS_INSTANCE({
     ...config,
+    params,
     ...options,
   }).then(({ data }) => data);
 

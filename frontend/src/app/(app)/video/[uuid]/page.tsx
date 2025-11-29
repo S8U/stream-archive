@@ -18,6 +18,7 @@ export default function VideoPage({
         },
     });
 
+    // 404 에러
     if (isError) {
         return (
             <div className="flex items-center justify-center h-[calc(100vh-4rem)]">

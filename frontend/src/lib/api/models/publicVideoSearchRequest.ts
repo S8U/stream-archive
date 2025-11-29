@@ -9,4 +9,5 @@
 export interface PublicVideoSearchRequest {
   title?: string;
   channelName?: string;
+  channelUuid?: string;
 }
