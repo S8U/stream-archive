@@ -14,7 +14,7 @@ import {
     SidebarProvider,
     SidebarTrigger
 } from "@/components/ui/sidebar";
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
     Calendar,
     ChevronUp,
@@ -38,8 +38,9 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {Separator} from "@/components/ui/separator";
-import {usePathname} from "next/navigation";
+import { Separator } from "@/components/ui/separator";
+import { usePathname } from "next/navigation";
+import { Toaster } from "@/components/ui/sonner";
 
 interface MenuItem {
     title: string;
@@ -169,7 +170,7 @@ export default function AdminLayout({
                     </SidebarMenu>
                 </SidebarFooter>
             </Sidebar>
-            <main className="flex flex-col flex-1">
+            <main className="flex flex-col flex-1 min-w-0">
                 <header className="flex h-16 shrink-0 items-center gap-2 px-4">
                     <SidebarTrigger />
                     <Separator orientation="vertical" className="!h-4 mr-2" />
@@ -193,10 +194,11 @@ export default function AdminLayout({
                         </BreadcrumbList>
                     </Breadcrumb>
                 </header>
-                <div className="flex-1 px-4">
+                <div className="flex-1 px-6 py-4 md:px-10 md:py-6 min-w-0">
                     {children}
                 </div>
             </main>
+            <Toaster />
         </SidebarProvider>
     );
 }
