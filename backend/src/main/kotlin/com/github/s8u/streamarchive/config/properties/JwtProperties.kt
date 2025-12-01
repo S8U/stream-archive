@@ -13,6 +13,9 @@ data class JwtProperties(
         val secure: Boolean,
         val sameSite: String,
         val httpOnly: Boolean,
-        val path: String
+        val path: String,
+        val domain: String,
+        val accessTokenName: String,
+        val refreshTokenName: String
     )
 }

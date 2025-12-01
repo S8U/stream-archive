@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.security
 
+import com.github.s8u.streamarchive.config.properties.JwtProperties
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -14,7 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
-    private val userDetailsService: UserDetailsService
+    private val userDetailsService: UserDetailsService,
+    private val jwtProperties: JwtProperties
 ) : OncePerRequestFilter() {
 
     private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
@@ -52,6 +54,16 @@ class JwtAuthenticationFilter(
     }
 
     private fun extractTokenFromRequest(request: HttpServletRequest): String? {
+        // 쿠키에서 토큰 추출
+        val cookies = request.cookies
+        if (cookies != null) {
+            val tokenCookie = cookies.find { it.name == jwtProperties.cookie.accessTokenName }
+            if (tokenCookie != null) {
+                return tokenCookie.value
+            }
+        }
+
+        // Authorization 헤더에서 토큰 추출
         val bearerToken = request.getHeader("Authorization")
         return if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             bearerToken.substring(7)

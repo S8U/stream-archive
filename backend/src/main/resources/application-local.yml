@@ -72,7 +72,10 @@ jwt:
     secure: false
     same-site: Lax
     http-only: true
-    path: /auth
+    path: /
+    domain: localhost
+    access-token-name: AT
+    refresh-token-name: RT
 
 # 플랫폼 설정
 platform:

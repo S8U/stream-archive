@@ -68,10 +68,13 @@ jwt:
   access-token-expiration: 1800000 # 30분 (밀리초)
   refresh-token-expiration: 2592000000 # 30일 (밀리초)
   cookie:
-    secure: false
+    secure: true
     same-site: Lax
     http-only: true
-    path: /auth
+    path: /
+    domain: ${COOKIE_DOMAIN:yourdomain.com}
+    access-token-name: AT
+    refresh-token-name: RT
 
 # 플랫폼 설정
 platform:
