@@ -135,6 +135,21 @@ export default function VideosPage() {
         }
     };
 
+    const formatDuration = (seconds: number) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h > 0 ? `${h}:` : ""}${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    };
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    };
+
     return (
         <div className="min-w-0">
             <h2 className="text-2xl font-bold">동영상 관리</h2>
@@ -189,6 +204,8 @@ export default function VideosPage() {
                             <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
                             <TableHead className="border-r font-semibold">동영상 정보</TableHead>
                             <TableHead className="border-r font-semibold w-[350px]">UUID</TableHead>
+                            <TableHead className="border-r font-semibold w-[100px] text-center">길이</TableHead>
+                            <TableHead className="border-r font-semibold w-[100px] text-center">용량</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">공개 범위</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
@@ -197,19 +214,19 @@ export default function VideosPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8">
+                                <TableCell colSpan={8} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={8} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !videosData?.content || videosData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                                     등록된 동영상이 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -242,6 +259,12 @@ export default function VideosPage() {
 
                                     {/* UUID */}
                                     <TableCell className="border-r font-mono text-xs">{video.uuid}</TableCell>
+
+                                    {/* 길이 */}
+                                    <TableCell className="border-r text-center">{formatDuration(video.duration)}</TableCell>
+
+                                    {/* 용량 */}
+                                    <TableCell className="border-r text-center">{formatFileSize(video.fileSize)}</TableCell>
 
                                     {/* 공개 범위 */}
                                     <TableCell className="border-r text-center">
