@@ -12,7 +12,8 @@ data class AdminChannelPlatformCreateRequest(
 )
 
 data class AdminChannelPlatformUpdateRequest(
-    val isSyncProfile: Boolean?
+    val isSyncProfile: Boolean?,
+    val platformChannelId: String?
 )
 
 data class AdminChannelPlatformSearchRequest(
@@ -24,20 +25,32 @@ data class AdminChannelPlatformSearchRequest(
 
 data class AdminChannelPlatformResponse(
     val id: Long,
-    val channelId: Long,
+    val channel: ChannelInfo,
     val platformType: PlatformType,
     val platformChannelId: String,
+    val platformUrl: String,
     val isSyncProfile: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
+    data class ChannelInfo(
+        val id: Long,
+        val name: String,
+        val profileUrl: String
+    )
+
     companion object {
-        fun from(channelPlatform: ChannelPlatform): AdminChannelPlatformResponse {
+        fun from(channelPlatform: ChannelPlatform, platformUrl: String, channelProfileUrl: String): AdminChannelPlatformResponse {
             return AdminChannelPlatformResponse(
                 id = channelPlatform.id!!,
-                channelId = channelPlatform.channelId,
+                channel = ChannelInfo(
+                    id = channelPlatform.channel?.id!!,
+                    name = channelPlatform.channel?.name!!,
+                    profileUrl = channelProfileUrl
+                ),
                 platformType = channelPlatform.platformType,
                 platformChannelId = channelPlatform.platformChannelId,
+                platformUrl = platformUrl,
                 isSyncProfile = channelPlatform.isSyncProfile,
                 createdAt = channelPlatform.createdAt,
                 updatedAt = channelPlatform.updatedAt

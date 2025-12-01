@@ -8,4 +8,5 @@
 
 export interface AdminChannelPlatformUpdateRequest {
   isSyncProfile?: boolean;
+  platformChannelId?: string;
 }

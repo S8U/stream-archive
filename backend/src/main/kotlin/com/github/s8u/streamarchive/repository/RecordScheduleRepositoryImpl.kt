@@ -24,10 +24,10 @@ class RecordScheduleRepositoryImpl(
         val results = queryFactory
             .selectFrom(recordSchedule)
             .leftJoin(channelPlatform).on(
-                recordSchedule.channelId.eq(channelPlatform.channelId)
+                recordSchedule.channelId.eq(channelPlatform.channel.id)
                     .and(recordSchedule.platformType.eq(channelPlatform.platformType))
             )
-            .leftJoin(channel).on(channelPlatform.channelId.eq(channel.id))
+            .leftJoin(channel).on(channelPlatform.channel.id.eq(channel.id))
             .where(
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { recordSchedule.platformType.eq(it) },
@@ -43,10 +43,10 @@ class RecordScheduleRepositoryImpl(
             .select(recordSchedule.count())
             .from(recordSchedule)
             .leftJoin(channelPlatform).on(
-                recordSchedule.channelId.eq(channelPlatform.channelId)
+                recordSchedule.channelId.eq(channelPlatform.channel.id)
                     .and(recordSchedule.platformType.eq(channelPlatform.platformType))
             )
-            .leftJoin(channel).on(channelPlatform.channelId.eq(channel.id))
+            .leftJoin(channel).on(channelPlatform.channel.id.eq(channel.id))
             .where(
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { recordSchedule.platformType.eq(it) },

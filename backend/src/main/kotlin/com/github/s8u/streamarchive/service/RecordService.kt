@@ -224,14 +224,14 @@ class RecordService(
         try {
             // 해당 채널+플랫폼의 활성 스케줄 조회
             val schedules = recordScheduleRepository.findByChannelIdAndPlatformType(
-                channelId = event.channelPlatform.channelId,
+                channelId = event.channelPlatform?.channel?.id!!,
                 platformType = event.channelPlatform.platformType
             )
 
             if (schedules.isEmpty()) {
                 logger.debug(
                     "No active schedules found: channelId={}, platformType={}",
-                    event.channelPlatform.channelId,
+                    event.channelPlatform?.channel?.id!!,
                     event.channelPlatform.platformType
                 )
                 return
@@ -243,7 +243,7 @@ class RecordService(
             if (todaySchedules.isEmpty()) {
                 logger.debug(
                     "No schedules match today: channelId={}, platformType={}",
-                    event.channelPlatform.channelId,
+                    event.channelPlatform?.channel?.id,
                     event.channelPlatform.platformType
                 )
                 return
@@ -254,7 +254,7 @@ class RecordService(
 
             if (topSchedule != null) {
                 startRecording(
-                    channelId = event.channelPlatform.channelId,
+                    channelId = event.channelPlatform?.channel?.id!!,
                     stream = event.stream,
                     recordQuality = topSchedule.recordQuality
                 )
@@ -262,7 +262,7 @@ class RecordService(
         } catch (e: Exception) {
             logger.error(
                 "Failed to handle stream detected event: channelId={}, platformType={}, streamId={}",
-                event.channelPlatform.channelId,
+                event.channelPlatform?.channel?.id,
                 event.channelPlatform.platformType,
                 event.stream.id,
                 e

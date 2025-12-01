@@ -60,16 +60,16 @@ class ChannelProfileService(
 
             val inputStream = ImageDownloadUtil.downloadImage(thumbnailUrl) ?: return
 
-            val filePath = storageProperties.getChannelProfilePath(channelPlatform.channelId)
+            val filePath = storageProperties.getChannelProfilePath(channelPlatform?.channel?.id!!)
             Files.createDirectories(filePath.parent)
 
             inputStream.use {
                 Files.copy(it, filePath, StandardCopyOption.REPLACE_EXISTING)
             }
 
-            logger.debug("Profile synced: channelId={}, platformType={}", channelPlatform.channelId, channelPlatform.platformType)
+            logger.debug("Profile synced: channelId={}, platformType={}", channelPlatform?.channel?.id, channelPlatform.platformType)
         } catch (e: Exception) {
-            logger.error("Failed to sync profile: channelId={}, platformType={}", channelPlatform.channelId, channelPlatform.platformType, e)
+            logger.error("Failed to sync profile: channelId={}, platformType={}", channelPlatform?.channel?.id, channelPlatform.platformType, e)
         }
     }
 }

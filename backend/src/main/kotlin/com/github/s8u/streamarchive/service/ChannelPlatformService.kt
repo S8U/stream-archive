@@ -11,6 +11,7 @@ import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.util.UrlBuilder
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -24,12 +25,19 @@ class ChannelPlatformService(
     private val channelRepository: ChannelRepository,
     private val channelProfileService: ChannelProfileService,
     private val authenticationService: AuthenticationService,
-    private val platformStrategyFactory: PlatformStrategyFactory
+    private val platformStrategyFactory: PlatformStrategyFactory,
+    private val urlBuilder: UrlBuilder
 ) {
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<AdminChannelPlatformResponse> {
         return channelPlatformRepository.searchForAdmin(request, pageable)
-            .map { AdminChannelPlatformResponse.from(it) }
+            .map { channelPlatform ->
+                val strategy = platformStrategyFactory.getPlatformStrategy(channelPlatform.platformType)
+                val platformUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
+                val channelProfileUrl = urlBuilder.channelProfileUrl(channelPlatform.channel?.uuid!!)
+
+                AdminChannelPlatformResponse.from(channelPlatform, platformUrl, channelProfileUrl)
+            }
     }
 
     @Transactional(readOnly = true)
@@ -37,7 +45,12 @@ class ChannelPlatformService(
         val channelPlatform = channelPlatformRepository.findById(id).orElseThrow {
             BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
-        return AdminChannelPlatformResponse.from(channelPlatform)
+
+        val strategy = platformStrategyFactory.getPlatformStrategy(channelPlatform.platformType)
+        val platformUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
+        val channelProfileUrl = urlBuilder.channelProfileUrl(channelPlatform.channel?.uuid!!)
+
+        return AdminChannelPlatformResponse.from(channelPlatform, platformUrl, channelProfileUrl)
     }
 
     @Transactional(readOnly = true)
@@ -55,14 +68,20 @@ class ChannelPlatformService(
             .map { channelPlatform ->
                 val strategy = platformStrategyFactory.getPlatformStrategy(channelPlatform.platformType)
                 val streamUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
+                val channelProfileUrl = urlBuilder.channelProfileUrl(channelPlatform.channel?.uuid!!)
+
                 ChannelPlatformResponse.from(channelPlatform, streamUrl)
             }
     }
 
     @Transactional
     fun createForAdmin(request: AdminChannelPlatformCreateRequest): AdminChannelPlatformResponse {
+        val channel = channelRepository.findById(request.channelId).orElseThrow {
+            BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+
         val channelPlatform = ChannelPlatform(
-            channelId = request.channelId,
+            channel = channel,
             platformType = request.platformType,
             platformChannelId = request.platformChannelId,
             isSyncProfile = request.isSyncProfile
@@ -70,10 +89,14 @@ class ChannelPlatformService(
         val saved = channelPlatformRepository.save(channelPlatform)
 
         if (saved.isSyncProfile) {
-            channelProfileService.syncProfile(saved.channelId, saved.platformType)
+            channelProfileService.syncProfile(saved.channel?.id!!, saved.platformType)
         }
 
-        return AdminChannelPlatformResponse.from(saved)
+        val strategy = platformStrategyFactory.getPlatformStrategy(saved.platformType)
+        val platformUrl = strategy.getStreamUrl(saved.platformChannelId)
+        val channelProfileUrl = urlBuilder.channelProfileUrl(channelPlatform.channel?.uuid!!)
+
+        return AdminChannelPlatformResponse.from(saved, platformUrl, channelProfileUrl)
     }
 
     @Transactional
@@ -83,12 +106,17 @@ class ChannelPlatformService(
         }
 
         request.isSyncProfile?.let { channelPlatform.isSyncProfile = it }
+        request.platformChannelId?.let { channelPlatform.platformChannelId = it }
 
         if (channelPlatform.isSyncProfile) {
-            channelProfileService.syncProfile(channelPlatform.channelId, channelPlatform.platformType)
+            channelProfileService.syncProfile(channelPlatform.channel?.id!!, channelPlatform.platformType)
         }
 
-        return AdminChannelPlatformResponse.from(channelPlatform)
+        val strategy = platformStrategyFactory.getPlatformStrategy(channelPlatform.platformType)
+        val platformUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
+        val channelProfileUrl = urlBuilder.channelProfileUrl(channelPlatform.channel?.uuid!!)
+
+        return AdminChannelPlatformResponse.from(channelPlatform, platformUrl, channelProfileUrl)
     }
 
     @Transactional
@@ -97,7 +125,7 @@ class ChannelPlatformService(
             BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
-        channelProfileService.deleteProfile(channelPlatform.channelId)
+        channelProfileService.deleteProfile(channelPlatform.channel?.id!!)
 
         channelPlatform.isActive = false
         channelPlatform.deletedAt = LocalDateTime.now()

@@ -246,7 +246,7 @@ export default function ChannelsPage() {
                                             href={`/channels/${channel.uuid}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                                            className="flex items-center gap-2 hover:underline"
                                         >
                                             <Avatar>
                                                 <AvatarImage src={channel.profileUrl} />

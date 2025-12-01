@@ -32,7 +32,7 @@ class StreamDetectionScheduler(
                 if (stream != null) {
                     logger.debug(
                         "Stream detected: channelId={}, platformType={}, streamId={}",
-                        channelPlatform.channelId,
+                        channelPlatform.channel?.id,
                         channelPlatform.platformType,
                         stream.id
                     )
@@ -41,7 +41,7 @@ class StreamDetectionScheduler(
             } catch (e: Exception) {
                 logger.error(
                     "Failed to detect stream: channelId={}, platformType={}",
-                    channelPlatform.channelId,
+                    channelPlatform.channel?.id,
                     channelPlatform.platformType,
                     e
                 )

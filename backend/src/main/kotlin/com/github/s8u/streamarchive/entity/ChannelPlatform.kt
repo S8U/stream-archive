@@ -29,9 +29,10 @@ class ChannelPlatform(
     @Comment("채널-플랫폼 연동 ID")
     val id: Long? = null,
 
-    @Column(nullable = false)
-    @Comment("채널 ID")
-    val channelId: Long,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    @Comment("채널")
+    val channel: Channel? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,7 +41,7 @@ class ChannelPlatform(
 
     @Column(nullable = false, length = 255)
     @Comment("플랫폼 채널 ID")
-    val platformChannelId: String,
+    var platformChannelId: String,
 
     @Column(nullable = false)
     @Comment("프로필 동기화 여부")

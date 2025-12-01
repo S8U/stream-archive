@@ -21,7 +21,7 @@ class ChannelPlatformRepositoryImpl(
     override fun searchForAdmin(request: AdminChannelPlatformSearchRequest, pageable: Pageable): Page<ChannelPlatform> {
         val results = queryFactory
             .selectFrom(channelPlatform)
-            .leftJoin(channel).on(channelPlatform.channelId.eq(channel.id))
+            .leftJoin(channelPlatform.channel, channel).fetchJoin()
             .where(
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { channelPlatform.platformType.eq(it) },
@@ -36,7 +36,7 @@ class ChannelPlatformRepositoryImpl(
         val total = queryFactory
             .select(channelPlatform.count())
             .from(channelPlatform)
-            .leftJoin(channel).on(channelPlatform.channelId.eq(channel.id))
+            .leftJoin(channel).on(channelPlatform.channel.id.eq(channel.id))
             .where(
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { channelPlatform.platformType.eq(it) },
