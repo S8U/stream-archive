@@ -22,6 +22,8 @@ class ChannelRepositoryImpl(
         val results = queryFactory
             .selectFrom(channel)
             .where(
+                request.id?.let { channel.id.eq(it) },
+                request.uuid?.let { channel.uuid.containsIgnoreCase(it) },
                 request.name?.let { channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { channel.contentPrivacy.eq(it) }
             )
@@ -34,6 +36,8 @@ class ChannelRepositoryImpl(
             .select(channel.count())
             .from(channel)
             .where(
+                request.id?.let { channel.id.eq(it) },
+                request.uuid?.let { channel.uuid.containsIgnoreCase(it) },
                 request.name?.let { channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { channel.contentPrivacy.eq(it) }
             )

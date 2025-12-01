@@ -15,6 +15,8 @@ data class AdminChannelUpdateRequest(
 )
 
 data class AdminChannelSearchRequest(
+    val id: Long? = null,
+    val uuid: String? = null,
     val name: String? = null,
     val contentPrivacy: ContentPrivacy? = null
 )

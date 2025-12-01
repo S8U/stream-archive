@@ -1,7 +1,7 @@
 -- Stream Archive Database Schema
 
 -- Enum 타입들
--- PlatformType: 'CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE'
+-- PlatformType: 'CHZZK', 'TWITCH', 'SOOP'
 -- ContentPrivacy: 'PUBLIC', 'UNLISTED', 'PRIVATE'
 -- RecordScheduleType: 'ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY'
 -- Role: 'ADMIN', 'USER'
@@ -61,7 +61,7 @@ CREATE TABLE channel_platforms
 (
     id                  BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '채널-플랫폼 연동 ID',
     channel_id          BIGINT                                      NOT NULL COMMENT '채널 ID',
-    platform_type       ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE') NOT NULL COMMENT '플랫폼 유형',
+    platform_type       ENUM ('CHZZK', 'TWITCH', 'SOOP') NOT NULL COMMENT '플랫폼 유형',
     platform_channel_id VARCHAR(255)                                NOT NULL COMMENT '플랫폼 채널 ID',
     is_sync_profile     BOOLEAN                                     NOT NULL DEFAULT TRUE COMMENT '프로필 동기화 여부',
     is_active           BOOLEAN                                     NOT NULL DEFAULT TRUE COMMENT '활성 상태',
@@ -86,7 +86,7 @@ CREATE TABLE record_schedules
 (
     id                   BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '녹화 스케줄 ID',
     channel_id           BIGINT                                                            NOT NULL COMMENT '채널 ID',
-    platform_type        ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE')                       NOT NULL COMMENT '플랫폼 유형',
+    platform_type        ENUM ('CHZZK', 'TWITCH', 'SOOP')                       NOT NULL COMMENT '플랫폼 유형',
     schedule_type        ENUM ('ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY')   NOT NULL COMMENT '녹화 스케줄 유형',
     value                TEXT                                                              NOT NULL COMMENT '스케줄 값',
     record_quality       ENUM ('BEST', 'P2160_60', 'P2160', 'P1440_60', 'P1440', 'P1080_60', 'P1080', 'P720_60', 'P720', 'P480', 'P240', 'P144', 'WORST') NOT NULL DEFAULT 'BEST' COMMENT '녹화 화질',
@@ -143,7 +143,7 @@ CREATE TABLE records
     id                 BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '녹화 기록 ID',
     channel_id         BIGINT                                      NOT NULL COMMENT '채널 ID',
     video_id           BIGINT                                      NOT NULL COMMENT '동영상 ID',
-    platform_type      ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE') NOT NULL COMMENT '플랫폼 유형',
+    platform_type      ENUM ('CHZZK', 'TWITCH', 'SOOP') NOT NULL COMMENT '플랫폼 유형',
     platform_stream_id VARCHAR(255)                                NOT NULL COMMENT '플랫폼 스트림 ID',
     record_quality     VARCHAR(50)                                 NOT NULL COMMENT '녹화 화질',
     is_ended           BOOLEAN                                     NOT NULL DEFAULT FALSE COMMENT '종료 여부',

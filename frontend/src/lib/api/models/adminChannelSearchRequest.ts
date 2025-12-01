@@ -8,6 +8,8 @@
 import type { AdminChannelSearchRequestContentPrivacy } from "./adminChannelSearchRequestContentPrivacy";
 
 export interface AdminChannelSearchRequest {
+  id?: number;
+  uuid?: string;
   name?: string;
   contentPrivacy?: AdminChannelSearchRequestContentPrivacy;
 }

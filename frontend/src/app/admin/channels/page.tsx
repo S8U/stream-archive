@@ -6,51 +6,42 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { CustomPagination } from "@/components/common/custom-pagination";
+import { ChannelFormDialog } from "@/components/admin/channel-form-dialog";
 import { useSearchAdminChannels, useCreateAdminChannel, useUpdateAdminChannel, useDeleteAdminChannel } from "@/lib/api/endpoints/admin-channel/admin-channel";
 import type { AdminChannelResponse, AdminChannelCreateRequestContentPrivacy, AdminChannelSearchRequestContentPrivacy } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import Link from "next/link";
 
-type SearchField = "__none__" | "id" | "uuid" | "name";
+type SearchField = "id" | "uuid" | "name";
 
 export default function ChannelsPage() {
     const queryClient = useQueryClient();
 
-    // Modal state
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+    // Dialog state
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
     const [selectedChannel, setSelectedChannel] = useState<AdminChannelResponse | null>(null);
 
     // Search/Filter state
-    const [searchField, setSearchField] = useState<SearchField>("__none__");
+    const [searchField, setSearchField] = useState<SearchField>("name");
     const [searchQuery, setSearchQuery] = useState("");
-    const [contentPrivacy, setContentPrivacy] = useState<string>("__none__");
+    const [searchContentPrivacy, setSearchContentPrivacy] = useState<string>("__none__");
 
     // Pagination state
     const [page, setPage] = useState(0);
     const [size] = useState(10);
 
-    // Form state
-    const [formName, setFormName] = useState("");
-    const [formPrivacy, setFormPrivacy] = useState<AdminChannelCreateRequestContentPrivacy>("PUBLIC");
-
     // Build search params
     const searchParams = {
         request: {
+            id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
+            uuid: searchField === "uuid" ? searchQuery : undefined,
             name: searchField === "name" ? searchQuery : undefined,
-            contentPrivacy: contentPrivacy !== "__none__" ? (contentPrivacy as AdminChannelSearchRequestContentPrivacy) : undefined,
+            contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminChannelSearchRequestContentPrivacy) : undefined,
         },
         pageable: {
             page,
@@ -70,63 +61,47 @@ export default function ChannelsPage() {
     };
 
     const handleReset = () => {
-        setSearchField("__none__");
+        setSearchField("name");
         setSearchQuery("");
-        setContentPrivacy("__none__");
+        setSearchContentPrivacy("__none__");
         setPage(0);
     };
 
-    const handleOpenCreateModal = () => {
-        setModalMode("create");
+    const handleOpenCreateDialog = () => {
+        setDialogMode("create");
         setSelectedChannel(null);
-        setFormName("");
-        setFormPrivacy("PUBLIC");
-        setIsModalOpen(true);
+        setIsDialogOpen(true);
     };
 
-    const handleOpenEditModal = (channel: AdminChannelResponse) => {
-        setModalMode("edit");
+    const handleOpenEditDialog = (channel: AdminChannelResponse) => {
+        setDialogMode("edit");
         setSelectedChannel(channel);
-        setFormName(channel.name);
-        setFormPrivacy(channel.contentPrivacy as AdminChannelCreateRequestContentPrivacy);
-        setIsModalOpen(true);
+        setIsDialogOpen(true);
     };
 
-    const handleModalClose = () => {
-        setIsModalOpen(false);
+    const handleDialogClose = () => {
+        setIsDialogOpen(false);
         setSelectedChannel(null);
-        setFormName("");
-        setFormPrivacy("PUBLIC");
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const handleDialogSubmit = async (data: { name: string; contentPrivacy: AdminChannelCreateRequestContentPrivacy }) => {
         try {
-            if (modalMode === "create") {
-                await createMutation.mutateAsync({
-                    data: {
-                        name: formName,
-                        contentPrivacy: formPrivacy,
-                    },
-                });
-                toast.success(`"${formName}" 채널이 생성되었습니다.`);
+            if (dialogMode === "create") {
+                await createMutation.mutateAsync({ data });
+                toast.success(`"${data.name}" 채널이 생성되었습니다.`);
             } else if (selectedChannel) {
                 await updateMutation.mutateAsync({
                     id: selectedChannel.id,
-                    data: {
-                        name: formName,
-                        contentPrivacy: formPrivacy,
-                    },
+                    data,
                 });
-                toast.success(`"${formName}" 채널이 수정되었습니다.`);
+                toast.success(`"${data.name}" 채널이 수정되었습니다.`);
             }
 
             // Invalidate and refetch
             queryClient.invalidateQueries({ queryKey: ["/admin/channels"] });
-            handleModalClose();
+            handleDialogClose();
         } catch (error) {
-            toast.error(modalMode === "create" ? "채널 생성에 실패했습니다." : "채널 수정에 실패했습니다.");
+            toast.error(dialogMode === "create" ? "채널 생성에 실패했습니다." : "채널 수정에 실패했습니다.");
         }
     };
 
@@ -161,6 +136,19 @@ export default function ChannelsPage() {
         }
     };
 
+    const getPrivacyVariant = (privacy: string): "default" | "secondary" | "outline" => {
+        switch (privacy) {
+            case "PUBLIC":
+                return "secondary";
+            case "UNLISTED":
+                return "outline";
+            case "PRIVATE":
+                return "outline";
+            default:
+                return "default";
+        }
+    };
+
     return (
         <div className="min-w-0">
             <h2 className="text-2xl font-bold">채널 관리</h2>
@@ -171,18 +159,21 @@ export default function ChannelsPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Select value={searchField} onValueChange={(value) => setSearchField(value as SearchField)}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
+                            <span className="text-muted-foreground">검색 기준:</span>
                             <SelectValue placeholder="검색 기준" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectItem value="__none__">전체</SelectItem>
+                                <SelectItem value="id">ID</SelectItem>
+                                <SelectItem value="uuid">UUID</SelectItem>
                                 <SelectItem value="name">채널명</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={contentPrivacy} onValueChange={setContentPrivacy}>
+                    <Select value={searchContentPrivacy} onValueChange={setSearchContentPrivacy}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[128px]">
-                            <SelectValue placeholder="공개범위" />
+                            <span className="text-muted-foreground">공개 범위:</span>
+                            <SelectValue placeholder="공개 범위" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -195,18 +186,17 @@ export default function ChannelsPage() {
                     </Select>
                     <Input
                         type="text"
-                        placeholder="검색"
-                        className="w-full sm:flex-1 sm:min-w-[200px]"
+                        placeholder="검색어 입력"
+                        className="w-full sm:flex-1 sm:min-w-[300px]"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        disabled={searchField === "__none__"}
                     />
                     <Button variant="default" onClick={handleSearch}>검색</Button>
                     <Button variant="outline" onClick={handleReset}>초기화</Button>
                 </div>
 
                 {/* 오른쪽: 액션 버튼 */}
-                <Button className="w-full lg:w-auto" onClick={handleOpenCreateModal}>
+                <Button className="w-full lg:w-auto" onClick={handleOpenCreateDialog}>
                     <Plus />
                     채널 추가
                 </Button>
@@ -220,7 +210,7 @@ export default function ChannelsPage() {
                             <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
                             <TableHead className="border-r font-semibold">채널 정보</TableHead>
                             <TableHead className="border-r font-semibold w-[350px]">UUID</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">공개범위</TableHead>
+                            <TableHead className="border-r font-semibold w-[100px] text-center">공개 범위</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
@@ -247,25 +237,45 @@ export default function ChannelsPage() {
                         ) : (
                             channelsData.content.map((channel) => (
                                 <TableRow key={channel.id}>
+                                    {/* ID */}
                                     <TableCell className="border-r text-center">{channel.id}</TableCell>
+
+                                    {/* 채널 정보 (프로필 + 이름) */}
                                     <TableCell className="border-r">
-                                        <div className="flex items-center gap-2">
+                                        <Link
+                                            href={`/channels/${channel.uuid}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                                        >
                                             <Avatar>
                                                 <AvatarImage src={channel.profileUrl} />
                                                 <AvatarFallback>{channel.name[0]?.toUpperCase()}</AvatarFallback>
                                             </Avatar>
                                             <span>{channel.name}</span>
-                                        </div>
+                                        </Link>
                                     </TableCell>
+
+                                    {/* UUID */}
                                     <TableCell className="border-r font-mono text-xs">{channel.uuid}</TableCell>
-                                    <TableCell className="border-r text-center">{getPrivacyLabel(channel.contentPrivacy)}</TableCell>
+
+                                    {/* 공개 범위 */}
+                                    <TableCell className="border-r text-center">
+                                        <Badge variant={getPrivacyVariant(channel.contentPrivacy)}>
+                                            {getPrivacyLabel(channel.contentPrivacy)}
+                                        </Badge>
+                                    </TableCell>
+
+                                    {/* 생성일 */}
                                     <TableCell className="border-r text-center">{formatDate(channel.createdAt)}</TableCell>
+
+                                    {/* 작업 (수정/삭제) */}
                                     <TableCell className="text-center">
                                         <div className="flex gap-2 justify-center">
                                             <Button
                                                 variant="secondary"
                                                 size="icon"
-                                                onClick={() => handleOpenEditModal(channel)}
+                                                onClick={() => handleOpenEditDialog(channel)}
                                                 disabled={updateMutation.isPending}
                                             >
                                                 <Edit />
@@ -296,62 +306,15 @@ export default function ChannelsPage() {
                 />
             )}
 
-            {/* 채널 생성/수정 모달 */}
-            <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-                <DialogContent className="sm:max-w-100">
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                        <DialogHeader>
-                            <DialogTitle>{modalMode === "create" ? "채널 생성" : "채널 수정"}</DialogTitle>
-                            <DialogDescription>
-                                {modalMode === "create" ? "새로운 채널을 생성합니다." : "채널 정보를 수정합니다."}
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4">
-                            <div className="grid gap-3">
-                                <Label>이름</Label>
-                                <Input
-                                    type="text"
-                                    required
-                                    value={formName}
-                                    onChange={(e) => setFormName(e.target.value)}
-                                />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label>공개 범위</Label>
-                                <Select value={formPrivacy} onValueChange={(value) => setFormPrivacy(value as AdminChannelCreateRequestContentPrivacy)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="선택" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="PUBLIC">공개</SelectItem>
-                                            <SelectItem value="UNLISTED">일부 공개</SelectItem>
-                                            <SelectItem value="PRIVATE">비공개</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button variant="outline" type="button">취소</Button>
-                            </DialogClose>
-                            <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                                {createMutation.isPending || updateMutation.isPending ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        처리중...
-                                    </>
-                                ) : modalMode === "create" ? (
-                                    "생성"
-                                ) : (
-                                    "수정"
-                                )}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            {/* 채널 생성/수정 다이얼로그 */}
+            <ChannelFormDialog
+                open={isDialogOpen}
+                onOpenChange={handleDialogClose}
+                mode={dialogMode}
+                channel={selectedChannel}
+                onSubmit={handleDialogSubmit}
+                isSubmitting={createMutation.isPending || updateMutation.isPending}
+            />
         </div>
     );
 }
