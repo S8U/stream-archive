@@ -68,7 +68,7 @@ export default async function AppLayout({
                 {channels.map((channel) => (
                     <Link
                         key={channel.uuid}
-                        href={"/channel/" + channel.uuid}
+                        href={"/channels/" + channel.uuid}
                         className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
                     >
                         <Avatar className="w-8 h-8">

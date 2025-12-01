@@ -65,7 +65,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
     return (
         <Link
             key={uuid}
-            href={`/video/${uuid}`}
+            href={`/videos/${uuid}`}
             className="flex flex-col gap-3 mb-4 md:mb-5"
             onMouseEnter={() => setHoveredVideoUuid(uuid)}
             onMouseLeave={() => setHoveredVideoUuid(null)}
@@ -84,7 +84,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                 )}
             </div>
             <div className="flex gap-3">
-                <Link href={`/channel/${channel.uuid}`}>
+                <Link href={`/channels/${channel.uuid}`}>
                     <Avatar className="w-9 h-9">
                         <AvatarImage src={channel.profileUrl} />
                         <AvatarFallback>{channel.name[0]}</AvatarFallback>

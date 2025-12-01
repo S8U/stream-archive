@@ -18,7 +18,7 @@ export function VideoInfo({ video }: VideoInfoProps) {
 
             {/* 채널 정보 */}
             <Link
-                href={`/channel/${video.channel.uuid}`}
+                href={`/channels/${video.channel.uuid}`}
                 className="flex items-center gap-3"
             >
                 <Avatar className="w-10 h-10">
