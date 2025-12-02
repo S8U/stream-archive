@@ -125,8 +125,6 @@ class ChannelPlatformService(
             BusinessException("채널 플랫폼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
-        channelProfileService.deleteProfile(channelPlatform.channel?.id!!)
-
         channelPlatform.isActive = false
         channelPlatform.deletedAt = LocalDateTime.now()
     }
@@ -138,10 +136,6 @@ class ChannelPlatformService(
         channelPlatforms.forEach { channelPlatform ->
             channelPlatform.isActive = false
             channelPlatform.deletedAt = LocalDateTime.now()
-        }
-
-        if (channelPlatforms.isNotEmpty()) {
-            channelProfileService.deleteProfile(channelId)
         }
     }
 

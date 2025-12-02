@@ -12,9 +12,6 @@ import java.time.LocalDateTime
 @Entity
 @Table(
     name = "channel_platforms",
-    uniqueConstraints = [
-        UniqueConstraint(name = "uk_channel_platforms", columnNames = ["channel_id", "platform_type"])
-    ],
     indexes = [
         Index(name = "idx_channel_platforms_platform_type", columnList = "platform_type"),
         Index(name = "idx_channel_platforms_is_active", columnList = "is_active")
