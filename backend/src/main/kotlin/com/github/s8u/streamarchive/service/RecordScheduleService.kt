@@ -7,6 +7,7 @@ import com.github.s8u.streamarchive.dto.AdminRecordScheduleUpdateRequest
 import com.github.s8u.streamarchive.entity.RecordSchedule
 import com.github.s8u.streamarchive.enums.RecordScheduleType
 import com.github.s8u.streamarchive.exception.BusinessException
+import com.github.s8u.streamarchive.repository.ChannelRepository
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
 import com.github.s8u.streamarchive.util.UrlBuilder
 import org.springframework.data.domain.Page
@@ -19,13 +20,14 @@ import java.time.LocalDateTime
 @Service
 class RecordScheduleService(
     private val recordScheduleRepository: RecordScheduleRepository,
+    private val channelRepository: ChannelRepository,
     private val urlBuilder: UrlBuilder
 ) {
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<AdminRecordScheduleResponse> {
         return recordScheduleRepository.searchForAdmin(request, pageable)
             .map { recordSchedule ->
-                val channelProfileUrl = urlBuilder.channelProfileUrl(recordSchedule.channel?.uuid!!)
+                val channelProfileUrl = urlBuilder.channelProfileUrl(recordSchedule.channel.uuid)
                 AdminRecordScheduleResponse.from(
                     recordSchedule = recordSchedule,
                     channelProfileUrl = channelProfileUrl
@@ -39,7 +41,7 @@ class RecordScheduleService(
             BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
-        val channelProfileUrl = urlBuilder.channelProfileUrl(recordSchedule.channel?.uuid!!)
+        val channelProfileUrl = urlBuilder.channelProfileUrl(recordSchedule.channel.uuid)
         return AdminRecordScheduleResponse.from(
             recordSchedule = recordSchedule,
             channelProfileUrl = channelProfileUrl
@@ -48,11 +50,15 @@ class RecordScheduleService(
 
     @Transactional
     fun createForAdmin(request: AdminRecordScheduleCreateRequest): AdminRecordScheduleResponse {
+        val channel = channelRepository.findById(request.channelId).orElseThrow {
+            BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+
         // ONCE, ALWAYS는 채널+플랫폼당 하나만 허용
         if (request.scheduleType == RecordScheduleType.ONCE ||
             request.scheduleType == RecordScheduleType.ALWAYS) {
-            val exists = recordScheduleRepository.existsByChannelIdAndPlatformTypeAndScheduleType(
-                channelId = request.channelId,
+            val exists = recordScheduleRepository.existsByChannelAndPlatformTypeAndScheduleType(
+                channel = channel,
                 platformType = request.platformType,
                 scheduleType = request.scheduleType
             )
@@ -65,7 +71,7 @@ class RecordScheduleService(
         }
 
         val recordSchedule = RecordSchedule(
-            channelId = request.channelId,
+            channel = channel,
             platformType = request.platformType,
             scheduleType = request.scheduleType,
             value = request.value,
@@ -93,8 +99,8 @@ class RecordScheduleService(
             newScheduleType == RecordScheduleType.ALWAYS) {
             // platformType이나 scheduleType이 변경되는 경우만 체크
             if (request.platformType != null || request.scheduleType != null) {
-                val exists = recordScheduleRepository.existsByChannelIdAndPlatformTypeAndScheduleType(
-                    channelId = recordSchedule.channelId,
+                val exists = recordScheduleRepository.existsByChannelAndPlatformTypeAndScheduleType(
+                    channel = recordSchedule.channel,
                     platformType = newPlatformType,
                     scheduleType = newScheduleType
                 )
@@ -131,7 +137,10 @@ class RecordScheduleService(
 
     @Transactional
     fun deleteAllByChannelId(channelId: Long) {
-        val recordSchedules = recordScheduleRepository.findByChannelId(channelId)
+        val channel = channelRepository.findById(channelId).orElseThrow {
+            BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+        val recordSchedules = recordScheduleRepository.findByChannel(channel)
 
         recordSchedules.forEach { recordSchedule ->
             recordSchedule.isActive = false

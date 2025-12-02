@@ -231,8 +231,9 @@ class RecordService(
     fun handleStreamDetected(event: StreamDetectedEvent) {
         try {
             // 해당 채널+플랫폼의 활성 스케줄 조회
-            val schedules = recordScheduleRepository.findByChannelIdAndPlatformType(
-                channelId = event.channelPlatform?.channel?.id!!,
+            val channel = event.channelPlatform?.channel!!
+            val schedules = recordScheduleRepository.findByChannelAndPlatformType(
+                channel = channel,
                 platformType = event.channelPlatform.platformType
             )
 

@@ -30,14 +30,10 @@ class RecordSchedule(
     @Comment("녹화 스케줄 ID")
     val id: Long? = null,
 
-    @Column(nullable = false)
-    @Comment("채널 ID")
-    val channelId: Long,
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channelId", insertable = false, updatable = false)
+    @JoinColumn(name = "channelId", nullable = false)
     @Comment("채널")
-    val channel: Channel? = null,
+    val channel: Channel,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

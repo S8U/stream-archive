@@ -36,7 +36,7 @@ class RecordScheduleRepositoryImpl(
         val total = queryFactory
             .select(recordSchedule.count())
             .from(recordSchedule)
-            .leftJoin(channel).on(recordSchedule.channelId.eq(channel.id))
+            .leftJoin(recordSchedule.channel, channel)
             .where(
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { recordSchedule.platformType.eq(it) },
