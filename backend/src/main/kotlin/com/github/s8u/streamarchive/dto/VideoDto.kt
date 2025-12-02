@@ -21,7 +21,7 @@ data class AdminVideoSearchRequest(
 data class AdminVideoResponse(
     val id: Long,
     val uuid: String,
-    val channelId: Long,
+    val channel: ChannelInfo,
     val title: String,
     val duration: Int,
     val fileSize: Long,
@@ -29,18 +29,43 @@ data class AdminVideoResponse(
     val playlistUrl: String,
     val contentPrivacy: ContentPrivacy,
     val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime
+    val updatedAt: LocalDateTime,
+    val record: RecordInfo?
 ) {
+    data class ChannelInfo(
+        val id: Long,
+        val uuid: String,
+        val name: String,
+        val profileUrl: String
+    )
+
+    data class RecordInfo(
+        val id: Long,
+        val platformType: PlatformType,
+        val platformStreamId: String,
+        val recordQuality: String,
+        val isEnded: Boolean,
+        val isCancelled: Boolean,
+        val startedAt: LocalDateTime,
+        val endedAt: LocalDateTime?
+    )
+
     companion object {
         fun from(
             video: Video,
+            channelProfileUrl: String,
             thumbnailUrl: String,
             playlistUrl: String
         ): AdminVideoResponse {
             return AdminVideoResponse(
                 id = video.id!!,
                 uuid = video.uuid,
-                channelId = video.channelId,
+                channel = ChannelInfo(
+                    id = video.channel?.id!!,
+                    uuid = video.channel?.uuid!!,
+                    name = video.channel?.name!!,
+                    profileUrl = channelProfileUrl
+                ),
                 title = video.title,
                 duration = video.duration,
                 fileSize = video.fileSize,
@@ -48,7 +73,19 @@ data class AdminVideoResponse(
                 playlistUrl = playlistUrl,
                 contentPrivacy = video.contentPrivacy,
                 createdAt = video.createdAt,
-                updatedAt = video.updatedAt
+                updatedAt = video.updatedAt,
+                record = video.record?.let { record ->
+                    RecordInfo(
+                        id = record.id!!,
+                        platformType = record.platformType,
+                        platformStreamId = record.platformStreamId,
+                        recordQuality = record.recordQuality,
+                        isEnded = record.isEnded,
+                        isCancelled = record.isCancelled,
+                        startedAt = record.createdAt,
+                        endedAt = record.endedAt
+                    )
+                }
             )
         }
     }

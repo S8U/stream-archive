@@ -36,8 +36,10 @@ class VideoService(
     fun searchForAdmin(request: AdminVideoSearchRequest, pageable: Pageable): Page<AdminVideoResponse> {
         return videoRepository.searchForAdmin(request, pageable)
             .map { video ->
+                val channelProfileUrl = urlBuilder.channelProfileUrl(video.channel?.uuid!!)
                 AdminVideoResponse.from(
                     video = video,
+                    channelProfileUrl = channelProfileUrl,
                     thumbnailUrl = urlBuilder.videoThumbnailUrl(video.uuid),
                     playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid)
                 )
@@ -49,8 +51,11 @@ class VideoService(
         val video = videoRepository.findById(id).orElseThrow {
             BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
+
+        val channelProfileUrl = urlBuilder.channelProfileUrl(video.channel?.uuid!!)
         return AdminVideoResponse.from(
             video = video,
+            channelProfileUrl = channelProfileUrl,
             thumbnailUrl = urlBuilder.videoThumbnailUrl(video.uuid),
             playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid)
         )
@@ -65,8 +70,10 @@ class VideoService(
         request.title?.let { video.title = it }
         request.contentPrivacy?.let { video.contentPrivacy = it }
 
+        val channelProfileUrl = urlBuilder.channelProfileUrl(video.channel?.uuid!!)
         return AdminVideoResponse.from(
             video = video,
+            channelProfileUrl = channelProfileUrl,
             thumbnailUrl = urlBuilder.videoThumbnailUrl(video.uuid),
             playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid)
         )

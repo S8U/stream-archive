@@ -36,9 +36,9 @@ The complete database schema is documented in `docs/schema.sql` with the followi
 ### Frontend
 ```bash
 cd frontend
-npm run dev          # Start development server with Turbopack
-npm run build        # Build for production with Turbopack
-npm run start        # Start production server
+pnpm run dev          # Start development server with Turbopack
+pnpm run build        # Build for production with Turbopack
+pnpm run start        # Start production server
 ```
 
 ### Backend

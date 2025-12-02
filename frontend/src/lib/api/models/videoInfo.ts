@@ -6,8 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface SortObject {
-  empty?: boolean;
-  sorted?: boolean;
-  unsorted?: boolean;
+export interface VideoInfo {
+  id: number;
+  uuid: string;
+  title: string;
+  thumbnailUrl: string;
 }

@@ -5,13 +5,14 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { ChannelInfo } from "./channelInfo";
 import type { AdminRecordScheduleResponsePlatformType } from "./adminRecordScheduleResponsePlatformType";
 import type { AdminRecordScheduleResponseScheduleType } from "./adminRecordScheduleResponseScheduleType";
 import type { AdminRecordScheduleResponseRecordQuality } from "./adminRecordScheduleResponseRecordQuality";
 
 export interface AdminRecordScheduleResponse {
   id: number;
-  channelId: number;
+  channel: ChannelInfo;
   platformType: AdminRecordScheduleResponsePlatformType;
   scheduleType: AdminRecordScheduleResponseScheduleType;
   value: string;

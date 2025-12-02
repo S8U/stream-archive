@@ -29,9 +29,19 @@ class Record(
     @Comment("채널 ID")
     val channelId: Long,
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channelId", insertable = false, updatable = false)
+    @Comment("채널")
+    val channel: Channel? = null,
+
     @Column(nullable = false)
     @Comment("동영상 ID")
     val videoId: Long,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "videoId", insertable = false, updatable = false)
+    @Comment("동영상")
+    val video: Video? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -5,12 +5,14 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { ChannelInfo } from "./channelInfo";
+import type { VideoInfo } from "./videoInfo";
 import type { AdminRecordResponsePlatformType } from "./adminRecordResponsePlatformType";
 
 export interface AdminRecordResponse {
   id: number;
-  channelId: number;
-  videoId: number;
+  channel: ChannelInfo;
+  video: VideoInfo;
   platformType: AdminRecordResponsePlatformType;
   platformStreamId: string;
   recordQuality: string;

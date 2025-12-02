@@ -25,10 +25,11 @@ class VideoRepositoryImpl(
     override fun searchForAdmin(request: AdminVideoSearchRequest, pageable: Pageable): Page<Video> {
         val results = queryFactory
             .selectFrom(video)
-            .leftJoin(channel).on(video.channelId.eq(channel.id))
+            .leftJoin(video.channel, channel).fetchJoin()
+            .leftJoin(video.record, record).fetchJoin()
             .where(
                 request.title?.let { video.title.containsIgnoreCase(it) },
-                request.channelName?.let { channel.name.containsIgnoreCase(it) },
+                request.channelName?.let { video.channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },
                 request.createdAtFrom?.let { video.createdAt.goe(it) },
                 request.createdAtTo?.let { video.createdAt.loe(it) }

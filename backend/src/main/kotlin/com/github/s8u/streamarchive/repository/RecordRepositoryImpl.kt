@@ -23,10 +23,10 @@ class RecordRepositoryImpl(
     override fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<Record> {
         val results = queryFactory
             .selectFrom(record)
-            .leftJoin(video).on(record.videoId.eq(video.id))
-            .leftJoin(channel).on(video.channelId.eq(channel.id))
+            .leftJoin(record.channel, channel).fetchJoin()
+            .leftJoin(record.video, video).fetchJoin()
             .where(
-                request.channelName?.let { channel.name.containsIgnoreCase(it) },
+                request.channelName?.let { record.channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { record.platformType.eq(it) },
                 request.isEnded?.let { record.isEnded.eq(it) },
                 request.isCancelled?.let { record.isCancelled.eq(it) },

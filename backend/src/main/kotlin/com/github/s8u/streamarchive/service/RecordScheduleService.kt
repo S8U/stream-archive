@@ -8,6 +8,7 @@ import com.github.s8u.streamarchive.entity.RecordSchedule
 import com.github.s8u.streamarchive.enums.RecordScheduleType
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
+import com.github.s8u.streamarchive.util.UrlBuilder
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -17,12 +18,19 @@ import java.time.LocalDateTime
 
 @Service
 class RecordScheduleService(
-    private val recordScheduleRepository: RecordScheduleRepository
+    private val recordScheduleRepository: RecordScheduleRepository,
+    private val urlBuilder: UrlBuilder
 ) {
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminRecordScheduleSearchRequest, pageable: Pageable): Page<AdminRecordScheduleResponse> {
         return recordScheduleRepository.searchForAdmin(request, pageable)
-            .map { AdminRecordScheduleResponse.from(it) }
+            .map { recordSchedule ->
+                val channelProfileUrl = urlBuilder.channelProfileUrl(recordSchedule.channel?.uuid!!)
+                AdminRecordScheduleResponse.from(
+                    recordSchedule = recordSchedule,
+                    channelProfileUrl = channelProfileUrl
+                )
+            }
     }
 
     @Transactional(readOnly = true)
@@ -30,7 +38,12 @@ class RecordScheduleService(
         val recordSchedule = recordScheduleRepository.findById(id).orElseThrow {
             BusinessException("녹화 스케줄을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
-        return AdminRecordScheduleResponse.from(recordSchedule)
+
+        val channelProfileUrl = urlBuilder.channelProfileUrl(recordSchedule.channel?.uuid!!)
+        return AdminRecordScheduleResponse.from(
+            recordSchedule = recordSchedule,
+            channelProfileUrl = channelProfileUrl
+        )
     }
 
     @Transactional
@@ -60,7 +73,9 @@ class RecordScheduleService(
             priority = request.priority
         )
         val saved = recordScheduleRepository.save(recordSchedule)
-        return AdminRecordScheduleResponse.from(saved)
+
+        // 저장 후 다시 조회하여 Channel 정보 로드
+        return getForAdmin(saved.id!!)
     }
 
     @Transactional
@@ -100,7 +115,8 @@ class RecordScheduleService(
         request.recordQuality?.let { recordSchedule.recordQuality = it }
         request.priority?.let { recordSchedule.priority = it }
 
-        return AdminRecordScheduleResponse.from(recordSchedule)
+        // 업데이트 후 다시 조회하여 최신 정보 로드
+        return getForAdmin(recordSchedule.id!!)
     }
 
     @Transactional

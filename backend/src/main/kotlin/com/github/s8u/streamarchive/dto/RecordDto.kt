@@ -15,8 +15,8 @@ data class AdminRecordSearchRequest(
 
 data class AdminRecordResponse(
     val id: Long,
-    val channelId: Long,
-    val videoId: Long,
+    val channel: ChannelInfo,
+    val video: VideoInfo,
     val platformType: PlatformType,
     val platformStreamId: String,
     val recordQuality: String,
@@ -25,12 +25,40 @@ data class AdminRecordResponse(
     val createdAt: LocalDateTime,
     val endedAt: LocalDateTime?
 ) {
+    data class ChannelInfo(
+        val id: Long,
+        val uuid: String,
+        val name: String,
+        val profileUrl: String
+    )
+
+    data class VideoInfo(
+        val id: Long,
+        val uuid: String,
+        val title: String,
+        val thumbnailUrl: String
+    )
+
     companion object {
-        fun from(record: Record): AdminRecordResponse {
+        fun from(
+            record: Record,
+            channelProfileUrl: String,
+            videoThumbnailUrl: String
+        ): AdminRecordResponse {
             return AdminRecordResponse(
                 id = record.id!!,
-                channelId = record.channelId,
-                videoId = record.videoId,
+                channel = ChannelInfo(
+                    id = record.channel?.id!!,
+                    uuid = record.channel?.uuid!!,
+                    name = record.channel?.name!!,
+                    profileUrl = channelProfileUrl
+                ),
+                video = VideoInfo(
+                    id = record.video?.id!!,
+                    uuid = record.video?.uuid!!,
+                    title = record.video?.title!!,
+                    thumbnailUrl = videoThumbnailUrl
+                ),
                 platformType = record.platformType,
                 platformStreamId = record.platformStreamId,
                 recordQuality = record.recordQuality,

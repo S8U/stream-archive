@@ -15,6 +15,7 @@ import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.RecordRepository
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
+import com.github.s8u.streamarchive.util.UrlBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Page
@@ -36,7 +37,8 @@ class RecordService(
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val videoMetadataService: VideoMetadataService,
     private val recordScheduleRepository: RecordScheduleRepository,
-    private val videoThumbnailService: VideoThumbnailService
+    private val videoThumbnailService: VideoThumbnailService,
+    private val urlBuilder: UrlBuilder
 ) {
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
     private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
@@ -44,15 +46,21 @@ class RecordService(
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<AdminRecordResponse> {
         return recordRepository.searchForAdmin(request, pageable)
-            .map { AdminRecordResponse.from(it) }
+            .map { record ->
+                val channelProfileUrl = urlBuilder.channelProfileUrl(record.channel?.uuid!!)
+                val videoThumbnailUrl = urlBuilder.videoThumbnailUrl(record.video?.uuid!!)
+                AdminRecordResponse.from(record, channelProfileUrl, videoThumbnailUrl)
+            }
     }
 
     @Transactional(readOnly = true)
     fun getForAdmin(id: Long): AdminRecordResponse {
         val record = recordRepository.findById(id).orElseThrow {
-            BusinessException("Record not found: $id", HttpStatus.NOT_FOUND)
+            BusinessException("녹화를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
-        return AdminRecordResponse.from(record)
+        val channelProfileUrl = urlBuilder.channelProfileUrl(record.channel?.uuid!!)
+        val videoThumbnailUrl = urlBuilder.videoThumbnailUrl(record.video?.uuid!!)
+        return AdminRecordResponse.from(record, channelProfileUrl, videoThumbnailUrl)
     }
 
     @Transactional

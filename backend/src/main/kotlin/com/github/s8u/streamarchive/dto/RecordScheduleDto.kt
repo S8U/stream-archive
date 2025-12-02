@@ -32,7 +32,7 @@ data class AdminRecordScheduleSearchRequest(
 
 data class AdminRecordScheduleResponse(
     val id: Long,
-    val channelId: Long,
+    val channel: ChannelInfo,
     val platformType: PlatformType,
     val scheduleType: RecordScheduleType,
     val value: String,
@@ -41,11 +41,26 @@ data class AdminRecordScheduleResponse(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
+    data class ChannelInfo(
+        val id: Long,
+        val uuid: String,
+        val name: String,
+        val profileUrl: String
+    )
+
     companion object {
-        fun from(recordSchedule: RecordSchedule): AdminRecordScheduleResponse {
+        fun from(
+            recordSchedule: RecordSchedule,
+            channelProfileUrl: String
+        ): AdminRecordScheduleResponse {
             return AdminRecordScheduleResponse(
                 id = recordSchedule.id!!,
-                channelId = recordSchedule.channelId,
+                channel = ChannelInfo(
+                    id = recordSchedule.channel?.id!!,
+                    uuid = recordSchedule.channel?.uuid!!,
+                    name = recordSchedule.channel?.name!!,
+                    profileUrl = channelProfileUrl
+                ),
                 platformType = recordSchedule.platformType,
                 scheduleType = recordSchedule.scheduleType,
                 value = recordSchedule.value,

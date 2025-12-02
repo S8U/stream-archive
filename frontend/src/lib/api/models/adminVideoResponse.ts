@@ -5,12 +5,14 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { ChannelInfo } from "./channelInfo";
 import type { AdminVideoResponseContentPrivacy } from "./adminVideoResponseContentPrivacy";
+import type { RecordInfo } from "./recordInfo";
 
 export interface AdminVideoResponse {
   id: number;
   uuid: string;
-  channelId: number;
+  channel: ChannelInfo;
   title: string;
   duration: number;
   fileSize: number;
@@ -19,4 +21,5 @@ export interface AdminVideoResponse {
   contentPrivacy: AdminVideoResponseContentPrivacy;
   createdAt: string;
   updatedAt: string;
+  record?: RecordInfo;
 }

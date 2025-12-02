@@ -8,6 +8,7 @@
 
 export interface ChannelInfo {
   id: number;
+  uuid: string;
   name: string;
   profileUrl: string;
 }

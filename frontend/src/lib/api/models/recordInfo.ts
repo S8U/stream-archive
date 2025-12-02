@@ -8,6 +8,7 @@
 import type { RecordInfoPlatformType } from "./recordInfoPlatformType";
 
 export interface RecordInfo {
+  id: number;
   platformType: RecordInfoPlatformType;
   platformStreamId: string;
   recordQuality: string;
