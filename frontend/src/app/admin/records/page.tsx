@@ -1,18 +1,20 @@
 "use client";
 
-import {Input} from "@/components/ui/input";
-import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {Button} from "@/components/ui/button";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {Ban, Loader2} from "lucide-react";
-import {Badge} from "@/components/ui/badge";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {useState} from "react";
-import {CustomPagination} from "@/components/common/custom-pagination";
-import {useCancelAdminRecord, useSearchAdminRecords} from "@/lib/api/endpoints/admin-record/admin-record";
-import type {AdminRecordResponse, AdminRecordSearchRequestPlatformType} from "@/lib/api/models";
-import {useQueryClient} from "@tanstack/react-query";
-import {toast} from "sonner";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Ban, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import { CustomPagination } from "@/components/common/custom-pagination";
+import { useCancelAdminRecord, useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
+import type { AdminRecordResponse, AdminRecordSearchRequestPlatformType } from "@/lib/api/models";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { PlatformBadge } from "@/components/common/platform-badge";
+import Link from "next/link";
 
 type SearchField = "channelName";
 type RecordStatus = "__all__" | "recording" | "ended" | "cancelled";
@@ -91,40 +93,14 @@ export default function RecordsPage() {
         return new Date(dateString).toLocaleString("ko-KR");
     };
 
-    const getPlatformBadgeVariant = (platform: string): "default" | "secondary" | "outline" | "destructive" => {
-        switch (platform) {
-            case "CHZZK":
-                return "default"; // Green-ish usually, but default is fine
-            case "TWITCH":
-                return "secondary"; // Purple-ish usually
-            case "SOOP":
-                return "outline"; // Blue-ish usually
-            default:
-                return "outline";
-        }
-    };
-
-    const getPlatformLabel = (platform: string) => {
-        switch (platform) {
-            case "CHZZK":
-                return "치지직";
-            case "TWITCH":
-                return "트위치";
-            case "SOOP":
-                return "숲(아프리카)";
-            default:
-                return platform;
-        }
-    };
-
     const getStatusBadge = (record: AdminRecordResponse) => {
         if (record.isCancelled) {
-            return <Badge variant="destructive">취소됨</Badge>;
+            return <Badge variant="outline">취소됨</Badge>;
         }
         if (record.isEnded) {
             return <Badge variant="secondary">종료됨</Badge>;
         }
-        return <Badge variant="default" className="animate-pulse">녹화중</Badge>;
+        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100/80">녹화중</Badge>;
     };
 
     return (
@@ -155,7 +131,7 @@ export default function RecordsPage() {
                             <SelectGroup>
                                 <SelectItem value="__all__">전체</SelectItem>
                                 <SelectItem value="CHZZK">치지직</SelectItem>
-                                <SelectItem value="SOOP">숲(아프리카)</SelectItem>
+                                <SelectItem value="SOOP">SOOP</SelectItem>
                                 <SelectItem value="TWITCH">트위치</SelectItem>
                             </SelectGroup>
                         </SelectContent>
@@ -225,7 +201,10 @@ export default function RecordsPage() {
                         ) : (
                             recordsData.content.map((record) => (
                                 <TableRow key={record.id}>
+                                    {/* ID */}
                                     <TableCell className="border-r text-center">{record.id}</TableCell>
+
+                                    {/* 채널 정보 */}
                                     <TableCell className="border-r">
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-8 w-8">
@@ -235,11 +214,13 @@ export default function RecordsPage() {
                                             <span>{record.channel.name}</span>
                                         </div>
                                     </TableCell>
+
+                                    {/* 플랫폼 */}
                                     <TableCell className="border-r text-center">
-                                        <Badge variant={getPlatformBadgeVariant(record.platformType)}>
-                                            {getPlatformLabel(record.platformType)}
-                                        </Badge>
+                                        <PlatformBadge platform={record.platformType} />
                                     </TableCell>
+
+                                    {/* 동영상 정보 */}
                                     <TableCell className="border-r">
                                         <div className="flex items-center gap-3">
                                             <div className="relative w-16 h-9 bg-muted rounded overflow-hidden flex-shrink-0">
@@ -249,32 +230,49 @@ export default function RecordsPage() {
                                                     <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">No Img</div>
                                                 )}
                                             </div>
-                                            <span className="truncate max-w-[200px]" title={record.video.title}>
+                                            <Link
+                                                href={`/videos/${record.video.uuid}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="hover:underline truncate"
+                                            >
                                                 {record.video.title}
-                                            </span>
+                                            </Link>
                                         </div>
                                     </TableCell>
+
+                                    {/* 스트림 ID */}
                                     <TableCell className="border-r font-mono text-xs">
                                         {record.platformStreamId}
                                     </TableCell>
+
+                                    {/* 화질 */}
                                     <TableCell className="border-r text-center text-sm">{record.recordQuality}</TableCell>
+
+                                    {/* 상태 */}
                                     <TableCell className="border-r text-center">
                                         {getStatusBadge(record)}
                                     </TableCell>
+
+                                    {/* 시작 시간 */}
                                     <TableCell className="border-r text-center text-sm">{formatDate(record.createdAt)}</TableCell>
+
+                                    {/* 종료 시간 */}
                                     <TableCell className="border-r text-center text-sm">
                                         {record.endedAt ? formatDate(record.endedAt) : "-"}
                                     </TableCell>
+
+                                    {/* 작업 */}
                                     <TableCell className="text-center">
                                         {!record.isEnded && !record.isCancelled && (
                                             <Button
-                                                variant="destructive"
+                                                variant="secondary"
                                                 size="icon"
                                                 onClick={() => handleCancel(record)}
                                                 disabled={cancelMutation.isPending}
                                                 title="녹화 중단"
                                             >
-                                                <Ban className="h-4 w-4" />
+                                                <Ban />
                                             </Button>
                                         )}
                                     </TableCell>

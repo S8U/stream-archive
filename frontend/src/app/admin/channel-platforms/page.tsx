@@ -24,6 +24,7 @@ import type {
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
+import { PlatformBadge } from "@/components/common/platform-badge";
 
 export default function ChannelPlatformsPage() {
     const queryClient = useQueryClient();
@@ -140,19 +141,6 @@ export default function ChannelPlatformsPage() {
         return new Date(dateString).toLocaleDateString("ko-KR");
     };
 
-    const getPlatformBadgeVariant = (type: string): "default" | "secondary" | "outline" | "destructive" => {
-        switch (type) {
-            case "CHZZK":
-                return "default"; // Greenish?
-            case "TWITCH":
-                return "secondary"; // Purpleish?
-            case "SOOP":
-                return "outline"; // Blueish?
-            default:
-                return "default";
-        }
-    };
-
     return (
         <div className="min-w-0">
             <h2 className="text-2xl font-bold">채널 플랫폼 관리</h2>
@@ -183,7 +171,7 @@ export default function ChannelPlatformsPage() {
                                 <SelectItem value="__none__">전체</SelectItem>
                                 <SelectItem value="CHZZK">치지직</SelectItem>
                                 <SelectItem value="TWITCH">트위치</SelectItem>
-                                <SelectItem value="SOOP">숲</SelectItem>
+                                <SelectItem value="SOOP">SOOP</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -274,11 +262,7 @@ export default function ChannelPlatformsPage() {
 
                                     {/* 플랫폼 */}
                                     <TableCell className="border-r text-center">
-                                        <Badge variant={getPlatformBadgeVariant(platform.platformType)}>
-                                            {platform.platformType === "CHZZK" && "치지직"}
-                                            {platform.platformType === "TWITCH" && "트위치"}
-                                            {platform.platformType === "SOOP" && "숲"}
-                                        </Badge>
+                                        <PlatformBadge platform={platform.platformType} />
                                     </TableCell>
 
                                     {/* 플랫폼 채널 ID */}
@@ -290,13 +274,14 @@ export default function ChannelPlatformsPage() {
                                             className="flex items-center gap-2 hover:underline"
                                         >
                                             {platform.platformChannelId}
+                                            <ExternalLink className="h-3 w-3" />
                                         </Link>
                                     </TableCell>
 
                                     {/* 프로필 동기화 */}
                                     <TableCell className="border-r text-center">
                                         {platform.isSyncProfile ? (
-                                            <Badge variant="default">켜짐</Badge>
+                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80">켜짐</Badge>
                                         ) : (
                                             <Badge variant="secondary">꺼짐</Badge>
                                         )}
