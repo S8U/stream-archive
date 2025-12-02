@@ -4,12 +4,12 @@ import com.github.s8u.streamarchive.config.properties.JwtProperties
 import com.github.s8u.streamarchive.dto.*
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.service.AuthService
+import com.github.s8u.streamarchive.service.JwtCookieService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseCookie
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "Auth", description = "인증")
@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/auth")
 class AuthController(
     private val authService: AuthService,
-    private val jwtProperties: JwtProperties
+    private val jwtProperties: JwtProperties,
+    private val jwtCookieService: JwtCookieService
 ) {
 
     @Operation(summary = "로그인")
@@ -29,8 +30,8 @@ class AuthController(
         val loginResponse = authService.login(request)
 
         // Access Token과 Refresh Token을 HttpOnly 쿠키로 설정
-        setAccessTokenCookie(response, loginResponse.accessToken)
-        setRefreshTokenCookie(response, loginResponse.refreshToken)
+        jwtCookieService.setAccessTokenCookie(response, loginResponse.accessToken)
+        jwtCookieService.setRefreshTokenCookie(response, loginResponse.refreshToken)
 
         return loginResponse
     }
@@ -58,11 +59,11 @@ class AuthController(
         val refreshToken = cookieRefreshToken ?: request?.refreshToken
             ?: throw BusinessException("리프레시 토큰이 필요합니다.", HttpStatus.BAD_REQUEST)
 
-        val refreshResponse = authService.refresh(RefreshTokenRequest(refreshToken))
+        val refreshResponse = authService.refresh(refreshToken)
 
         // 새로운 Access Token과 Refresh Token을 쿠키에 설정
-        setAccessTokenCookie(response, refreshResponse.accessToken)
-        setRefreshTokenCookie(response, refreshResponse.refreshToken)
+        jwtCookieService.setAccessTokenCookie(response, refreshResponse.accessToken)
+        jwtCookieService.setRefreshTokenCookie(response, refreshResponse.refreshToken)
 
         return refreshResponse
     }
@@ -89,57 +90,7 @@ class AuthController(
         }
 
         // Access Token과 Refresh Token 쿠키 삭제
-        clearAccessTokenCookie(response)
-        clearRefreshTokenCookie(response)
-    }
-
-    private fun setAccessTokenCookie(response: HttpServletResponse, accessToken: String) {
-        val cookieConfig = jwtProperties.cookie
-        val maxAge = (jwtProperties.accessTokenExpiration / 1000)
-
-        val cookie = ResponseCookie.from(cookieConfig.accessTokenName, accessToken)
-            .domain(cookieConfig.domain)
-            .path(cookieConfig.path)
-            .maxAge(maxAge)
-            .httpOnly(cookieConfig.httpOnly)
-            .secure(cookieConfig.secure)
-            .sameSite(cookieConfig.sameSite)
-            .build()
-
-        response.addHeader("Set-Cookie", cookie.toString())
-    }
-
-    private fun setRefreshTokenCookie(response: HttpServletResponse, refreshToken: String) {
-        val cookieConfig = jwtProperties.cookie
-        val maxAge = (jwtProperties.refreshTokenExpiration / 1000)
-
-        val cookie = ResponseCookie.from(cookieConfig.refreshTokenName, refreshToken)
-            .domain(cookieConfig.domain)
-            .path(cookieConfig.path)
-            .maxAge(maxAge)
-            .httpOnly(cookieConfig.httpOnly)
-            .secure(cookieConfig.secure)
-            .sameSite(cookieConfig.sameSite)
-            .build()
-
-        response.addHeader("Set-Cookie", cookie.toString())
-    }
-
-    private fun clearAccessTokenCookie(response: HttpServletResponse) {
-        val cookie = ResponseCookie.from(jwtProperties.cookie.accessTokenName, "")
-            .path(jwtProperties.cookie.path)
-            .maxAge(0)
-            .build()
-
-        response.addHeader("Set-Cookie", cookie.toString())
-    }
-
-    private fun clearRefreshTokenCookie(response: HttpServletResponse) {
-        val cookie = ResponseCookie.from(jwtProperties.cookie.refreshTokenName, "")
-            .path(jwtProperties.cookie.path)
-            .maxAge(0)
-            .build()
-
-        response.addHeader("Set-Cookie", cookie.toString())
+        jwtCookieService.clearAccessTokenCookie(response)
+        jwtCookieService.clearRefreshTokenCookie(response)
     }
 }

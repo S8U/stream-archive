@@ -1,10 +1,13 @@
 package com.github.s8u.streamarchive.security
 
 import com.github.s8u.streamarchive.config.properties.JwtProperties
+import com.github.s8u.streamarchive.service.AuthService
+import com.github.s8u.streamarchive.service.JwtCookieService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -16,7 +19,9 @@ import org.springframework.web.filter.OncePerRequestFilter
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userDetailsService: UserDetailsService,
-    private val jwtProperties: JwtProperties
+    private val jwtProperties: JwtProperties,
+    @Lazy private val authService: AuthService,
+    private val jwtCookieService: JwtCookieService
 ) : OncePerRequestFilter() {
 
     private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
@@ -26,50 +31,66 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        try {
-            // 헤더에서 토큰 추출
-            val token = extractTokenFromRequest(request)
+        val accessToken = extractAccessTokenFromCookie(request)
 
-            // 토큰 검증
-            if (token != null && jwtTokenProvider.validateToken(token)) {
-                val username = jwtTokenProvider.getUsernameFromToken(token)
-                val userDetails = userDetailsService.loadUserByUsername(username)
+        // 인증
+        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+            setAuthentication(accessToken, request)
+        }
+        // Access Token 재발급
+        else {
+            logger.debug("Access token invalid, attempting auto-refresh")
 
-                val authentication = UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.authorities
-                )
-                authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+            val refreshToken = extractRefreshTokenFromCookie(request)
+            if (refreshToken != null) {
+                try {
+                    val newTokens = authService.refresh(refreshToken)
 
-                SecurityContextHolder.getContext().authentication = authentication
-                logger.debug("Set authentication for user: $username",)
+                    // 새 쿠키 설정
+                    jwtCookieService.setAccessTokenCookie(response, newTokens.accessToken)
+                    jwtCookieService.setRefreshTokenCookie(response, newTokens.refreshToken)
+
+                    // 새 AT로 인증
+                    setAuthentication(newTokens.accessToken, request)
+
+                    logger.info("Access token auto-refreshed successfully")
+                } catch (refreshException: Exception) {
+                    logger.debug("Auto-refresh failed", refreshException)
+                    SecurityContextHolder.clearContext()
+                }
+            } else {
+                logger.debug("No refresh token available for auto-refresh")
+                SecurityContextHolder.clearContext()
             }
-        } catch (e: Exception) {
-            logger.debug("Cannot set user authentication", e)
-            SecurityContextHolder.clearContext()
         }
 
         filterChain.doFilter(request, response)
     }
 
-    private fun extractTokenFromRequest(request: HttpServletRequest): String? {
-        // 쿠키에서 토큰 추출
-        val cookies = request.cookies
-        if (cookies != null) {
-            val tokenCookie = cookies.find { it.name == jwtProperties.cookie.accessTokenName }
-            if (tokenCookie != null) {
-                return tokenCookie.value
-            }
-        }
+    private fun extractAccessTokenFromCookie(request: HttpServletRequest): String? {
+        return request.cookies?.find {
+            it.name == jwtProperties.cookie.accessTokenName
+        }?.value
+    }
 
-        // Authorization 헤더에서 토큰 추출
-        val bearerToken = request.getHeader("Authorization")
-        return if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            bearerToken.substring(7)
-        } else {
-            null
-        }
+    private fun extractRefreshTokenFromCookie(request: HttpServletRequest): String? {
+        return request.cookies?.find {
+            it.name == jwtProperties.cookie.refreshTokenName
+        }?.value
+    }
+
+    private fun setAuthentication(token: String, request: HttpServletRequest) {
+        val username = jwtTokenProvider.getUsernameFromToken(token)
+        val userDetails = userDetailsService.loadUserByUsername(username)
+
+        val authentication = UsernamePasswordAuthenticationToken(
+            userDetails,
+            null,
+            userDetails.authorities
+        )
+        authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+        SecurityContextHolder.getContext().authentication = authentication
+        logger.debug("Set authentication for user: $username")
     }
 
 }

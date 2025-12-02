@@ -99,16 +99,16 @@ class AuthService(
     }
 
     @Transactional
-    fun refresh(request: RefreshTokenRequest): RefreshTokenResponse {
+    fun refresh(refreshToken: String): RefreshTokenResponse {
         logger.debug("Refresh token request received")
 
         // JWT 토큰 자체의 유효성 검증
-        if (!jwtTokenProvider.validateToken(request.refreshToken)) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw BusinessException("유효하지 않거나 만료된 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED)
         }
 
         // DB에서 리프레시 토큰 조회
-        val storedToken = refreshTokenRepository.findByToken(request.refreshToken)
+        val storedToken = refreshTokenRepository.findByToken(refreshToken)
             ?: throw BusinessException("유효하지 않은 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED)
 
         // 만료 시간 확인
@@ -116,7 +116,7 @@ class AuthService(
             throw BusinessException("만료된 리프레시 토큰입니다.", HttpStatus.UNAUTHORIZED)
         }
 
-        val username = jwtTokenProvider.getUsernameFromToken(request.refreshToken)
+        val username = jwtTokenProvider.getUsernameFromToken(refreshToken)
         val user = userRepository.findByUsername(username)
             ?: throw BusinessException("사용자를 찾을 수 없습니다.", HttpStatus.UNAUTHORIZED)
 
