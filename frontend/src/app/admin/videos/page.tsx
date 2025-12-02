@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
@@ -202,6 +203,7 @@ export default function VideosPage() {
                     <TableHeader className="bg-muted">
                         <TableRow>
                             <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
+                            <TableHead className="border-r font-semibold">채널 정보</TableHead>
                             <TableHead className="border-r font-semibold">동영상 정보</TableHead>
                             <TableHead className="border-r font-semibold w-[350px]">UUID</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">길이</TableHead>
@@ -214,19 +216,19 @@ export default function VideosPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8">
+                                <TableCell colSpan={9} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={9} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !videosData?.content || videosData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                                     등록된 동영상이 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -235,6 +237,17 @@ export default function VideosPage() {
                                 <TableRow key={video.id}>
                                     {/* ID */}
                                     <TableCell className="border-r text-center">{video.id}</TableCell>
+
+                                    {/* 채널 정보 */}
+                                    <TableCell className="border-r">
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={video.channel.profileUrl} />
+                                                <AvatarFallback>{video.channel.name[0]?.toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                            <span>{video.channel.name}</span>
+                                        </div>
+                                    </TableCell>
 
                                     {/* 동영상 정보 (썸네일 + 제목) */}
                                     <TableCell className="border-r">

@@ -1,17 +1,18 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Ban } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
-import { CustomPagination } from "@/components/common/custom-pagination";
-import { useSearchAdminRecords, useCancelAdminRecord } from "@/lib/api/endpoints/admin-record/admin-record";
-import type { AdminRecordResponse, AdminRecordSearchRequestPlatformType } from "@/lib/api/models";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Button} from "@/components/ui/button";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Ban, Loader2} from "lucide-react";
+import {Badge} from "@/components/ui/badge";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {useState} from "react";
+import {CustomPagination} from "@/components/common/custom-pagination";
+import {useCancelAdminRecord, useSearchAdminRecords} from "@/lib/api/endpoints/admin-record/admin-record";
+import type {AdminRecordResponse, AdminRecordSearchRequestPlatformType} from "@/lib/api/models";
+import {useQueryClient} from "@tanstack/react-query";
+import {toast} from "sonner";
 
 type SearchField = "channelName";
 type RecordStatus = "__all__" | "recording" | "ended" | "cancelled";
@@ -20,7 +21,7 @@ export default function RecordsPage() {
     const queryClient = useQueryClient();
 
     // Search/Filter state
-    const [searchField] = useState<SearchField>("channelName");
+    const [searchField, setSearchField] = useState<SearchField>("channelName");
     const [searchQuery, setSearchQuery] = useState("");
     const [searchPlatform, setSearchPlatform] = useState<string>("__all__");
     const [searchStatus, setSearchStatus] = useState<RecordStatus>("__all__");
@@ -45,7 +46,7 @@ export default function RecordsPage() {
 
     const searchParams = {
         request: {
-            channelName: searchQuery || undefined,
+            channelName: searchField === "channelName" ? searchQuery : undefined,
             platformType: searchPlatform !== "__all__" ? (searchPlatform as AdminRecordSearchRequestPlatformType) : undefined,
             ...getStatusParams(searchStatus),
         },
@@ -65,6 +66,7 @@ export default function RecordsPage() {
     };
 
     const handleReset = () => {
+        setSearchField("channelName");
         setSearchQuery("");
         setSearchPlatform("__all__");
         setSearchStatus("__all__");
@@ -133,6 +135,17 @@ export default function RecordsPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Select value={searchField} onValueChange={(value) => setSearchField(value as SearchField)}>
+                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
+                            <span className="text-muted-foreground">검색 기준:</span>
+                            <SelectValue placeholder="검색 기준" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="channelName">채널명</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                     <Select value={searchPlatform} onValueChange={setSearchPlatform}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">플랫폼:</span>
@@ -163,8 +176,8 @@ export default function RecordsPage() {
                     </Select>
                     <Input
                         type="text"
-                        placeholder="채널명 검색"
-                        className="w-full sm:flex-1 sm:min-w-[200px]"
+                        placeholder="검색어 입력"
+                        className="w-full sm:flex-1 sm:min-w-[300px]"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -179,8 +192,9 @@ export default function RecordsPage() {
                     <TableHeader className="bg-muted">
                         <TableRow>
                             <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
+                            <TableHead className="border-r font-semibold">채널 정보</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">플랫폼</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">채널 ID</TableHead>
+                            <TableHead className="border-r font-semibold">동영상 정보</TableHead>
                             <TableHead className="border-r font-semibold">스트림 ID</TableHead>
                             <TableHead className="border-r font-semibold w-[80px] text-center">화질</TableHead>
                             <TableHead className="border-r font-semibold w-[80px] text-center">상태</TableHead>
@@ -192,19 +206,19 @@ export default function RecordsPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8">
+                                <TableCell colSpan={10} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={10} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !recordsData?.content || recordsData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                                     녹화 기록이 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -212,13 +226,33 @@ export default function RecordsPage() {
                             recordsData.content.map((record) => (
                                 <TableRow key={record.id}>
                                     <TableCell className="border-r text-center">{record.id}</TableCell>
+                                    <TableCell className="border-r">
+                                        <div className="flex items-center gap-2">
+                                            <Avatar className="h-8 w-8">
+                                                <AvatarImage src={record.channel.profileUrl} />
+                                                <AvatarFallback>{record.channel.name[0]?.toUpperCase()}</AvatarFallback>
+                                            </Avatar>
+                                            <span>{record.channel.name}</span>
+                                        </div>
+                                    </TableCell>
                                     <TableCell className="border-r text-center">
                                         <Badge variant={getPlatformBadgeVariant(record.platformType)}>
                                             {getPlatformLabel(record.platformType)}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="border-r text-center">
-                                        {record.channelId}
+                                    <TableCell className="border-r">
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative w-16 h-9 bg-muted rounded overflow-hidden flex-shrink-0">
+                                                {record.video.thumbnailUrl ? (
+                                                    <img src={record.video.thumbnailUrl} alt={record.video.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">No Img</div>
+                                                )}
+                                            </div>
+                                            <span className="truncate max-w-[200px]" title={record.video.title}>
+                                                {record.video.title}
+                                            </span>
+                                        </div>
                                     </TableCell>
                                     <TableCell className="border-r font-mono text-xs">
                                         {record.platformStreamId}
