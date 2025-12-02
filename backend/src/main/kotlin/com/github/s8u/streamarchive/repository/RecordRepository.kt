@@ -32,4 +32,11 @@ interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom
     fun findAllByOrderByCreatedAtDesc(): List<Record>
 
     fun findByIsEndedFalseAndIsCancelledFalse(): List<Record>
+
+    fun findByChannelIdAndPlatformTypeAndIsEndedAndIsCancelled(
+        channelId: Long,
+        platformType: PlatformType,
+        isEnded: Boolean,
+        isCancelled: Boolean
+    ): Record?
 }

@@ -38,7 +38,10 @@ class RecordService(
     private val videoMetadataService: VideoMetadataService,
     private val recordScheduleRepository: RecordScheduleRepository,
     private val videoThumbnailService: VideoThumbnailService,
-    private val urlBuilder: UrlBuilder
+    private val urlBuilder: UrlBuilder,
+    private val viewerHistoryService: VideoMetadataViewerHistoryService,
+    private val titleHistoryService: VideoMetadataTitleHistoryService,
+    private val categoryHistoryService: VideoMetadataCategoryHistoryService
 ) {
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
     private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
@@ -138,6 +141,11 @@ class RecordService(
                 platformHeaders = streamHeaders
             )
 
+            // 초기 메타데이터 저장
+            viewerHistoryService.saveViewerCount(savedRecord.id!!, savedVideo.id!!, stream.viewerCount, 0)
+            titleHistoryService.saveTitle(savedRecord.id!!, savedVideo.id!!, stream.title, 0)
+            categoryHistoryService.saveCategory(savedRecord.id!!, savedVideo.id!!, stream.category, 0)
+
             logger.info(
                 "Started recording: recordId={}, videoId={}, channelId={}, platformType={}, streamId={}, quality={}",
                 savedRecord.id,
@@ -184,6 +192,11 @@ class RecordService(
             if (isCancel) {
                 recordProcessManager.stopRecording(recordId)
             }
+
+            // 메타데이터 캐시 정리
+            viewerHistoryService.clearCache(recordId)
+            titleHistoryService.clearCache(recordId)
+            categoryHistoryService.clearCache(recordId)
 
             // DB 업데이트
             record.isEnded = true
