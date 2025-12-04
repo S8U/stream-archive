@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(
-    name = "video_metadata_chat_histories",
+    name = "video_data_chat_histories",
     indexes = [
         Index(name = "idx_video_metadata_chat_histories_video_id", columnList = "videoId"),
         Index(name = "idx_video_metadata_chat_histories_created_at", columnList = "createdAt"),
@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 )
 @EntityListeners(AuditingEntityListener::class)
 @Comment("동영상 채팅 이력")
-class VideoMetadataChatHistory(
+class VideoDataChatHistory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Comment("채팅 이력 ID")

@@ -52,6 +52,18 @@ class ChzzkApiClient {
         }
     }
 
+    /**
+     * 채팅 액세스 토큰 조회
+     */
+    fun getChatAccessToken(chatChannelId: String): ChzzkResponseDto<ChzzkChatAccessTokenDto>? {
+        return execute {
+            restClient.get()
+                .uri("https://comm-api.game.naver.com/nng_main/v1/chats/access-token?channelId=$chatChannelId&chatType=STREAMING")
+                .retrieve()
+                .body(object : ParameterizedTypeReference<ChzzkResponseDto<ChzzkChatAccessTokenDto>>() {})
+        }
+    }
+
     private fun <T> execute(block: () -> T?): T? {
         return try {
             block()

@@ -1,7 +1,7 @@
 package com.github.s8u.streamarchive.repository
 
-import com.github.s8u.streamarchive.entity.VideoMetadataChatHistory
+import com.github.s8u.streamarchive.entity.VideoDataChatHistory
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface VideoMetadataChatHistoryRepository : JpaRepository<VideoMetadataChatHistory, Long> {
+interface VideoMetadataChatHistoryRepository : JpaRepository<VideoDataChatHistory, Long> {
 }

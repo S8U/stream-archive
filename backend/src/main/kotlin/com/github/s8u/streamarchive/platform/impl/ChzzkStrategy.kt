@@ -1,5 +1,8 @@
 package com.github.s8u.streamarchive.platform.impl
 
+import com.github.s8u.streamarchive.chat.ChatMessageDto
+import com.github.s8u.streamarchive.chat.ChatWebSocketHandler
+import com.github.s8u.streamarchive.chat.chzzk.ChzzkChatWebSocketHandler
 import com.github.s8u.streamarchive.client.chzzk.ChzzkApiClient
 import com.github.s8u.streamarchive.enums.PlatformType
 import com.github.s8u.streamarchive.platform.PlatformChannelDto
@@ -66,6 +69,32 @@ class ChzzkStrategy(
             startedAt = content.openDate?.let {
                 LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             } ?: LocalDateTime.now()
+        )
+    }
+
+    override fun isSupportChatRecord(): Boolean {
+        return true
+    }
+
+    override fun getChatWebSocketUrl(): String {
+        return "wss://kr-ss1.chat.naver.com/chat"
+    }
+
+    override fun createChatWebSocketHandler(
+        recordId: Long,
+        videoId: Long,
+        platformType: PlatformType,
+        platformChannelId: String,
+        recordStartedAt: LocalDateTime,
+        onChat: (ChatMessageDto) -> Unit
+    ): ChatWebSocketHandler? {
+        return ChzzkChatWebSocketHandler(
+            chzzkApiClient = apiClient,
+            recordId = recordId,
+            videoId = videoId,
+            platformChannelId = platformChannelId,
+            recordStartedAt = recordStartedAt,
+            onChat = onChat
         )
     }
 

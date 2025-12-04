@@ -16,5 +16,6 @@ data class ChzzkLiveDetailDto(
     val liveCategory: String?,
     val liveCategoryValue: String?,
     val channel: ChzzkChannelDto?,
+    val chatChannelId: String?,
     val livePlaybackJson: String?
 )

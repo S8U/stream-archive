@@ -1,5 +1,7 @@
 package com.github.s8u.streamarchive.platform.impl
 
+import com.github.s8u.streamarchive.chat.ChatMessageDto
+import com.github.s8u.streamarchive.chat.ChatWebSocketHandler
 import com.github.s8u.streamarchive.client.soop.SoopApiClient
 import com.github.s8u.streamarchive.enums.PlatformType
 import com.github.s8u.streamarchive.platform.PlatformChannelDto
@@ -73,6 +75,25 @@ class SoopStrategy(
                 }
             } ?: LocalDateTime.now()
         )
+    }
+
+    override fun isSupportChatRecord(): Boolean {
+        return false
+    }
+
+    override fun getChatWebSocketUrl(): String? {
+        return null
+    }
+
+    override fun createChatWebSocketHandler(
+        recordId: Long,
+        videoId: Long,
+        platformType: PlatformType,
+        platformChannelId: String,
+        recordStartedAt: LocalDateTime,
+        onChat: (ChatMessageDto) -> Unit
+    ): ChatWebSocketHandler? {
+        return null
     }
 
 }

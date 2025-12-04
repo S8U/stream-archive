@@ -1,5 +1,7 @@
 package com.github.s8u.streamarchive.platform.impl
 
+import com.github.s8u.streamarchive.chat.ChatMessageDto
+import com.github.s8u.streamarchive.chat.ChatWebSocketHandler
 import com.github.s8u.streamarchive.client.twitch.TwitchApiClient
 import com.github.s8u.streamarchive.client.twitch.TwitchStreamsRequestDto
 import com.github.s8u.streamarchive.client.twitch.TwitchUsersRequestDto
@@ -10,6 +12,7 @@ import com.github.s8u.streamarchive.platform.PlatformStreamDto
 import com.github.s8u.streamarchive.properties.TwitchProperties
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 @Component
@@ -72,6 +75,25 @@ class TwitchStrategy(
         return mapOf(
             "Authorization" to "OAuth ${twitchProperties.personalOauthToken}"
         )
+    }
+
+    override fun isSupportChatRecord(): Boolean {
+        return false
+    }
+
+    override fun getChatWebSocketUrl(): String? {
+        return null
+    }
+
+    override fun createChatWebSocketHandler(
+        recordId: Long,
+        videoId: Long,
+        platformType: PlatformType,
+        platformChannelId: String,
+        recordStartedAt: LocalDateTime,
+        onChat: (ChatMessageDto) -> Unit
+    ): ChatWebSocketHandler? {
+        return null
     }
 
 }

@@ -10,6 +10,7 @@ import com.github.s8u.streamarchive.event.StreamDetectedEvent
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStreamDto
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
+import com.github.s8u.streamarchive.recorder.ChatRecordWebSocketManager
 import com.github.s8u.streamarchive.recorder.RecordProcessManager
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.RecordRepository
@@ -33,6 +34,7 @@ class RecordService(
     private val recordRepository: RecordRepository,
     private val videoRepository: VideoRepository,
     private val recordProcessManager: RecordProcessManager,
+    private val chatRecordWebSocketManager: ChatRecordWebSocketManager,
     private val platformStrategyFactory: PlatformStrategyFactory,
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val videoMetadataService: VideoMetadataService,
@@ -146,6 +148,15 @@ class RecordService(
             titleHistoryService.saveTitle(savedRecord.id!!, savedVideo.id!!, stream.title, 0)
             categoryHistoryService.saveCategory(savedRecord.id!!, savedVideo.id!!, stream.category, 0)
 
+            // 채팅 녹화 시작
+            chatRecordWebSocketManager.startRecording(
+                recordId = savedRecord.id!!,
+                videoId = savedVideo.id!!,
+                platformType = stream.platformType,
+                platformChannelId = channelPlatform.platformChannelId,
+                recordStartedAt = savedRecord.createdAt
+            )
+
             logger.info(
                 "Started recording: recordId={}, videoId={}, channelId={}, platformType={}, streamId={}, quality={}",
                 savedRecord.id,
@@ -192,6 +203,9 @@ class RecordService(
             if (isCancel) {
                 recordProcessManager.stopRecording(recordId)
             }
+
+            // 채팅 녹화 종료
+            chatRecordWebSocketManager.stopRecording(recordId)
 
             // 메타데이터 캐시 정리
             viewerHistoryService.clearCache(recordId)
