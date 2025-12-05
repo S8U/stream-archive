@@ -26,9 +26,9 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         // video.duration이 0이면 녹화 중이거나 아직 정보가 없는 상태
         // 이 경우 현재 재생 시간 + 여유시간을 사용
         if (video.duration <= 0) {
-            return currentTimeMs + 60000; // 현재 시간 + 1분 여유
+            return Math.floor(currentTimeMs + 60000); // 현재 시간 + 1분 여유 (정수)
         }
-        return video.duration * 1000;
+        return Math.floor(video.duration * 1000); // 정수로 변환
     }, [video.duration, currentTimeMs]);
 
     // 전체 채팅 데이터 불러오기 (하이라이트 계산용)
