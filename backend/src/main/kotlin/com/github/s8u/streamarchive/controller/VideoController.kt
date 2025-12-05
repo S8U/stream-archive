@@ -1,7 +1,9 @@
 package com.github.s8u.streamarchive.controller
 
+import com.github.s8u.streamarchive.dto.ChatHistoryResponse
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
+import com.github.s8u.streamarchive.service.VideoDataChatHistoryService
 import com.github.s8u.streamarchive.service.VideoService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -13,13 +15,15 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "Video", description = "동영상")
 @RestController
 @RequestMapping("/videos")
 class VideoController(
-    private val videoService: VideoService
+    private val videoService: VideoService,
+    private val videoDataChatHistoryService: VideoDataChatHistoryService
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
@@ -62,5 +66,15 @@ class VideoController(
         return ResponseEntity.ok()
             .contentType(MediaType.parseMediaType("video/mp2t"))
             .body(resource)
+    }
+
+    @Operation(summary = "동영상 채팅 이력 조회")
+    @GetMapping("/{uuid}/chat")
+    fun getVideoChatHistory(
+        @PathVariable uuid: String,
+        @RequestParam offsetStart: Long,
+        @RequestParam offsetEnd: Long
+    ): List<ChatHistoryResponse> {
+        return videoDataChatHistoryService.getChatHistoriesByVideoIdForPublic(uuid, offsetStart, offsetEnd)
     }
 }

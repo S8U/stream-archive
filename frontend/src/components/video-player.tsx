@@ -5,9 +5,10 @@ import Hls from 'hls.js';
 
 interface VideoPlayerProps {
     playlistUrl: string;
+    onTimeUpdate?: (currentTimeMs: number) => void;
 }
 
-export function VideoPlayer({ playlistUrl }: VideoPlayerProps) {
+export function VideoPlayer({ playlistUrl, onTimeUpdate }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
 
@@ -54,6 +55,11 @@ export function VideoPlayer({ playlistUrl }: VideoPlayerProps) {
                 ref={videoRef}
                 controls
                 className="w-full h-full"
+                onTimeUpdate={(e) => {
+                    if (onTimeUpdate) {
+                        onTimeUpdate(e.currentTarget.currentTime * 1000);
+                    }
+                }}
             />
         </div>
     );

@@ -19,6 +19,8 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ChatHistoryResponse,
+  GetVideoChatHistoryParams,
   PagePublicVideoResponse,
   PublicVideoResponse,
   SearchVideosParams,
@@ -832,6 +834,187 @@ export function useGetVideoPlaylist<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetVideoPlaylistQueryOptions(uuid, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 동영상 채팅 이력 조회
+ */
+export const getVideoChatHistory = (
+  uuid: string,
+  params: GetVideoChatHistoryParams,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<ChatHistoryResponse[]>(
+    { url: `/videos/${uuid}/chat`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getGetVideoChatHistoryQueryKey = (
+  uuid?: string,
+  params?: GetVideoChatHistoryParams,
+) => {
+  return [`/videos/${uuid}/chat`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetVideoChatHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoChatHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params: GetVideoChatHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVideoChatHistoryQueryKey(uuid, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoChatHistory>>
+  > = ({ signal }) => getVideoChatHistory(uuid, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoChatHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoChatHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoChatHistory>>
+>;
+export type GetVideoChatHistoryQueryError = unknown;
+
+export function useGetVideoChatHistory<
+  TData = Awaited<ReturnType<typeof getVideoChatHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params: GetVideoChatHistoryParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChatHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChatHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChatHistory<
+  TData = Awaited<ReturnType<typeof getVideoChatHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params: GetVideoChatHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChatHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChatHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChatHistory<
+  TData = Awaited<ReturnType<typeof getVideoChatHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params: GetVideoChatHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 채팅 이력 조회
+ */
+
+export function useGetVideoChatHistory<
+  TData = Awaited<ReturnType<typeof getVideoChatHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params: GetVideoChatHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoChatHistoryQueryOptions(
+    uuid,
+    params,
+    options,
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

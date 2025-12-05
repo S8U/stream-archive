@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getVideoByUuid } from '@/lib/api/endpoints/video/video';
-import { VideoPlayer } from '@/components/video-player';
-import { VideoInfo } from '@/components/video-info';
-import { ChatHistory } from '@/components/chat-history';
+import { VideoWatchView } from '@/components/video-watch-view';
 
 type Props = {
     params: { uuid: string };
@@ -56,18 +54,5 @@ export default async function VideoPage({ params }: Props) {
         notFound();
     }
 
-    return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
-            {/* 좌측: 동영상 + 정보 */}
-            <div className="flex-shrink-0 lg:flex-1 flex flex-col gap-4 overflow-y-auto">
-                <VideoPlayer playlistUrl={video.playlistUrl} />
-                <VideoInfo video={video} />
-            </div>
-
-            {/* 우측: 채팅창 */}
-            <div className="flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-4 lg:mt-0 min-h-0">
-                <ChatHistory videoUuid={uuid} />
-            </div>
-        </div>
-    );
+    return <VideoWatchView video={video} />;
 }

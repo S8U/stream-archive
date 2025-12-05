@@ -12,12 +12,12 @@ import type { PageableObject } from "./pageableObject";
 export interface PageAdminChannelPlatformResponse {
   totalElements?: number;
   totalPages?: number;
-  first?: boolean;
-  last?: boolean;
   size?: number;
   content?: AdminChannelPlatformResponse[];
   number?: number;
   sort?: SortObject;
+  first?: boolean;
+  last?: boolean;
   numberOfElements?: number;
   pageable?: PageableObject;
   empty?: boolean;
