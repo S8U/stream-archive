@@ -73,7 +73,7 @@ jwt:
     same-site: Lax
     http-only: true
     path: /
-    domain: localhost
+    domain: ${COOKIE_DOMAIN:localhost}
     access-token-name: AT
     refresh-token-name: RT
 
@@ -88,6 +88,7 @@ platform:
 storage:
   base-path: ${STORAGE_BASE_PATH:./storage}
 
-# API URL 설정
-api:
-  base-url: ${API_BASE_URL:http://localhost:8080}
+# URL 설정
+url:
+  api-base: ${API_BASE_URL:http://localhost:8080}
+  frontend-base: ${FRONTEND_BASE_URL:http://localhost:3000}

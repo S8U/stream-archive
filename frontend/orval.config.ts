@@ -3,7 +3,7 @@ import { defineConfig } from 'orval';
 export default defineConfig({
   api: {
     input: {
-      target: 'http://localhost:8080/v3/api-docs',
+      target: process.env.API_SCHEMA_URL || 'http://localhost:8082/v3/api-docs',
     },
     output: {
       mode: 'tags-split',

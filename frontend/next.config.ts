@@ -4,15 +4,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8080',
+        protocol: (process.env.NEXT_PUBLIC_API_IMAGE_PROTOCOL as 'http' | 'https') || 'http',
+        hostname: process.env.NEXT_PUBLIC_API_IMAGE_HOSTNAME || 'localhost',
+        port: process.env.NEXT_PUBLIC_API_IMAGE_PORT || '8082',
         pathname: '/videos/**',
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8080',
+        protocol: (process.env.NEXT_PUBLIC_API_IMAGE_PROTOCOL as 'http' | 'https') || 'http',
+        hostname: process.env.NEXT_PUBLIC_API_IMAGE_HOSTNAME || 'localhost',
+        port: process.env.NEXT_PUBLIC_API_IMAGE_PORT || '8082',
         pathname: '/channels/**',
       },
     ],

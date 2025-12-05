@@ -4,7 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
 @Component
-@ConfigurationProperties(prefix = "api")
-data class ApiProperties(
-    var baseUrl: String = "http://localhost:8080"
+@ConfigurationProperties(prefix = "url")
+data class UrlProperties(
+    var apiBase: String = "http://localhost:8080",
+    var frontendBase: String = "http://localhost:3000"
 )

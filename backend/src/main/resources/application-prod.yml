@@ -87,6 +87,7 @@ platform:
 storage:
   base-path: ${STORAGE_BASE_PATH:/var/stream-archive/storage}
 
-# API URL 설정
-api:
-  base-url: ${API_BASE_URL:http://localhost:8080}
+# URL 설정
+url:
+  api-base: ${API_BASE_URL:https://api.yourdomain.com}
+  frontend-base: ${FRONTEND_BASE_URL:https://yourdomain.com}
