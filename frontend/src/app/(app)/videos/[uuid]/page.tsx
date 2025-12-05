@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getVideoByUuid } from '@/lib/api/endpoints/video/video';
-import { VideoWatchView } from '@/components/video-watch-view';
+import { VideoWatchView } from '@/app/(app)/videos/[uuid]/video-watch-view';
 
 type Props = {
     params: { uuid: string };

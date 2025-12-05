@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from "@/components/ui/separator";
-import { getVideoChatHistory } from '@/lib/api/endpoints/video/video';
-import { ChatHistoryResponse } from "@/lib/api/models/chatHistoryResponse";
+import { useGetVideoChatHistory } from '@/lib/api/endpoints/video/video';
+import type { ChatHistoryResponse } from '@/lib/api/models/chatHistoryResponse';
 
 interface ChatHistoryProps {
     videoUuid: string;
@@ -68,29 +68,30 @@ export function ChatHistory({ videoUuid, currentTimeMs }: ChatHistoryProps) {
     const beforeTimeMillisRef = useRef(0);
     const lastChatRef = useRef<HTMLDivElement>(null);
 
+    // API 요청 파라미터
+    const [fetchParams, setFetchParams] = useState<{ offsetStart: number; offsetEnd: number } | null>(null);
+
     // 채팅 불러오기
-    const loadChat = useCallback(async (offsetStart: number, timeMillis: number) => {
-        const start = Math.floor(offsetStart);
-        const end = Math.floor(offsetStart + timeMillis);
-        try {
-            const response = await getVideoChatHistory(videoUuid, { offsetStart: start, offsetEnd: end });
-            chatBufferRef.current = [...chatBufferRef.current, ...response]
-                .sort((a, b) => a.offsetMillis - b.offsetMillis);
-            nextLoadOffsetMillisRef.current = end;
-        } catch (error) {
-            console.error('채팅 로딩 실패', error);
+    const { data } = useGetVideoChatHistory(
+        videoUuid,
+        fetchParams || { offsetStart: 0, offsetEnd: 0 },
+        {
+            query: {
+                enabled: fetchParams !== null,
+                refetchInterval: false,
+            },
         }
-    }, [videoUuid]);
+    );
 
-    // 채팅 다시 불러오기
-    const reloadChat = useCallback(async () => {
-        setDisplayedChats([]);
-        chatBufferRef.current = [];
-
-        const offsetStart = Math.max(0, currentTimeMs - LOAD_BEFORE_CHAT_MILLIS);
-        await loadChat(offsetStart, CHAT_LOAD_MILLIS + LOAD_BEFORE_CHAT_MILLIS);
-        nextLoadOffsetMillisRef.current = currentTimeMs + CHAT_LOAD_MILLIS;
-    }, [currentTimeMs, loadChat]);
+    // API 응답 처리
+    useEffect(() => {
+        if (data && fetchParams) {
+            chatBufferRef.current = [...chatBufferRef.current, ...data]
+                .sort((a, b) => a.offsetMillis - b.offsetMillis);
+            nextLoadOffsetMillisRef.current = fetchParams.offsetEnd;
+            setFetchParams(null); // 요청 완료
+        }
+    }, [data, fetchParams]);
 
     // 현재 시간까지의 채팅 표시
     const addChatBeforeTimeMillis = useCallback((timeMillis: number) => {
@@ -112,6 +113,23 @@ export function ChatHistory({ videoUuid, currentTimeMs }: ChatHistoryProps) {
             });
         }
     }, []);
+
+    // 채팅 불러오기
+    const loadChat = useCallback((offsetStart: number, timeMillis: number) => {
+        const start = Math.floor(offsetStart);
+        const end = Math.floor(offsetStart + timeMillis);
+        setFetchParams({ offsetStart: start, offsetEnd: end });
+    }, []);
+
+    // 채팅 다시 불러오기 (건너뛰기 시)
+    const reloadChat = useCallback(() => {
+        setDisplayedChats([]);
+        chatBufferRef.current = [];
+
+        const offsetStart = Math.max(0, currentTimeMs - LOAD_BEFORE_CHAT_MILLIS);
+        loadChat(offsetStart, CHAT_LOAD_MILLIS + LOAD_BEFORE_CHAT_MILLIS);
+        nextLoadOffsetMillisRef.current = currentTimeMs + CHAT_LOAD_MILLIS;
+    }, [currentTimeMs, loadChat]);
 
     // 시간 업데이트 시 처리
     useEffect(() => {
