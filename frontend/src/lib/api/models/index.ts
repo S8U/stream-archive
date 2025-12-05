@@ -56,6 +56,8 @@ export * from "./adminVideoUpdateRequestContentPrivacy";
 export * from "./channelInfo";
 export * from "./channelPlatformResponse";
 export * from "./channelPlatformResponsePlatformType";
+export * from "./chatHistoryResponse";
+export * from "./getVideoChatHistoryParams";
 export * from "./loginRequest";
 export * from "./loginResponse";
 export * from "./logoutRequest";

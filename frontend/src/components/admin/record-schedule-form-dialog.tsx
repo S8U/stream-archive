@@ -272,8 +272,9 @@ export function RecordScheduleFormDialog({
                                         <Calendar
                                             mode="multiple"
                                             selected={selectedDates}
-                                            onSelect={setSelectedDates}
+                                            onSelect={(dates) => dates && setSelectedDates(dates)}
                                             locale={ko}
+                                            required={false}
                                         />
                                     </PopoverContent>
                                 </Popover>
