@@ -21,10 +21,20 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     const [showCharts, setShowCharts] = useState(false);
     const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
+    // 채팅 조회 범위 계산 (녹화 중일 때는 currentTimeMs 사용)
+    const chatOffsetEnd = useMemo(() => {
+        // video.duration이 0이면 녹화 중이거나 아직 정보가 없는 상태
+        // 이 경우 현재 재생 시간 + 여유시간을 사용
+        if (video.duration <= 0) {
+            return currentTimeMs + 60000; // 현재 시간 + 1분 여유
+        }
+        return video.duration * 1000;
+    }, [video.duration, currentTimeMs]);
+
     // 전체 채팅 데이터 불러오기 (하이라이트 계산용)
     const { data: allChats, isLoading: isLoadingChats } = useGetVideoChatHistory(
         video.uuid,
-        { offsetStart: 0, offsetEnd: video.duration * 1000 },
+        { offsetStart: 0, offsetEnd: chatOffsetEnd },
         {
             query: {
                 enabled: showCharts || highlightMode,
