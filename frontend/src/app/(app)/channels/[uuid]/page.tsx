@@ -4,9 +4,11 @@ import { getChannelByUuid } from '@/lib/api/endpoints/channel/channel';
 import { searchVideos } from '@/lib/api/endpoints/video/video';
 import { ChannelHeader } from '@/app/(app)/channels/[uuid]/channel-header';
 import { VideoCard } from '@/components/video-card';
+import { CustomPagination } from "@/components/common/custom-pagination";
 
 type Props = {
     params: { uuid: string };
+    searchParams: { page?: string };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -46,8 +48,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-export default async function ChannelPage({ params }: Props) {
+export default async function ChannelPage({ params, searchParams }: Props) {
     const { uuid } = params;
+    const page = Math.max(0, Number(searchParams.page || 1) - 1); // URL은 1-based, API는 0-based
+    const size = 20;
 
     let channel;
     try {
@@ -61,12 +65,13 @@ export default async function ChannelPage({ params }: Props) {
             channelUuid: uuid,
         },
         pageable: {
-            page: 1,
-            size: 20,
+            page: page + 1,
+            size,
         },
     });
 
     const videos = videosData.content || [];
+    const totalPages = videosData.totalPages || 0;
 
     return (
         <div className="p-4">
@@ -76,21 +81,26 @@ export default async function ChannelPage({ params }: Props) {
             {/* 동영상 목록 */}
             <div className="mt-8">
                 {videos.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {videos.map((video) => (
-                            <VideoCard
-                                key={video.uuid}
-                                uuid={video.uuid}
-                                title={video.title}
-                                thumbnailUrl={video.thumbnailUrl}
-                                playlistUrl={video.playlistUrl}
-                                duration={video.duration}
-                                createdAt={video.createdAt}
-                                channel={video.channel}
-                                record={video.record}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {videos.map((video) => (
+                                <VideoCard
+                                    key={video.uuid}
+                                    uuid={video.uuid}
+                                    title={video.title}
+                                    thumbnailUrl={video.thumbnailUrl}
+                                    playlistUrl={video.playlistUrl}
+                                    duration={video.duration}
+                                    createdAt={video.createdAt}
+                                    channel={video.channel}
+                                    record={video.record}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Pagination */}
+                        <CustomPagination page={page} totalPages={totalPages} />
+                    </>
                 ) : (
                     <div className="text-center py-12">
                         <p className="text-muted-foreground">아직 동영상이 없습니다.</p>

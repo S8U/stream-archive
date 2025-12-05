@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useSearchAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from "@/lib/api/endpoints/admin-user/admin-user";
 import type { AdminUserResponse, AdminUserSearchRequestRole, AdminUserUpdateRequestRole } from "@/lib/api/models";
@@ -18,6 +19,7 @@ type SearchField = "username" | "name" | "email";
 
 export default function UsersPage() {
     const queryClient = useQueryClient();
+    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -28,8 +30,9 @@ export default function UsersPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchRole, setSearchRole] = useState<string>("__none__");
 
-    // Pagination state
-    const [page, setPage] = useState(0);
+    // Pagination state - URL에서 초기값 읽기
+    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
+    const [page, setPage] = useState(initialPage);
     const [size] = useState(10);
 
     // Build search params

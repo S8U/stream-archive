@@ -8,6 +8,7 @@ import { Ban, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useCancelAdminRecord, useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
 import type { AdminRecordResponse, AdminRecordSearchRequestPlatformType } from "@/lib/api/models";
@@ -21,6 +22,7 @@ type RecordStatus = "__all__" | "recording" | "ended" | "cancelled";
 
 export default function RecordsPage() {
     const queryClient = useQueryClient();
+    const urlSearchParams = useSearchParams();
 
     // Search/Filter state
     const [searchField, setSearchField] = useState<SearchField>("channelName");
@@ -28,8 +30,9 @@ export default function RecordsPage() {
     const [searchPlatform, setSearchPlatform] = useState<string>("__all__");
     const [searchStatus, setSearchStatus] = useState<RecordStatus>("__all__");
 
-    // Pagination state
-    const [page, setPage] = useState(0);
+    // Pagination state - URL에서 초기값 읽기
+    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
+    const [page, setPage] = useState(initialPage);
     const [size] = useState(10);
 
     // Build search params

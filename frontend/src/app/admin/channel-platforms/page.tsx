@@ -8,6 +8,7 @@ import { Edit, Loader2, Plus, Trash2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelPlatformFormDialog } from "@/components/admin/channel-platform-form-dialog";
 import {
@@ -28,6 +29,7 @@ import { PlatformBadge } from "@/components/common/platform-badge";
 
 export default function ChannelPlatformsPage() {
     const queryClient = useQueryClient();
+    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -40,8 +42,9 @@ export default function ChannelPlatformsPage() {
     const [searchPlatformType, setSearchPlatformType] = useState<string>("__none__");
     const [searchIsSyncProfile, setSearchIsSyncProfile] = useState<string>("__none__");
 
-    // Pagination state
-    const [page, setPage] = useState(0);
+    // Pagination state - URL에서 초기값 읽기
+    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
+    const [page, setPage] = useState(initialPage);
     const [size] = useState(10);
 
     // Build search params

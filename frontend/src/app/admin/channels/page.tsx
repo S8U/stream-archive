@@ -8,6 +8,7 @@ import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelFormDialog } from "@/components/admin/channel-form-dialog";
 import { useSearchAdminChannels, useCreateAdminChannel, useUpdateAdminChannel, useDeleteAdminChannel } from "@/lib/api/endpoints/admin-channel/admin-channel";
@@ -20,6 +21,7 @@ type SearchField = "id" | "uuid" | "name";
 
 export default function ChannelsPage() {
     const queryClient = useQueryClient();
+    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -32,7 +34,8 @@ export default function ChannelsPage() {
     const [searchContentPrivacy, setSearchContentPrivacy] = useState<string>("__none__");
 
     // Pagination state
-    const [page, setPage] = useState(0);
+    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
+    const [page, setPage] = useState(initialPage);
     const [size] = useState(10);
 
     // Build search params

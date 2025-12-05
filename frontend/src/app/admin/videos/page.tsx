@@ -8,6 +8,7 @@ import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
 import { useSearchAdminVideos, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/admin-video/admin-video";
@@ -20,6 +21,7 @@ type SearchField = "title" | "channelName";
 
 export default function VideosPage() {
     const queryClient = useQueryClient();
+    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -30,8 +32,9 @@ export default function VideosPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchContentPrivacy, setSearchContentPrivacy] = useState<string>("__none__");
 
-    // Pagination state
-    const [page, setPage] = useState(0);
+    // Pagination state - URL에서 초기값 읽기
+    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
+    const [page, setPage] = useState(initialPage);
     const [size] = useState(10);
 
     // Build search params

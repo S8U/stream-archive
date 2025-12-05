@@ -8,6 +8,7 @@ import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { RecordScheduleFormDialog } from "@/components/admin/record-schedule-form-dialog";
 import {
@@ -40,6 +41,7 @@ const DAYS_MAP: Record<string, string> = {
 
 export default function RecordSchedulesPage() {
     const queryClient = useQueryClient();
+    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -52,8 +54,9 @@ export default function RecordSchedulesPage() {
     const [searchPlatformType, setSearchPlatformType] = useState<string>("__none__");
     const [searchScheduleType, setSearchScheduleType] = useState<string>("__none__");
 
-    // Pagination state
-    const [page, setPage] = useState(0);
+    // Pagination state - URL에서 초기값 읽기
+    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
+    const [page, setPage] = useState(initialPage);
     const [size] = useState(10);
 
     // Build search params

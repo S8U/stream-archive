@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
     Pagination,
     PaginationContent,
@@ -11,7 +14,7 @@ import {
 interface CustomPaginationProps {
     page: number;
     totalPages: number;
-    onPageChange: (page: number) => void;
+    onPageChange?: (page: number) => void;
 }
 
 const getPageNumbers = (currentPage: number, totalPages: number) => {
@@ -36,11 +39,30 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
 };
 
 export function CustomPagination({ page, totalPages, onPageChange }: CustomPaginationProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
     if (totalPages <= 1) return null;
 
     const pageNumbers = getPageNumbers(page, totalPages);
     const isFirstPage = page === 0;
     const isLastPage = page >= totalPages - 1;
+
+    const handlePageChange = (newPage: number) => {
+        // 콜백 호출 (있는 경우)
+        onPageChange?.(newPage);
+
+        // URL 업데이트
+        const params = new URLSearchParams(searchParams.toString());
+        if (newPage === 0) {
+            params.delete("page");
+        } else {
+            params.set("page", String(newPage + 1));
+        }
+        const queryString = params.toString();
+        router.push(queryString ? `${pathname}?${queryString}` : pathname);
+    };
 
     return (
         <Pagination className="mt-4">
@@ -50,7 +72,7 @@ export function CustomPagination({ page, totalPages, onPageChange }: CustomPagin
                         href="#"
                         onClick={(e) => {
                             e.preventDefault();
-                            if (!isFirstPage) onPageChange(page - 1);
+                            if (!isFirstPage) handlePageChange(page - 1);
                         }}
                         aria-disabled={isFirstPage}
                         className={isFirstPage ? "pointer-events-none opacity-50" : ""}
@@ -73,7 +95,7 @@ export function CustomPagination({ page, totalPages, onPageChange }: CustomPagin
                                 isActive={page === pageNum}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    onPageChange(pageNum);
+                                    handlePageChange(pageNum);
                                 }}
                             >
                                 {pageNum + 1}
@@ -87,7 +109,7 @@ export function CustomPagination({ page, totalPages, onPageChange }: CustomPagin
                         href="#"
                         onClick={(e) => {
                             e.preventDefault();
-                            if (!isLastPage) onPageChange(page + 1);
+                            if (!isLastPage) handlePageChange(page + 1);
                         }}
                         aria-disabled={isLastPage}
                         className={isLastPage ? "pointer-events-none opacity-50" : ""}
