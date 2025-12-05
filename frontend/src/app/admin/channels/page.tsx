@@ -8,7 +8,7 @@ import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelFormDialog } from "@/components/admin/channel-form-dialog";
 import { useSearchAdminChannels, useCreateAdminChannel, useUpdateAdminChannel, useDeleteAdminChannel } from "@/lib/api/endpoints/admin-channel/admin-channel";
@@ -18,25 +18,24 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 type SearchField = "id" | "uuid" | "name";
+const searchFieldOptions = ["id", "uuid", "name"] as const;
+const privacyOptions = ["__none__", "PUBLIC", "UNLISTED", "PRIVATE"] as const;
 
 export default function ChannelsPage() {
     const queryClient = useQueryClient();
-    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
     const [selectedChannel, setSelectedChannel] = useState<AdminChannelResponse | null>(null);
 
-    // Search/Filter state
-    const [searchField, setSearchField] = useState<SearchField>("name");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchContentPrivacy, setSearchContentPrivacy] = useState<string>("__none__");
+    // URL 상태 (nuqs)
+    const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("name"));
+    const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
+    const [searchContentPrivacy, setSearchContentPrivacy] = useQueryState("privacy", parseAsStringLiteral(privacyOptions).withDefault("__none__"));
+    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-    // Pagination state
-    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
-    const [page, setPage] = useState(initialPage);
-    const [size] = useState(10);
+    const size = 10;
 
     // Build search params
     const searchParams = {
@@ -47,7 +46,7 @@ export default function ChannelsPage() {
             contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminChannelSearchRequestContentPrivacy) : undefined,
         },
         pageable: {
-            page,
+            page: page - 1,
             size,
         },
     };
@@ -60,14 +59,14 @@ export default function ChannelsPage() {
 
     // Handlers
     const handleSearch = () => {
-        setPage(0);
+        setPage(1);
     };
 
     const handleReset = () => {
         setSearchField("name");
         setSearchQuery("");
         setSearchContentPrivacy("__none__");
-        setPage(0);
+        setPage(1);
     };
 
     const handleOpenCreateDialog = () => {
@@ -173,7 +172,7 @@ export default function ChannelsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchContentPrivacy} onValueChange={setSearchContentPrivacy}>
+                    <Select value={searchContentPrivacy} onValueChange={(value) => setSearchContentPrivacy(value as typeof privacyOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[128px]">
                             <span className="text-muted-foreground">공개 범위:</span>
                             <SelectValue placeholder="공개 범위" />
@@ -303,9 +302,9 @@ export default function ChannelsPage() {
             {/* Pagination */}
             {channelsData && (
                 <CustomPagination
-                    page={page}
+                    page={page - 1}
                     totalPages={channelsData.totalPages || 0}
-                    onPageChange={setPage}
+                    onPageChange={(p) => setPage(p + 1)}
                 />
             )}
 

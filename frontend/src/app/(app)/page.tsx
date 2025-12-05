@@ -49,7 +49,7 @@ export default async function Home({ searchParams }: Props) {
                     </div>
 
                     {/* Pagination */}
-                    <CustomPagination page={page} totalPages={totalPages} />
+                    <CustomPagination totalPages={totalPages} />
                 </>
             ) : (
                 <div className="text-center py-12">

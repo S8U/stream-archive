@@ -8,7 +8,7 @@ import { Edit, Loader2, Plus, Trash2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelPlatformFormDialog } from "@/components/admin/channel-platform-form-dialog";
 import {
@@ -27,25 +27,26 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { PlatformBadge } from "@/components/common/platform-badge";
 
+const searchFieldOptions = ["channelName", "platformChannelId"] as const;
+const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
+const syncProfileOptions = ["__none__", "true", "false"] as const;
+
 export default function ChannelPlatformsPage() {
     const queryClient = useQueryClient();
-    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
     const [selectedPlatform, setSelectedPlatform] = useState<AdminChannelPlatformResponse | null>(null);
 
-    // Search/Filter state
-    const [searchField, setSearchField] = useState<"channelName" | "platformChannelId">("channelName");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchPlatformType, setSearchPlatformType] = useState<string>("__none__");
-    const [searchIsSyncProfile, setSearchIsSyncProfile] = useState<string>("__none__");
+    // URL 상태 (nuqs)
+    const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("channelName"));
+    const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
+    const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
+    const [searchIsSyncProfile, setSearchIsSyncProfile] = useQueryState("sync", parseAsStringLiteral(syncProfileOptions).withDefault("__none__"));
+    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-    // Pagination state - URL에서 초기값 읽기
-    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
-    const [page, setPage] = useState(initialPage);
-    const [size] = useState(10);
+    const size = 10;
 
     // Build search params
     const searchParams = {
@@ -56,7 +57,7 @@ export default function ChannelPlatformsPage() {
             isSyncProfile: searchIsSyncProfile !== "__none__" ? searchIsSyncProfile === "true" : undefined,
         },
         pageable: {
-            page,
+            page: page - 1,
             size,
         },
     };
@@ -69,7 +70,7 @@ export default function ChannelPlatformsPage() {
 
     // Handlers
     const handleSearch = () => {
-        setPage(0);
+        setPage(1);
     };
 
     const handleReset = () => {
@@ -77,7 +78,7 @@ export default function ChannelPlatformsPage() {
         setSearchQuery("");
         setSearchPlatformType("__none__");
         setSearchIsSyncProfile("__none__");
-        setPage(0);
+        setPage(1);
     };
 
     const handleOpenCreateDialog = () => {
@@ -152,7 +153,7 @@ export default function ChannelPlatformsPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as "channelName" | "platformChannelId")}>
+                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">검색 기준:</span>
                             <SelectValue placeholder="검색 기준" />
@@ -164,7 +165,7 @@ export default function ChannelPlatformsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchPlatformType} onValueChange={setSearchPlatformType}>
+                    <Select value={searchPlatformType} onValueChange={(value) => setSearchPlatformType(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">플랫폼:</span>
                             <SelectValue placeholder="플랫폼" />
@@ -178,7 +179,7 @@ export default function ChannelPlatformsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchIsSyncProfile} onValueChange={setSearchIsSyncProfile}>
+                    <Select value={searchIsSyncProfile} onValueChange={(value) => setSearchIsSyncProfile(value as typeof syncProfileOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">동기화:</span>
                             <SelectValue placeholder="동기화 여부" />
@@ -324,9 +325,9 @@ export default function ChannelPlatformsPage() {
             {/* 페이지네이션 */}
             {platformsData && (
                 <CustomPagination
-                    page={page}
+                    page={page - 1}
                     totalPages={platformsData.totalPages || 0}
-                    onPageChange={setPage}
+                    onPageChange={(p) => setPage(p + 1)}
                 />
             )}
 

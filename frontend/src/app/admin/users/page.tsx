@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useSearchAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from "@/lib/api/endpoints/admin-user/admin-user";
 import type { AdminUserResponse, AdminUserSearchRequestRole, AdminUserUpdateRequestRole } from "@/lib/api/models";
@@ -15,25 +15,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { UserFormDialog } from "@/components/admin/user-form-dialog";
 
-type SearchField = "username" | "name" | "email";
+const searchFieldOptions = ["username", "name", "email"] as const;
+const roleOptions = ["__none__", "ADMIN", "USER"] as const;
 
 export default function UsersPage() {
     const queryClient = useQueryClient();
-    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<AdminUserResponse | null>(null);
 
-    // Search/Filter state
-    const [searchField, setSearchField] = useState<SearchField>("username");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchRole, setSearchRole] = useState<string>("__none__");
+    // URL 상태 (nuqs)
+    const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("username"));
+    const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
+    const [searchRole, setSearchRole] = useQueryState("role", parseAsStringLiteral(roleOptions).withDefault("__none__"));
+    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-    // Pagination state - URL에서 초기값 읽기
-    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
-    const [page, setPage] = useState(initialPage);
-    const [size] = useState(10);
+    const size = 10;
 
     // Build search params
     const searchParams = {
@@ -42,7 +40,7 @@ export default function UsersPage() {
             role: searchRole !== "__none__" ? (searchRole as AdminUserSearchRequestRole) : undefined,
         },
         pageable: {
-            page,
+            page: page - 1,
             size,
         },
     };
@@ -54,14 +52,14 @@ export default function UsersPage() {
 
     // Handlers
     const handleSearch = () => {
-        setPage(0);
+        setPage(1);
     };
 
     const handleReset = () => {
         setSearchField("username");
         setSearchQuery("");
         setSearchRole("__none__");
-        setPage(0);
+        setPage(1);
     };
 
     const handleOpenEditDialog = (user: AdminUserResponse) => {
@@ -145,7 +143,7 @@ export default function UsersPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as SearchField)}>
+                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">검색 기준:</span>
                             <SelectValue placeholder="검색 기준" />
@@ -158,7 +156,7 @@ export default function UsersPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchRole} onValueChange={setSearchRole}>
+                    <Select value={searchRole} onValueChange={(value) => setSearchRole(value as typeof roleOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">역할:</span>
                             <SelectValue placeholder="역할" />
@@ -279,9 +277,9 @@ export default function UsersPage() {
             {/* Pagination */}
             {usersData && (
                 <CustomPagination
-                    page={page}
+                    page={page - 1}
                     totalPages={usersData.totalPages || 0}
-                    onPageChange={setPage}
+                    onPageChange={(p) => setPage(p + 1)}
                 />
             )}
 

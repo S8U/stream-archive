@@ -8,7 +8,7 @@ import { Ban, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useCancelAdminRecord, useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
 import type { AdminRecordResponse, AdminRecordSearchRequestPlatformType } from "@/lib/api/models";
@@ -17,26 +17,22 @@ import { toast } from "sonner";
 import { PlatformBadge } from "@/components/common/platform-badge";
 import Link from "next/link";
 
-type SearchField = "channelName";
-type RecordStatus = "__all__" | "recording" | "ended" | "cancelled";
+const platformOptions = ["__all__", "CHZZK", "TWITCH", "SOOP"] as const;
+const statusOptions = ["__all__", "recording", "ended", "cancelled"] as const;
 
 export default function RecordsPage() {
     const queryClient = useQueryClient();
-    const urlSearchParams = useSearchParams();
 
-    // Search/Filter state
-    const [searchField, setSearchField] = useState<SearchField>("channelName");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchPlatform, setSearchPlatform] = useState<string>("__all__");
-    const [searchStatus, setSearchStatus] = useState<RecordStatus>("__all__");
+    // URL 상태 (nuqs)
+    const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
+    const [searchPlatform, setSearchPlatform] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__all__"));
+    const [searchStatus, setSearchStatus] = useQueryState("status", parseAsStringLiteral(statusOptions).withDefault("__all__"));
+    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-    // Pagination state - URL에서 초기값 읽기
-    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
-    const [page, setPage] = useState(initialPage);
-    const [size] = useState(10);
+    const size = 10;
 
     // Build search params
-    const getStatusParams = (status: RecordStatus) => {
+    const getStatusParams = (status: typeof statusOptions[number]) => {
         switch (status) {
             case "recording":
                 return { isEnded: false, isCancelled: false };
@@ -51,12 +47,12 @@ export default function RecordsPage() {
 
     const searchParams = {
         request: {
-            channelName: searchField === "channelName" ? searchQuery : undefined,
+            channelName: searchQuery || undefined,
             platformType: searchPlatform !== "__all__" ? (searchPlatform as AdminRecordSearchRequestPlatformType) : undefined,
             ...getStatusParams(searchStatus),
         },
         pageable: {
-            page,
+            page: page - 1,
             size,
         },
     };
@@ -67,15 +63,14 @@ export default function RecordsPage() {
 
     // Handlers
     const handleSearch = () => {
-        setPage(0);
+        setPage(1);
     };
 
     const handleReset = () => {
-        setSearchField("channelName");
         setSearchQuery("");
         setSearchPlatform("__all__");
         setSearchStatus("__all__");
-        setPage(0);
+        setPage(1);
     };
 
     const handleCancel = async (record: AdminRecordResponse) => {
@@ -114,18 +109,7 @@ export default function RecordsPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as SearchField)}>
-                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">검색 기준:</span>
-                            <SelectValue placeholder="검색 기준" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="channelName">채널명</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <Select value={searchPlatform} onValueChange={setSearchPlatform}>
+                    <Select value={searchPlatform} onValueChange={(value) => setSearchPlatform(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">플랫폼:</span>
                             <SelectValue placeholder="전체" />
@@ -139,7 +123,7 @@ export default function RecordsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchStatus} onValueChange={(value) => setSearchStatus(value as RecordStatus)}>
+                    <Select value={searchStatus} onValueChange={(value) => setSearchStatus(value as typeof statusOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">상태:</span>
                             <SelectValue placeholder="전체" />
@@ -289,9 +273,9 @@ export default function RecordsPage() {
             {/* Pagination */}
             {recordsData && (
                 <CustomPagination
-                    page={page}
+                    page={page - 1}
                     totalPages={recordsData.totalPages || 0}
-                    onPageChange={setPage}
+                    onPageChange={(p) => setPage(p + 1)}
                 />
             )}
         </div>

@@ -8,7 +8,7 @@ import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
 import { useSearchAdminVideos, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/admin-video/admin-video";
@@ -17,25 +17,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
 
-type SearchField = "title" | "channelName";
+const searchFieldOptions = ["title", "channelName"] as const;
+const privacyOptions = ["__none__", "PUBLIC", "UNLISTED", "PRIVATE"] as const;
 
 export default function VideosPage() {
     const queryClient = useQueryClient();
-    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState<AdminVideoResponse | null>(null);
 
-    // Search/Filter state
-    const [searchField, setSearchField] = useState<SearchField>("title");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchContentPrivacy, setSearchContentPrivacy] = useState<string>("__none__");
+    // URL 상태 (nuqs)
+    const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("title"));
+    const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
+    const [searchContentPrivacy, setSearchContentPrivacy] = useQueryState("privacy", parseAsStringLiteral(privacyOptions).withDefault("__none__"));
+    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-    // Pagination state - URL에서 초기값 읽기
-    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
-    const [page, setPage] = useState(initialPage);
-    const [size] = useState(10);
+    const size = 10;
 
     // Build search params
     const searchParams = {
@@ -45,7 +43,7 @@ export default function VideosPage() {
             contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminVideoSearchRequestContentPrivacy) : undefined,
         },
         pageable: {
-            page,
+            page: page - 1,
             size,
         },
     };
@@ -57,14 +55,14 @@ export default function VideosPage() {
 
     // Handlers
     const handleSearch = () => {
-        setPage(0);
+        setPage(1);
     };
 
     const handleReset = () => {
         setSearchField("title");
         setSearchQuery("");
         setSearchContentPrivacy("__none__");
-        setPage(0);
+        setPage(1);
     };
 
     const handleOpenEditDialog = (video: AdminVideoResponse) => {
@@ -162,7 +160,7 @@ export default function VideosPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as SearchField)}>
+                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">검색 기준:</span>
                             <SelectValue placeholder="검색 기준" />
@@ -174,7 +172,7 @@ export default function VideosPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchContentPrivacy} onValueChange={setSearchContentPrivacy}>
+                    <Select value={searchContentPrivacy} onValueChange={(value) => setSearchContentPrivacy(value as typeof privacyOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[128px]">
                             <span className="text-muted-foreground">공개 범위:</span>
                             <SelectValue placeholder="공개 범위" />
@@ -323,9 +321,9 @@ export default function VideosPage() {
             {/* Pagination */}
             {videosData && (
                 <CustomPagination
-                    page={page}
+                    page={page - 1}
                     totalPages={videosData.totalPages || 0}
-                    onPageChange={setPage}
+                    onPageChange={(p) => setPage(p + 1)}
                 />
             )}
 

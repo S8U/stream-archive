@@ -8,7 +8,7 @@ import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { RecordScheduleFormDialog } from "@/components/admin/record-schedule-form-dialog";
 import {
@@ -39,35 +39,34 @@ const DAYS_MAP: Record<string, string> = {
     SUNDAY: "일",
 };
 
+const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
+const scheduleTypeOptions = ["__none__", "ONCE", "ALWAYS", "N_DAYS_OF_EVERY_WEEK", "SPECIFIC_DAY"] as const;
+
 export default function RecordSchedulesPage() {
     const queryClient = useQueryClient();
-    const urlSearchParams = useSearchParams();
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
     const [selectedSchedule, setSelectedSchedule] = useState<AdminRecordScheduleResponse | null>(null);
 
-    // Search/Filter state
-    const [searchField, setSearchField] = useState<"channelName">("channelName");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchPlatformType, setSearchPlatformType] = useState<string>("__none__");
-    const [searchScheduleType, setSearchScheduleType] = useState<string>("__none__");
+    // URL 상태 (nuqs)
+    const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
+    const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
+    const [searchScheduleType, setSearchScheduleType] = useQueryState("type", parseAsStringLiteral(scheduleTypeOptions).withDefault("__none__"));
+    const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
-    // Pagination state - URL에서 초기값 읽기
-    const initialPage = Math.max(0, Number(urlSearchParams.get("page") || 1) - 1);
-    const [page, setPage] = useState(initialPage);
-    const [size] = useState(10);
+    const size = 10;
 
     // Build search params
     const searchParams = {
         request: {
-            channelName: searchField === "channelName" ? searchQuery : undefined,
+            channelName: searchQuery || undefined,
             platformType: searchPlatformType !== "__none__" ? (searchPlatformType as AdminRecordScheduleSearchRequestPlatformType) : undefined,
             scheduleType: searchScheduleType !== "__none__" ? (searchScheduleType as AdminRecordScheduleSearchRequestScheduleType) : undefined,
         },
         pageable: {
-            page,
+            page: page - 1,
             size,
         },
     };
@@ -80,15 +79,14 @@ export default function RecordSchedulesPage() {
 
     // Handlers
     const handleSearch = () => {
-        setPage(0);
+        setPage(1);
     };
 
     const handleReset = () => {
-        setSearchField("channelName");
         setSearchQuery("");
         setSearchPlatformType("__none__");
         setSearchScheduleType("__none__");
-        setPage(0);
+        setPage(1);
     };
 
     const handleOpenCreateDialog = () => {
@@ -200,18 +198,7 @@ export default function RecordSchedulesPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as "channelName")}>
-                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">검색 기준:</span>
-                            <SelectValue placeholder="검색 기준" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="channelName">채널명</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <Select value={searchPlatformType} onValueChange={setSearchPlatformType}>
+                    <Select value={searchPlatformType} onValueChange={(value) => setSearchPlatformType(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">플랫폼:</span>
                             <SelectValue placeholder="플랫폼" />
@@ -225,7 +212,7 @@ export default function RecordSchedulesPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchScheduleType} onValueChange={setSearchScheduleType}>
+                    <Select value={searchScheduleType} onValueChange={(value) => setSearchScheduleType(value as typeof scheduleTypeOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">유형:</span>
                             <SelectValue placeholder="스케줄 유형" />
@@ -371,9 +358,9 @@ export default function RecordSchedulesPage() {
             {/* 페이지네이션 */}
             {schedulesData && (
                 <CustomPagination
-                    page={page}
+                    page={page - 1}
                     totalPages={schedulesData.totalPages || 0}
-                    onPageChange={setPage}
+                    onPageChange={(p) => setPage(p + 1)}
                 />
             )}
 

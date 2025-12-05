@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useQueryState, parseAsInteger } from "nuqs";
 import {
     Pagination,
     PaginationContent,
@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/pagination";
 
 interface CustomPaginationProps {
-    page: number;
     totalPages: number;
+    /** 외부에서 page 상태를 직접 관리할 경우 전달 (0-based) */
+    page?: number;
+    /** 외부에서 page 변경 핸들러를 전달할 경우 (0-based) */
     onPageChange?: (page: number) => void;
 }
 
@@ -21,7 +23,6 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
     const pages: (number | 'ellipsis')[] = [];
 
     for (let i = 0; i < totalPages; i++) {
-        // 첫 페이지, 마지막 페이지, 현재 페이지 주변 1개씩 표시
         const isFirstOrLast = i === 0 || i === totalPages - 1;
         const isNearCurrent = i >= currentPage - 1 && i <= currentPage + 1;
 
@@ -38,10 +39,12 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
     return pages;
 };
 
-export function CustomPagination({ page, totalPages, onPageChange }: CustomPaginationProps) {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
+export function CustomPagination({ totalPages, page: externalPage, onPageChange }: CustomPaginationProps) {
+    // nuqs로 URL 상태 관리 (1-based)
+    const [urlPage, setUrlPage] = useQueryState("page", parseAsInteger.withDefault(1));
+
+    // 외부 page가 전달되면 사용, 아니면 URL 상태 사용
+    const page = externalPage ?? (urlPage - 1);
 
     if (totalPages <= 1) return null;
 
@@ -50,18 +53,13 @@ export function CustomPagination({ page, totalPages, onPageChange }: CustomPagin
     const isLastPage = page >= totalPages - 1;
 
     const handlePageChange = (newPage: number) => {
-        // 콜백 호출 (있는 경우)
-        onPageChange?.(newPage);
-
-        // URL 업데이트
-        const params = new URLSearchParams(searchParams.toString());
-        if (newPage === 0) {
-            params.delete("page");
+        if (onPageChange) {
+            // 외부 핸들러가 있으면 호출 (URL 업데이트는 외부에서)
+            onPageChange(newPage);
         } else {
-            params.set("page", String(newPage + 1));
+            // 없으면 직접 URL 업데이트
+            setUrlPage(newPage + 1);
         }
-        const queryString = params.toString();
-        router.push(queryString ? `${pathname}?${queryString}` : pathname);
     };
 
     return (
