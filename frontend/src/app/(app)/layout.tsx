@@ -1,11 +1,12 @@
 import Link from "next/link";
-import {Clock, HomeIcon, Library, Menu, Search, ThumbsUp} from "lucide-react";
-import {Separator} from "@/components/ui/separator";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Button} from "@/components/ui/button";
-import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet";
-import {Input} from "@/components/ui/input";
-import {searchChannels} from "@/lib/api/endpoints/channel/channel";
+import { Clock, HomeIcon, Library, Menu, Search, ThumbsUp } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { searchChannels } from "@/lib/api/endpoints/channel/channel";
+import { ModeToggle } from "@/components/common/mode-toggle";
 
 export default async function AppLayout({
     children,
@@ -31,7 +32,7 @@ export default async function AppLayout({
                     href="/public"
                     className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
                 >
-                    <HomeIcon className="w-5 h-5"/>
+                    <HomeIcon className="w-5 h-5" />
                     <span>홈</span>
                 </Link>
 
@@ -39,7 +40,7 @@ export default async function AppLayout({
                     href="/public"
                     className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
                 >
-                    <Library className="w-5 h-5"/>
+                    <Library className="w-5 h-5" />
                     <span>보관함</span>
                 </Link>
 
@@ -47,7 +48,7 @@ export default async function AppLayout({
                     href="/my/history"
                     className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
                 >
-                    <Clock className="w-5 h-5"/>
+                    <Clock className="w-5 h-5" />
                     <span>시청 기록</span>
                 </Link>
 
@@ -55,7 +56,7 @@ export default async function AppLayout({
                     href="/public"
                     className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
                 >
-                    <ThumbsUp className="w-5 h-5"/>
+                    <ThumbsUp className="w-5 h-5" />
                     <span>좋아요</span>
                 </Link>
             </div>
@@ -85,24 +86,24 @@ export default async function AppLayout({
     return (
         <div className={"bg-background"}>
             {/* 헤더 */}
-            <header className="sticky top-0 left-0 right-0 h-14 bg-white z-50">
+            <header className="sticky top-0 left-0 right-0 h-14 bg-background z-50">
                 <div className="h-full px-4 flex items-center justify-between gap-4">
                     {/* 왼쪽: 로고 */}
                     <div className="flex-shrink-0 flex items-center gap-2">
                         {/* PC 사이드바 토글 */}
                         <Button variant="ghost" size="icon" className="hidden md:flex">
-                            <Menu/>
+                            <Menu />
                         </Button>
 
                         {/* 모바일 사이드바 */}
                         <Sheet>
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="md:hidden">
-                                    <Menu/>
+                                    <Menu />
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-64">
-                                <SidebarContent/>
+                                <SidebarContent />
                             </SheetContent>
                         </Sheet>
 
@@ -122,13 +123,14 @@ export default async function AppLayout({
                                 className="flex-1 border-0 h-full focus-visible:ring-0"
                             />
                             <Button variant="secondary" size="icon" className="rounded-r-full h-full">
-                                <Search className="h-4 w-4"/>
+                                <Search className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
 
-                    {/* 오른쪽: 로그인 버튼 */}
-                    <div className="flex-shrink-0 flex">
+                    {/* 오른쪽: 토글 & 로그인 버튼 */}
+                    <div className="flex-shrink-0 flex items-center gap-2">
+                        <ModeToggle />
                         <Button variant="secondary">로그인</Button>
 
                         {/*<Avatar className="w-9 h-9">*/}
@@ -143,7 +145,7 @@ export default async function AppLayout({
             {/* PC 사이드바 */}
             <div className="hidden md:block fixed w-60 h-full">
                 {/*<Separator orientation="vertical" className="absolute right-0"></Separator>*/}
-                <SidebarContent/>
+                <SidebarContent />
             </div>
 
             {/* 내용 */}

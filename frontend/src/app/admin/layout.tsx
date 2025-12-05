@@ -41,6 +41,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
+import { ModeToggle } from "@/components/common/mode-toggle";
 
 interface MenuItem {
     title: string;
@@ -193,6 +194,9 @@ export default function AdminLayout({
                             ) : null}
                         </BreadcrumbList>
                     </Breadcrumb>
+                    <div className="ml-auto">
+                        <ModeToggle />
+                    </div>
                 </header>
                 <div className="flex-1 px-6 py-4 md:px-10 md:py-6 min-w-0">
                     {children}
