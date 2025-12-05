@@ -6,6 +6,7 @@ import com.github.s8u.streamarchive.entity.Record
 import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.enums.RecordQuality
+import com.github.s8u.streamarchive.enums.RecordScheduleType
 import com.github.s8u.streamarchive.event.StreamDetectedEvent
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStreamDto
@@ -39,6 +40,7 @@ class RecordService(
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val videoMetadataService: VideoMetadataService,
     private val recordScheduleRepository: RecordScheduleRepository,
+    private val recordScheduleService: RecordScheduleService,
     private val videoThumbnailService: VideoThumbnailService,
     private val urlBuilder: UrlBuilder,
     private val viewerHistoryService: VideoMetadataViewerHistoryService,
@@ -294,6 +296,26 @@ class RecordService(
                     stream = event.stream,
                     recordQuality = topSchedule.recordQuality
                 )
+                
+                // ONCE 스케줄인 경우 녹화 시작 후 삭제
+                if (topSchedule.scheduleType == RecordScheduleType.ONCE) {
+                    try {
+                        recordScheduleService.delete(topSchedule.id!!)
+                        logger.info(
+                            "Deleted ONCE schedule after recording started: scheduleId={}, channelId={}, platformType={}",
+                            topSchedule.id,
+                            event.channelPlatform?.channel?.id,
+                            event.channelPlatform.platformType
+                        )
+                    } catch (e: Exception) {
+                        // 스케줄 삭제 실패는 녹화를 막지 않음
+                        logger.error(
+                            "Failed to delete ONCE schedule: scheduleId={}",
+                            topSchedule.id,
+                            e
+                        )
+                    }
+                }
             }
         } catch (e: Exception) {
             logger.error(
