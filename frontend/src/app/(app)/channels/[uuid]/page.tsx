@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getChannelByUuid } from '@/lib/api/endpoints/channel/channel';
 import { searchVideos } from '@/lib/api/endpoints/video/video';
-import { ChannelHeader } from '@/components/channel-header';
+import { ChannelHeader } from '@/app/(app)/channels/[uuid]/channel-header';
 import { VideoCard } from '@/components/video-card';
 
 type Props = {
