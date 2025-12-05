@@ -17,7 +17,7 @@ enum class RecordScheduleType(
         true
     }),
 
-    N_DAYS_OF_EVERY_WEEK("매주 n요일", { value ->
+    N_DAYS_OF_EVERY_WEEK("매주 N요일", { value ->
         val objectMapper = ObjectMapper()
         val jsonNode = objectMapper.readTree(value)
 

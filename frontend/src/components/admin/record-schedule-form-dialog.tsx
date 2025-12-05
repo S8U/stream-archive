@@ -220,7 +220,7 @@ export function RecordScheduleFormDialog({
                                     <SelectGroup>
                                         <SelectItem value="ONCE">한 번만</SelectItem>
                                         <SelectItem value="ALWAYS">항상</SelectItem>
-                                        <SelectItem value="N_DAYS_OF_EVERY_WEEK">매주 n요일</SelectItem>
+                                        <SelectItem value="N_DAYS_OF_EVERY_WEEK">매주 N요일</SelectItem>
                                         <SelectItem value="SPECIFIC_DAY">날짜 지정</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
@@ -273,7 +273,6 @@ export function RecordScheduleFormDialog({
                                             mode="multiple"
                                             selected={selectedDates}
                                             onSelect={setSelectedDates}
-                                            initialFocus
                                             locale={ko}
                                         />
                                     </PopoverContent>

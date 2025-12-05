@@ -183,7 +183,7 @@ export default function RecordSchedulesPage() {
         switch (type) {
             case "ONCE": return <Badge variant="secondary">한 번만</Badge>;
             case "ALWAYS": return <Badge>항상</Badge>;
-            case "N_DAYS_OF_EVERY_WEEK": return <Badge variant="outline">매주 n요일</Badge>;
+            case "N_DAYS_OF_EVERY_WEEK": return <Badge variant="outline">매주 요일</Badge>;
             case "SPECIFIC_DAY": return <Badge variant="outline">날짜 지정</Badge>;
             default: return <Badge variant="outline">{type}</Badge>;
         }
@@ -232,7 +232,7 @@ export default function RecordSchedulesPage() {
                                 <SelectItem value="__none__">전체</SelectItem>
                                 <SelectItem value="ONCE">한 번만</SelectItem>
                                 <SelectItem value="ALWAYS">항상</SelectItem>
-                                <SelectItem value="N_DAYS_OF_EVERY_WEEK">매주 n요일</SelectItem>
+                                <SelectItem value="N_DAYS_OF_EVERY_WEEK">매주 N요일</SelectItem>
                                 <SelectItem value="SPECIFIC_DAY">날짜 지정</SelectItem>
                             </SelectGroup>
                         </SelectContent>
