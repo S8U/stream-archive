@@ -116,47 +116,65 @@ export function calculateRSI(
 
 /**
  * RSI 기반으로 하이라이트 구간 추출
+ * RSI가 50을 넘는 구간 중에서 65 이상의 피크가 있는 구간을 하이라이트로 추출
  */
 export function extractHighlights(
     rsiData: RSIData[],
     chatBuckets: ChatBucket[],
-    threshold: number = 65, // RSI 임계값 (기본 65)
+    threshold: number = 65, // RSI 피크 임계값 (기본 65)
+    baseThreshold: number = 50, // RSI 구간 시작/종료 임계값 (기본 50)
     minDurationMs: number = 10000, // 최소 하이라이트 길이 (10초)
     mergeGapMs: number = 20000 // 근접한 하이라이트 병합 간격 (20초)
 ): HighlightSegment[] {
     const highlights: HighlightSegment[] = [];
-    let currentSegment: HighlightSegment | undefined = undefined;
+    let potentialSegment: { startTimeMs: number; endTimeMs: number; maxRsi: number } | undefined = undefined;
+    let hasHighPeak = false; // 현재 구간에서 threshold를 넘었는지 여부
 
     rsiData.forEach((data, index) => {
-        if (data.rsi >= threshold) {
-            if (!currentSegment) {
-                // 새로운 하이라이트 시작
-                currentSegment = {
+        if (data.rsi >= baseThreshold) {
+            if (!potentialSegment) {
+                // RSI 50 이상 구간 시작
+                potentialSegment = {
                     startTimeMs: data.timeMs,
-                    endTimeMs: data.timeMs + 10000, // 10초 버킷
-                    rsiScore: data.rsi
+                    endTimeMs: data.timeMs + 10000,
+                    maxRsi: data.rsi
                 };
+                hasHighPeak = data.rsi >= threshold;
             } else {
-                // 기존 하이라이트 확장
-                currentSegment.endTimeMs = data.timeMs + 10000;
-                currentSegment.rsiScore = Math.max(currentSegment.rsiScore, data.rsi);
+                // 기존 구간 확장
+                potentialSegment.endTimeMs = data.timeMs + 10000;
+                potentialSegment.maxRsi = Math.max(potentialSegment.maxRsi, data.rsi);
+
+                // 피크 체크
+                if (data.rsi >= threshold) {
+                    hasHighPeak = true;
+                }
             }
         } else {
-            if (currentSegment) {
-                // 하이라이트 종료
-                if (currentSegment.endTimeMs - currentSegment.startTimeMs >= minDurationMs) {
-                    highlights.push(currentSegment);
+            // RSI가 50 아래로 떨어짐 - 구간 종료
+            if (potentialSegment && hasHighPeak) {
+                // 65 이상의 피크가 있었던 구간만 하이라이트로 추가
+                if (potentialSegment.endTimeMs - potentialSegment.startTimeMs >= minDurationMs) {
+                    highlights.push({
+                        startTimeMs: potentialSegment.startTimeMs,
+                        endTimeMs: potentialSegment.endTimeMs,
+                        rsiScore: potentialSegment.maxRsi
+                    });
                 }
-                currentSegment = undefined;
             }
+            potentialSegment = undefined;
+            hasHighPeak = false;
         }
     });
 
     // 마지막 세그먼트 처리
-    if (currentSegment) {
-        const segment = currentSegment as HighlightSegment;
-        if (segment.endTimeMs - segment.startTimeMs >= minDurationMs) {
-            highlights.push(segment);
+    if (potentialSegment && hasHighPeak) {
+        if (potentialSegment.endTimeMs - potentialSegment.startTimeMs >= minDurationMs) {
+            highlights.push({
+                startTimeMs: potentialSegment.startTimeMs,
+                endTimeMs: potentialSegment.endTimeMs,
+                rsiScore: potentialSegment.maxRsi
+            });
         }
     }
 
@@ -198,6 +216,7 @@ export function generateHighlights(
         intervalMs?: number;
         rsiPeriod?: number;
         rsiThreshold?: number;
+        rsiBaseThreshold?: number;
         minDurationMs?: number;
         mergeGapMs?: number;
     }
@@ -212,6 +231,7 @@ export function generateHighlights(
         rsiData,
         chatBuckets,
         options?.rsiThreshold,
+        options?.rsiBaseThreshold,
         options?.minDurationMs,
         options?.mergeGapMs
     );

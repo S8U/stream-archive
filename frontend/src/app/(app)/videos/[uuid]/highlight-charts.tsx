@@ -104,7 +104,7 @@ export function HighlightCharts({
                 <h3 className="text-sm font-semibold mb-3">
                     RSI (Relative Strength Index)
                     <span className="text-xs text-muted-foreground ml-2">
-                        하이라이트 임계값: 65
+                        피크: 65 이상 | 구간: 50~50
                     </span>
                 </h3>
                 <ResponsiveContainer width="100%" height={200}>
@@ -149,8 +149,8 @@ export function HighlightCharts({
                         ))}
 
                         {/* 임계값 선 */}
-                        <ReferenceLine y={65} stroke="orange" strokeDasharray="3 3" label="임계값" />
-                        <ReferenceLine y={50} stroke="gray" strokeDasharray="3 3" label="중립" />
+                        <ReferenceLine y={65} stroke="orange" strokeDasharray="3 3" label="피크(65)" />
+                        <ReferenceLine y={50} stroke="blue" strokeDasharray="3 3" label="구간(50)" />
 
                         {/* 현재 재생 위치 */}
                         <ReferenceLine
