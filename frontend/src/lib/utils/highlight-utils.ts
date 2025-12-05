@@ -116,12 +116,12 @@ export function calculateRSI(
 
 /**
  * RSI 기반으로 하이라이트 구간 추출
- * RSI가 50을 넘는 구간 중에서 65 이상의 피크가 있는 구간을 하이라이트로 추출
+ * RSI가 50을 넘는 구간 중에서 60 이상의 피크가 있는 구간을 하이라이트로 추출
  */
 export function extractHighlights(
     rsiData: RSIData[],
     chatBuckets: ChatBucket[],
-    threshold: number = 65, // RSI 피크 임계값 (기본 65)
+    threshold: number = 60, // RSI 피크 임계값 (기본 60)
     baseThreshold: number = 50, // RSI 구간 시작/종료 임계값 (기본 50)
     minDurationMs: number = 10000, // 최소 하이라이트 길이 (10초)
     mergeGapMs: number = 20000 // 근접한 하이라이트 병합 간격 (20초)
@@ -153,7 +153,7 @@ export function extractHighlights(
         } else {
             // RSI가 50 아래로 떨어짐 - 구간 종료
             if (potentialSegment && hasHighPeak) {
-                // 65 이상의 피크가 있었던 구간만 하이라이트로 추가
+                // 60 이상의 피크가 있었던 구간만 하이라이트로 추가
                 if (potentialSegment.endTimeMs - potentialSegment.startTimeMs >= minDurationMs) {
                     highlights.push({
                         startTimeMs: potentialSegment.startTimeMs,
