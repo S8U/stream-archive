@@ -68,63 +68,71 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
             <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
                 {/* 좌측: 동영상 + 정보 */}
-                <div className="flex-shrink-0 lg:flex-1 flex flex-col gap-4 overflow-y-auto">
-                    <VideoPlayer
-                        ref={videoPlayerRef}
-                        playlistUrl={video.playlistUrl}
-                        onTimeUpdate={setCurrentTimeMs}
-                        highlightMode={highlightMode}
-                        highlights={highlightData.highlights}
-                    />
+                <div className="flex-shrink-0 lg:flex-1 flex flex-col overflow-hidden">
+                    {/* 상단 고정 영역: 비디오 플레이어 + 버튼 */}
+                    <div className="flex-shrink-0">
+                        <VideoPlayer
+                            ref={videoPlayerRef}
+                            playlistUrl={video.playlistUrl}
+                            onTimeUpdate={setCurrentTimeMs}
+                            highlightMode={highlightMode}
+                            highlights={highlightData.highlights}
+                        />
 
-                    {/* 하이라이트 버튼 */}
-                    <div className="flex gap-2 px-4">
-                        <Button
-                            onClick={toggleHighlightMode}
-                            variant={highlightMode ? "default" : "outline"}
-                            disabled={isLoadingChats || (showCharts && highlightData.highlights.length === 0)}
-                            className="gap-2"
-                        >
-                            <Sparkles className="h-4 w-4" />
-                            {isLoadingChats
-                                ? '로딩 중...'
-                                : highlightMode
-                                    ? '일반 모드'
-                                    : `하이라이트 보기${highlightData.highlights.length > 0 ? ` (${highlightData.highlights.length})` : ''}`
-                            }
-                        </Button>
-
-                        {!highlightMode && (
+                        {/* 하이라이트 버튼 */}
+                        <div className="flex gap-2 px-4 py-4">
                             <Button
-                                onClick={() => setShowCharts(!showCharts)}
-                                variant="outline"
-                                disabled={isLoadingChats}
+                                onClick={toggleHighlightMode}
+                                variant={highlightMode ? "default" : "outline"}
+                                disabled={isLoadingChats || (showCharts && highlightData.highlights.length === 0)}
+                                className="gap-2"
                             >
-                                {showCharts ? '그래프 숨기기' : '그래프 보기'}
+                                <Sparkles className="h-4 w-4" />
+                                {isLoadingChats
+                                    ? '로딩 중...'
+                                    : highlightMode
+                                        ? '일반 모드'
+                                        : `하이라이트 보기${highlightData.highlights.length > 0 ? ` (${highlightData.highlights.length})` : ''}`
+                                }
                             </Button>
-                        )}
+
+                            {!highlightMode && (
+                                <Button
+                                    onClick={() => setShowCharts(!showCharts)}
+                                    variant="outline"
+                                    disabled={isLoadingChats}
+                                >
+                                    {showCharts ? '그래프 숨기기' : '그래프 보기'}
+                                </Button>
+                            )}
+                        </div>
                     </div>
 
-                    <VideoInfo video={video} />
+                    {/* 하단 스크롤 영역: 비디오 정보 + 그래프 */}
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="space-y-4 pb-4">
+                            <VideoInfo video={video} />
 
-                    {/* 하이라이트 그래프 */}
-                    {showCharts && highlightData.chatBuckets.length > 0 && (
-                        <div className="px-4">
-                            <HighlightCharts
-                                chatBuckets={highlightData.chatBuckets}
-                                rsiData={highlightData.rsiData}
-                                highlights={highlightData.highlights}
-                                currentTimeMs={currentTimeMs}
-                                onSeek={handleSeek}
-                            />
-                        </div>
-                    )}
+                            {/* 하이라이트 그래프 */}
+                            {showCharts && highlightData.chatBuckets.length > 0 && (
+                                <div className="px-4">
+                                    <HighlightCharts
+                                        chatBuckets={highlightData.chatBuckets}
+                                        rsiData={highlightData.rsiData}
+                                        highlights={highlightData.highlights}
+                                        currentTimeMs={currentTimeMs}
+                                        onSeek={handleSeek}
+                                    />
+                                </div>
+                            )}
 
-                    {showCharts && highlightData.chatBuckets.length === 0 && !isLoadingChats && (
-                        <div className="px-4 py-8 text-center text-muted-foreground">
-                            채팅 데이터가 없어 하이라이트를 생성할 수 없습니다.
+                            {showCharts && highlightData.chatBuckets.length === 0 && !isLoadingChats && (
+                                <div className="px-4 py-8 text-center text-muted-foreground">
+                                    채팅 데이터가 없어 하이라이트를 생성할 수 없습니다.
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 {/* 우측: 채팅창 */}
