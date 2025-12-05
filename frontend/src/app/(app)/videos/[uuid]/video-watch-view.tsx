@@ -52,7 +52,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
             intervalMs: 10000,      // 10초 단위
             rsiPeriod: 14,          // RSI 기간
             rsiThreshold: 60,       // RSI 피크 임계값
-            rsiBaseThreshold: 45,   // RSI 구간 시작/종료 임계값
+            rsiBaseThreshold: 50,   // RSI 구간 시작/종료 임계값
             minDurationMs: 10000,   // 최소 하이라이트 길이 10초
             mergeGapMs: 20000       // 20초 이내 구간은 병합
         });
