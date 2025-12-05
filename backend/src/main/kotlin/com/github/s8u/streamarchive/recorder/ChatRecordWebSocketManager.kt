@@ -49,10 +49,18 @@ class ChatRecordWebSocketManager(
                 videoId,
                 platformType,
                 platformChannelId,
-                recordStartedAt
-            ) { chatMessageDto ->
-                videoDataChatHistoryService.addBuffer(chatMessageDto)
-            } ?: return
+                recordStartedAt,
+                onChat = { chatMessageDto ->
+                    videoDataChatHistoryService.addBuffer(chatMessageDto)
+                },
+                onConnectionClosed = {
+                    if (webSocketSessions.containsKey(recordId)) {
+                        logger.info("Reconnecting chat: recordId={}", recordId)
+                        webSocketSessions.remove(recordId)
+                        startRecording(recordId, videoId, platformType, platformChannelId, recordStartedAt)
+                    }
+                }
+            ) ?: return
 
             val session = client.execute(platformWebSocketHandler, null, URI(platformWebSocketUrl)).get()
             webSocketSessions[recordId] = session

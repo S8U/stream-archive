@@ -86,7 +86,8 @@ class ChzzkStrategy(
         platformType: PlatformType,
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
-        onChat: (ChatMessageDto) -> Unit
+        onChat: (ChatMessageDto) -> Unit,
+        onConnectionClosed: () -> Unit
     ): ChatWebSocketHandler? {
         return ChzzkChatWebSocketHandler(
             chzzkApiClient = apiClient,
@@ -94,7 +95,8 @@ class ChzzkStrategy(
             videoId = videoId,
             platformChannelId = platformChannelId,
             recordStartedAt = recordStartedAt,
-            onChat = onChat
+            onChat = onChat,
+            onConnectionClosed = onConnectionClosed
         )
     }
 

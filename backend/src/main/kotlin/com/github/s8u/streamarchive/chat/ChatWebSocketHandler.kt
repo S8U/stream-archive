@@ -8,6 +8,7 @@ abstract class ChatWebSocketHandler(
     val videoId: Long,
     val platformChannelId: String,
     val recordStartedAt: LocalDateTime,
-    val onChat: (chatMessageDto: ChatMessageDto) -> Unit
+    val onChat: (chatMessageDto: ChatMessageDto) -> Unit,
+    val onConnectionClosed: () -> Unit
 ) : WebSocketHandler {
 }

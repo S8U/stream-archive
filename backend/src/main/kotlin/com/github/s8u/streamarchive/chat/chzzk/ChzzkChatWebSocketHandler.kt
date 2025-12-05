@@ -21,13 +21,15 @@ class ChzzkChatWebSocketHandler(
     videoId: Long,
     platformChannelId: String,
     recordStartedAt: LocalDateTime,
-    onChat: (chatMessageDto: ChatMessageDto) -> Unit
+    onChat: (chatMessageDto: ChatMessageDto) -> Unit,
+    onConnectionClosed: () -> Unit
 ) : ChatWebSocketHandler(
     recordId,
     videoId,
     platformChannelId,
     recordStartedAt,
-    onChat
+    onChat,
+    onConnectionClosed
 ) {
 
     private val logger = LoggerFactory.getLogger(ChzzkChatWebSocketHandler::class.java)
@@ -116,6 +118,7 @@ class ChzzkChatWebSocketHandler(
 
     override fun afterConnectionClosed(session: WebSocketSession, closeStatus: CloseStatus) {
         logger.debug("Chzzk chat closed (recordId: {})", recordId)
+        onConnectionClosed()
     }
 
     override fun supportsPartialMessages(): Boolean {

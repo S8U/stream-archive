@@ -91,7 +91,8 @@ class TwitchStrategy(
         platformType: PlatformType,
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
-        onChat: (ChatMessageDto) -> Unit
+        onChat: (ChatMessageDto) -> Unit,
+        onConnectionClosed: () -> Unit
     ): ChatWebSocketHandler? {
         return null
     }
