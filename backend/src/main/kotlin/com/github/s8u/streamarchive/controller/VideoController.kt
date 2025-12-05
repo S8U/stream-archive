@@ -1,9 +1,12 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.ChatHistoryResponse
+import com.github.s8u.streamarchive.dto.HighlightParameters
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
+import com.github.s8u.streamarchive.dto.VideoHighlightsResponse
 import com.github.s8u.streamarchive.service.VideoDataChatHistoryService
+import com.github.s8u.streamarchive.service.VideoHighlightService
 import com.github.s8u.streamarchive.service.VideoService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -23,7 +26,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/videos")
 class VideoController(
     private val videoService: VideoService,
-    private val videoDataChatHistoryService: VideoDataChatHistoryService
+    private val videoDataChatHistoryService: VideoDataChatHistoryService,
+    private val videoHighlightService: VideoHighlightService
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
@@ -76,5 +80,23 @@ class VideoController(
         @RequestParam offsetEnd: Long
     ): List<ChatHistoryResponse> {
         return videoDataChatHistoryService.getChatHistoriesByVideoIdForPublic(uuid, offsetStart, offsetEnd)
+    }
+
+    @Operation(summary = "동영상 하이라이트 조회")
+    @GetMapping("/{uuid}/highlights")
+    fun getVideoHighlights(
+        @PathVariable uuid: String,
+        @RequestParam(required = false) windowSize: Int?,
+        @RequestParam(required = false) percentile: Int?,
+        @RequestParam(required = false) minSegment: Int?,
+        @RequestParam(required = false) mergeGap: Int?
+    ): VideoHighlightsResponse {
+        val params = HighlightParameters(
+            windowSizeSeconds = windowSize ?: 10,
+            thresholdPercentile = percentile ?: 80,
+            minSegmentSeconds = minSegment ?: 5,
+            mergeGapSeconds = mergeGap ?: 15
+        )
+        return videoHighlightService.getHighlights(uuid, params)
     }
 }

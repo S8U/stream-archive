@@ -93,3 +93,4 @@ export * from "./sortObject";
 export * from "./userInfo";
 export * from "./userInfoRole";
 export * from "./videoInfo";
+export * from "./videoHighlightsResponse";

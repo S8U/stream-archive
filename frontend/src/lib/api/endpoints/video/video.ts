@@ -21,9 +21,11 @@ import type {
 import type {
   ChatHistoryResponse,
   GetVideoChatHistoryParams,
+  GetVideoHighlightsParams,
   PagePublicVideoResponse,
   PublicVideoResponse,
   SearchVideosParams,
+  VideoHighlightsResponse,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
@@ -1011,6 +1013,187 @@ export function useGetVideoChatHistory<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetVideoChatHistoryQueryOptions(
+    uuid,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 동영상 하이라이트 조회
+ */
+export const getVideoHighlights = (
+  uuid: string,
+  params?: GetVideoHighlightsParams,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<VideoHighlightsResponse>(
+    { url: `/videos/${uuid}/highlights`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getGetVideoHighlightsQueryKey = (
+  uuid?: string,
+  params?: GetVideoHighlightsParams,
+) => {
+  return [`/videos/${uuid}/highlights`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetVideoHighlightsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoHighlights>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoHighlightsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoHighlights>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVideoHighlightsQueryKey(uuid, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoHighlights>>
+  > = ({ signal }) => getVideoHighlights(uuid, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoHighlights>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoHighlightsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoHighlights>>
+>;
+export type GetVideoHighlightsQueryError = unknown;
+
+export function useGetVideoHighlights<
+  TData = Awaited<ReturnType<typeof getVideoHighlights>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoHighlightsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoHighlights>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoHighlights>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoHighlights>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoHighlights<
+  TData = Awaited<ReturnType<typeof getVideoHighlights>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoHighlightsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoHighlights>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoHighlights>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoHighlights>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoHighlights<
+  TData = Awaited<ReturnType<typeof getVideoHighlights>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoHighlightsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoHighlights>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 하이라이트 조회
+ */
+
+export function useGetVideoHighlights<
+  TData = Awaited<ReturnType<typeof getVideoHighlights>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoHighlightsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoHighlights>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoHighlightsQueryOptions(
     uuid,
     params,
     options,
