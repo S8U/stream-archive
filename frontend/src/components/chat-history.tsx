@@ -24,6 +24,32 @@ function formatTime(milliseconds: number): string {
     return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
+// 닉네임 색깔 (닉네임 기반 랜덤)
+function getUsernameColor(username: string): string {
+    const colors = [
+        'text-blue-500',
+        'text-green-500',
+        'text-purple-500',
+        'text-pink-500',
+        'text-orange-500',
+        'text-cyan-500',
+        'text-yellow-600',
+        'text-red-500',
+        'text-indigo-500',
+        'text-rose-500',
+    ];
+
+    // 닉네임 각 문자의 코드에 위치를 곱해서 더하기
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+        hash += username.charCodeAt(i) * (i + 1);
+    }
+
+    const index = hash % colors.length;
+    return colors[index];
+}
+
+
 // 한번에 불러올 채팅 시간 (ms)
 const CHAT_LOAD_MILLIS = 3000;
 // 건너뛰었을 때 불러올 이전 채팅 시간 (ms)
@@ -140,7 +166,7 @@ export function ChatHistory({ videoUuid, currentTimeMs }: ChatHistoryProps) {
                                     ref={isLast ? lastChatRef : null}
                                 >
                                     <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis)}]</span>{' '}
-                                    <span className="font-semibold">{chat.username}</span>:{' '}
+                                    <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>:{' '}
                                     <span>{chat.message}</span>
                                 </div>
                             );
