@@ -19,17 +19,17 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     const [currentTimeMs, setCurrentTimeMs] = useState(0);
     const [highlightMode, setHighlightMode] = useState(false);
     const [showCharts, setShowCharts] = useState(false);
+    const [capturedOffsetEnd, setCapturedOffsetEnd] = useState<number | null>(null);
     const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
-    // 채팅 조회 범위 계산 (녹화 중일 때는 currentTimeMs 사용)
+    // 채팅 조회 범위 계산 (버튼 누를 당시 고정)
     const chatOffsetEnd = useMemo(() => {
-        // video.duration이 0이면 녹화 중이거나 아직 정보가 없는 상태
-        // 이 경우 현재 재생 시간 + 여유시간을 사용
-        if (video.duration <= 0) {
-            return Math.floor(currentTimeMs + 60000); // 현재 시간 + 1분 여유 (정수)
+        if (capturedOffsetEnd !== null) {
+            return capturedOffsetEnd;
         }
-        return Math.floor(video.duration * 1000); // 정수로 변환
-    }, [video.duration, currentTimeMs]);
+        // 기본값 (사용되지 않음)
+        return Math.floor(video.duration > 0 ? video.duration * 1000 : 0);
+    }, [capturedOffsetEnd, video.duration]);
 
     // 전체 채팅 데이터 불러오기 (하이라이트 계산용)
     const { data: allChats, isLoading: isLoadingChats } = useGetVideoChatHistory(
@@ -37,7 +37,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         { offsetStart: 0, offsetEnd: chatOffsetEnd },
         {
             query: {
-                enabled: showCharts || highlightMode,
+                enabled: (showCharts || highlightMode) && capturedOffsetEnd !== null,
             }
         }
     );
@@ -51,8 +51,8 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         return generateHighlights(allChats, {
             intervalMs: 10000,      // 10초 단위
             rsiPeriod: 14,          // RSI 기간
-            rsiThreshold: 65,       // RSI 피크 임계값
-            rsiBaseThreshold: 50,   // RSI 구간 시작/종료 임계값
+            rsiThreshold: 60,       // RSI 피크 임계값
+            rsiBaseThreshold: 45,   // RSI 구간 시작/종료 임계값
             minDurationMs: 10000,   // 최소 하이라이트 길이 10초
             mergeGapMs: 20000       // 20초 이내 구간은 병합
         });
@@ -62,12 +62,31 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     const toggleHighlightMode = () => {
         if (!highlightMode && highlightData.highlights.length > 0) {
             // 하이라이트 모드 활성화
+            if (capturedOffsetEnd === null) {
+                // 첫 활성화 시 현재 영상 길이 캡처
+                const offset = video.duration > 0
+                    ? Math.floor(video.duration * 1000)
+                    : Math.floor(currentTimeMs + 60000);
+                setCapturedOffsetEnd(offset);
+            }
             setHighlightMode(true);
             setShowCharts(true);
         } else {
             // 하이라이트 모드 비활성화
             setHighlightMode(false);
         }
+    };
+
+    // 그래프 보기 토글
+    const toggleCharts = () => {
+        if (!showCharts && capturedOffsetEnd === null) {
+            // 첫 활성화 시 현재 영상 길이 캡처
+            const offset = video.duration > 0
+                ? Math.floor(video.duration * 1000)
+                : Math.floor(currentTimeMs + 60000);
+            setCapturedOffsetEnd(offset);
+        }
+        setShowCharts(!showCharts);
     };
 
     // 비디오 시간 이동 핸들러
@@ -109,7 +128,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
                             {!highlightMode && (
                                 <Button
-                                    onClick={() => setShowCharts(!showCharts)}
+                                    onClick={toggleCharts}
                                     variant="outline"
                                     disabled={isLoadingChats}
                                 >
