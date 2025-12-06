@@ -58,8 +58,8 @@ class VideoRepositoryImpl(
     override fun searchForPublic(request: PublicVideoSearchRequest, pageable: Pageable): Page<Video> {
         val results = queryFactory
             .selectFrom(video)
-            .leftJoin(channel).on(video.channelId.eq(channel.id)).fetchJoin()
-            .leftJoin(record).on(video.id.eq(record.videoId)).fetchJoin()
+            .leftJoin(video.channel, channel).fetchJoin()
+            .leftJoin(video.record, record).fetchJoin()
             .where(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 video.isActive.eq(true),
