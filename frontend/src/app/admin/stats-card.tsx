@@ -80,7 +80,7 @@ export function StatsCard() {
                 isLoading={isLoading}
             />
             <StatCard
-                title="스토리지 사용량"
+                title="총 스토리지 사용량"
                 value={formatStorage(data?.totalStorage ?? 0)}
                 icon={<HardDrive className="h-4 w-4 text-muted-foreground" />}
                 isLoading={isLoading}
