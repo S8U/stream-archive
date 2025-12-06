@@ -43,9 +43,9 @@
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
 | GET | `/videos/{uuid}/chat` | 채팅 히스토리 (offsetStart, offsetEnd 파라미터 필수) | ✅ |
-| GET | `/videos/{uuid}/viewer-history` | 시청자 수 히스토리 | ❌ |
-| GET | `/videos/{uuid}/title-history` | 제목 변경 히스토리 | ❌ |
-| GET | `/videos/{uuid}/category-history` | 카테고리 변경 히스토리 | ❌ |
+| GET | `/videos/{uuid}/viewer-histories` | 시청자 수 히스토리 | ❌ |
+| GET | `/videos/{uuid}/title-histories` | 제목 변경 히스토리 | ❌ |
+| GET | `/videos/{uuid}/category-histories` | 카테고리 변경 히스토리 | ❌ |
 
 ---
 
@@ -54,11 +54,11 @@
 ### 3.1 시청 기록
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/history` | 시청 기록 목록 (페이징) | ❌ |
+| GET | `/histories` | 시청 기록 목록 (페이징) | ❌ |
 | GET | `/videos/{uuid}/watch-history` | 개별 영상 시청 기록 조회 | ❌ |
 | POST | `/videos/{uuid}/watch-history` | 시청 위치 저장 (UPSERT) | ❌ |
-| DELETE | `/history/{videoUuid}` | 개별 시청 기록 삭제 | ❌ |
-| DELETE | `/history` | 전체 시청 기록 삭제 | ❌ |
+| DELETE | `/histories/{videoUuid}` | 개별 시청 기록 삭제 | ❌ |
+| DELETE | `/histories` | 전체 시청 기록 삭제 | ❌ |
 
 ### 3.2 마이페이지
 | 메서드 | 엔드포인트 | 설명 | 상태 |
@@ -132,15 +132,14 @@
 ### 4.8 대시보드
 | 메서드 | 엔드포인트 | 설명 | 상태 |
 |--------|-----------|------|------|
-| GET | `/admin/dashboard/stats` | 대시보드 통계 | ❌ |
-| GET | `/admin/dashboard/active-records` | 현재 녹화 중인 목록 | ❌ |
-| GET | `/admin/dashboard/system-status` | 시스템 상태 (CPU, 메모리) | ❌ |
+| GET | `/admin/dashboard/stats` | 대시보드 통계 (채널 수, 동영상 수, 녹화 시간, 스토리지) | ✅ |
+| GET | `/admin/dashboard/video-histories` | 동영상 히스토리 (최근 30일간 누적 통계) | ✅ |
 
 ---
 
 ## 구현 현황 요약
 
-### ✅ 구현 완료 (42개)
+### ✅ 구현 완료 (44개)
 - 인증 API: 4개
 - 공개 채널 API: 4개
 - 공개 비디오 API: 5개
@@ -151,14 +150,14 @@
 - 녹화 기록 관리: 3개
 - 비디오 관리: 4개
 - 사용자 관리: 4개
+- 대시보드: 2개 (통계, 동영상 히스토리)
 - JWT 기반 인증/인가 시스템 구현 완료
 
-### ❌ 미구현 (11개)
+### ❌ 미구현 (9개)
 - 메타데이터 API: 3개
 - 시청 기록 API: 5개
 - 사용자 API: 3개
 - 관리자 설정 관리: 4개
-- 관리자 대시보드: 3개
 
 ### 전체 구현률
-**42 / 53 = 79%**
+**44 / 53 = 83%**
