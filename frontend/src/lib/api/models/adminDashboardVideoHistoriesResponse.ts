@@ -5,11 +5,8 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { DailyStat } from "./dailyStat";
 
-export interface VideoInfo {
-  id: number;
-  uuid: string;
-  title: string;
-  thumbnailUrl: string;
-  duration: number;
+export interface AdminDashboardVideoHistoriesResponse {
+  dailyStats: DailyStat[];
 }

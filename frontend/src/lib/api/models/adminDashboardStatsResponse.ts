@@ -6,10 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface VideoInfo {
-  id: number;
-  uuid: string;
-  title: string;
-  thumbnailUrl: string;
-  duration: number;
+export interface AdminDashboardStatsResponse {
+  totalChannels: number;
+  totalVideos: number;
+  totalDuration: number;
+  totalStorage: number;
 }

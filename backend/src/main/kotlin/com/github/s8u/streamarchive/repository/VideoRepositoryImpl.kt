@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.repository
 
+import com.github.s8u.streamarchive.dto.AdminDashboardVideoHistoriesResponse
 import com.github.s8u.streamarchive.dto.AdminVideoSearchRequest
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
 import com.github.s8u.streamarchive.entity.QChannel
@@ -8,6 +9,7 @@ import com.github.s8u.streamarchive.entity.QVideo
 import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.querydsl.jpa.impl.JPAQueryFactory
+import java.time.LocalDate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -86,5 +88,52 @@ class VideoRepositoryImpl(
             .fetchOne() ?: 0L
 
         return PageImpl(results, pageable, total)
+    }
+
+    override fun sumDuration(): Long? {
+        return queryFactory.select(video.duration.sum().longValue()).from(video).fetchOne()
+    }
+
+    override fun sumFileSize(): Long? {
+        return queryFactory.select(video.fileSize.sum()).from(video).fetchOne()
+    }
+
+    override fun getDailyVideoStats(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<AdminDashboardVideoHistoriesResponse.DailyStat> {
+        // 각 날짜별 누적 값 계산
+        val result = mutableListOf<AdminDashboardVideoHistoriesResponse.DailyStat>()
+        var currentDate = startDate
+
+        while (!currentDate.isAfter(endDate)) {
+            val endOfDay = currentDate.plusDays(1).atStartOfDay()
+
+            val videoCount = queryFactory
+                    .select(video.count())
+                    .from(video)
+                    .where(video.createdAt.lt(endOfDay))
+                    .fetchOne()
+                    ?: 0L
+
+            val storageUsage = queryFactory
+                    .select(video.fileSize.sum())
+                    .from(video)
+                    .where(video.createdAt.lt(endOfDay))
+                    .fetchOne()
+                    ?: 0L
+
+            result.add(
+                AdminDashboardVideoHistoriesResponse.DailyStat(
+                    date = currentDate,
+                    videoCount = videoCount,
+                    storageUsage = storageUsage
+                )
+            )
+
+            currentDate = currentDate.plusDays(1)
+        }
+
+        return result
     }
 }
