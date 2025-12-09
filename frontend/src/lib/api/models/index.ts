@@ -95,6 +95,6 @@ export * from "./signupRequest";
 export * from "./signupResponse";
 export * from "./signupResponseRole";
 export * from "./sortObject";
-export * from "./userInfo";
-export * from "./userInfoRole";
+export * from "./userMeResponse";
+export * from "./userMeResponseRole";
 export * from "./videoInfo";

@@ -5,10 +5,10 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { UserInfo } from "./userInfo";
+import type { UserMeResponse } from "./userMeResponse";
 
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
-  user: UserInfo;
+  user: UserMeResponse;
 }

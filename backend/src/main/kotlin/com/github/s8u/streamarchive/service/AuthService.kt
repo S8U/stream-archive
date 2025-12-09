@@ -67,7 +67,7 @@ class AuthService(
         return LoginResponse(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            user = UserInfo.from(user)
+            user = UserMeResponse.from(user)
         )
     }
 
