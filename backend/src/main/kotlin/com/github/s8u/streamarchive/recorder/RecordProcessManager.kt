@@ -66,7 +66,8 @@ class RecordProcessManager(
                     "-y",                           // 덮어쓰기
                     "-v", "error",                  // 에러만 로깅
                     "-i", "pipe:0",                 // stdin에서 입력
-                    "-c", "copy",                   // 코덱 복사 (재인코딩 X)
+                    "-c:v", "copy",                 // 동영상 코덱 복사 (재인코딩 X)
+                    "-c:a", "copy",                 // 오디오 코덱 복사 (재인코딩 X)
                     "-f", "hls",                    // HLS 형식
                     "-hls_time", "3",               // 3초 세그먼트
                     "-hls_list_size", "0",          // 무제한 세그먼트
