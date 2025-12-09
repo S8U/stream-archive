@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { usePathname } from "next/navigation";
-import { Toaster } from "@/components/ui/sonner";
 import { ModeToggle } from "@/components/common/mode-toggle";
 
 interface MenuItem {
@@ -202,7 +201,6 @@ export default function AdminLayout({
                     {children}
                 </div>
             </main>
-            <Toaster />
         </SidebarProvider>
     );
 }

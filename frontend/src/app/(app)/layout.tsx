@@ -131,7 +131,9 @@ export default async function AppLayout({
                     {/* 오른쪽: 토글 & 로그인 버튼 */}
                     <div className="flex-shrink-0 flex items-center gap-2">
                         <ModeToggle />
-                        <Button variant="secondary">로그인</Button>
+                        <Button variant="secondary" asChild>
+                            <Link href="/login">로그인</Link>
+                        </Button>
 
                         {/*<Avatar className="w-9 h-9">*/}
                         {/*    <AvatarImage src="" />*/}
