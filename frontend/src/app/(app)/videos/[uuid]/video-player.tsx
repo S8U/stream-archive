@@ -55,6 +55,8 @@ export function VideoPlayer({ playlistUrl, onTimeUpdate }: VideoPlayerProps) {
                 ref={videoRef}
                 controls
                 className="w-full h-full"
+                playsInline
+                webkit-playsinline
                 onTimeUpdate={(e) => {
                     if (onTimeUpdate) {
                         onTimeUpdate(e.currentTarget.currentTime * 1000);
