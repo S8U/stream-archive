@@ -57,7 +57,10 @@ AXIOS_INSTANCE.interceptors.response.use(
       return AXIOS_INSTANCE(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError as AxiosError);
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      
+      // /users/me는 인증 체크용이므로 리다이렉트하지 않음
+      const isAuthCheck = originalRequest.url?.includes('/users/me');
+      if (typeof window !== 'undefined' && !isAuthCheck && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
       return Promise.reject(refreshError);

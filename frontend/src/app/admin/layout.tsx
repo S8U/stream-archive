@@ -39,8 +39,11 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { ModeToggle } from "@/components/common/mode-toggle";
+import { useGetUserMe } from "@/lib/api/endpoints/user/user";
+import { useLogout } from "@/lib/api/endpoints/auth/auth";
 
 interface MenuItem {
     title: string;
@@ -101,6 +104,22 @@ export default function AdminLayout({
         group.items.map(item => ({ ...item, group: group.label }))
     );
     const currentPage = allItems.find(item => item.href === pathname);
+    
+    const router = useRouter();
+    const queryClient = useQueryClient();
+    const { data: user } = useGetUserMe();
+    const logoutMutation = useLogout();
+
+    const handleLogout = async () => {
+        try {
+            await logoutMutation.mutateAsync({ data: {} });
+            queryClient.clear();
+            router.push('/login');
+        } catch {
+            queryClient.clear();
+            router.push('/login');
+        }
+    };
 
     return (
         <SidebarProvider>
@@ -147,8 +166,8 @@ export default function AdminLayout({
                                             <User className="h-4 w-4" />
                                         </div>
                                         <div className="grid flex-1 text-left text-sm leading-tight">
-                                            <span className="truncate font-semibold">S8U</span>
-                                            <span className="truncate text-xs text-muted-foreground">m@example.com</span>
+                                            <span className="truncate font-semibold">{user?.name || '사용자'}</span>
+                                            <span className="truncate text-xs text-muted-foreground">{user?.email || ''}</span>
                                         </div>
                                         <ChevronUp className="ml-auto size-4" />
                                     </SidebarMenuButton>
@@ -160,7 +179,7 @@ export default function AdminLayout({
                                             <span>메인 화면으로 가기</span>
                                         </Link>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleLogout}>
                                         <LogOut />
                                         <span>로그아웃</span>
                                     </DropdownMenuItem>

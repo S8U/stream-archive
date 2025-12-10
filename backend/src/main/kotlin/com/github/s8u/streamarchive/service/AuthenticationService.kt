@@ -10,16 +10,18 @@ class AuthenticationService(
     private val userRepository: UserRepository
 ) {
     fun getCurrentUserId(): Long? {
+        val user = getCurrentUser() ?: return null
+        return user.id
+    }
+
+    fun getCurrentUser(): User? {
         val authentication = SecurityContextHolder.getContext().authentication ?: return null
         if (!authentication.isAuthenticated || authentication.principal == "anonymousUser") {
             return null
         }
-        return (authentication.principal as? Long)
-    }
-
-    fun getCurrentUser(): User? {
-        val userId = getCurrentUserId() ?: return null
-        return userRepository.findById(userId).orElse(null)
+        
+        val username = authentication.name ?: return null
+        return userRepository.findByUsername(username)
     }
 
     fun isAuthenticated(): Boolean {

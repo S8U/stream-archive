@@ -7,5 +7,5 @@
  */
 
 export interface RefreshTokenRequest {
-  refreshToken: string;
+  refreshToken?: string;
 }

@@ -7,5 +7,5 @@
  */
 
 export interface LogoutRequest {
-  refreshToken: string;
+  refreshToken?: string;
 }

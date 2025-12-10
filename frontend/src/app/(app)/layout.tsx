@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { searchChannels } from "@/lib/api/endpoints/channel/channel";
 import { ModeToggle } from "@/components/common/mode-toggle";
 import { SearchBar } from "./search-bar";
+import { UserMenu } from "./user-menu";
 
 export default async function AppLayout({
     children,
@@ -116,17 +117,10 @@ export default async function AppLayout({
                     {/* 중앙: 검색창 */}
                     <SearchBar />
 
-                    {/* 오른쪽: 토글 & 로그인 버튼 */}
+                    {/* 오른쪽: 토글 & 유저 메뉴 */}
                     <div className="flex-shrink-0 flex items-center gap-2">
                         <ModeToggle />
-                        <Button variant="secondary" asChild>
-                            <Link href="/login">로그인</Link>
-                        </Button>
-
-                        {/*<Avatar className="w-9 h-9">*/}
-                        {/*    <AvatarImage src="" />*/}
-                        {/*    <AvatarFallback>S</AvatarFallback>*/}
-                        {/*</Avatar>*/}
+                        <UserMenu />
                     </div>
                 </div>
                 {/*<Separator />*/}
