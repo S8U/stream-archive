@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Clock, HomeIcon, Library, Menu, Search, ThumbsUp } from "lucide-react";
+import { Clock, HomeIcon, Library, Menu, ThumbsUp } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
 import { searchChannels } from "@/lib/api/endpoints/channel/channel";
 import { ModeToggle } from "@/components/common/mode-toggle";
+import { SearchBar } from "./search-bar";
 
 export default async function AppLayout({
     children,
@@ -114,19 +114,7 @@ export default async function AppLayout({
                     </div>
 
                     {/* 중앙: 검색창 */}
-                    <div className="flex-1 max-w-sm">
-                        <div
-                            className="flex border border-input rounded-full h-10 focus-within:ring-2 focus-within:ring-ring transition-all">
-                            <Input
-                                type="search"
-                                placeholder="검색"
-                                className="flex-1 border-0 h-full focus-visible:ring-0"
-                            />
-                            <Button variant="secondary" size="icon" className="rounded-r-full h-full">
-                                <Search className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
+                    <SearchBar />
 
                     {/* 오른쪽: 토글 & 로그인 버튼 */}
                     <div className="flex-shrink-0 flex items-center gap-2">

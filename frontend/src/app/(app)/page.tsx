@@ -9,15 +9,17 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-    searchParams: { page?: string };
+    searchParams: Promise<{ page?: string; q?: string }>;
 };
 
 export default async function Home({ searchParams }: Props) {
-    const page = Math.max(0, Number(searchParams.page || 1) - 1); // URL은 1-based, API는 0-based
+    const params = await searchParams;
+    const page = Math.max(0, Number(params.page || 1) - 1);
     const size = 20;
+    const query = params.q?.trim();
 
     const data = await searchVideos({
-        request: {},
+        request: query ? { title: query } : {},
         pageable: {
             page: page + 1,
             size,
