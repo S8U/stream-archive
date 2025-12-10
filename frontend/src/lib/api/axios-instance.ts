@@ -1,67 +1,94 @@
-import Axios, { AxiosRequestConfig } from 'axios';
+import Axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export const AXIOS_INSTANCE = Axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080',
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
-// 요청 인터셉터: 인증 토큰 추가 등
-AXIOS_INSTANCE.interceptors.request.use(
-  (config) => {
-    // 필요시 토큰 추가
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// 토큰 리프레시 상태 관리
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+  config: InternalAxiosRequestConfig;
+}> = [];
 
-// 응답 인터셉터: 에러 처리 등
+const processQueue = (error: AxiosError | null) => {
+  failedQueue.forEach(({ resolve, reject, config }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(AXIOS_INSTANCE(config));
+    }
+  });
+  failedQueue = [];
+};
+
+// 401 발생 시 자동 refresh
 AXIOS_INSTANCE.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // 에러 처리 로직
-    return Promise.reject(error);
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // 401이 아니거나, 이미 재시도했거나, refresh 요청 자체인 경우 그냥 에러 반환
+    if (
+      error.response?.status !== 401 ||
+      originalRequest._retry ||
+      originalRequest.url?.includes('/auth/refresh')
+    ) {
+      return Promise.reject(error);
+    }
+
+    // 이미 refresh 중이면 큐에 추가
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject, config: originalRequest });
+      });
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      await AXIOS_INSTANCE.post('/auth/refresh', {});
+      processQueue(null);
+      return AXIOS_INSTANCE(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError as AxiosError);
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 
+// Orval용 커스텀 인스턴스 (params 플랫화)
 export const customAxiosInstance = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig
 ): Promise<T> => {
-  // params가 중첩된 객체인 경우 플랫하게 변환
   let params = config.params;
+  
   if (params && typeof params === 'object') {
     const flatParams: Record<string, unknown> = {};
-
-    // request, pageable 등의 중첩 객체를 플랫하게 펼침
     Object.entries(params).forEach(([key, value]) => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
-        // 중첩 객체를 플랫하게 펼침
-        Object.entries(value as Record<string, unknown>).forEach(([nestedKey, nestedValue]) => {
-          if (nestedValue !== undefined && nestedValue !== null) {
-            flatParams[nestedKey] = nestedValue;
-          }
+        Object.entries(value as Record<string, unknown>).forEach(([k, v]) => {
+          if (v !== undefined && v !== null) flatParams[k] = v;
         });
       } else if (value !== undefined && value !== null) {
         flatParams[key] = value;
       }
     });
-
     params = flatParams;
   }
 
-  const promise = AXIOS_INSTANCE({
-    ...config,
-    params,
-    ...options,
-  }).then(({ data }) => data);
-
-  return promise;
+  return AXIOS_INSTANCE({ ...config, params, ...options }).then(({ data }) => data);
 };
 
 export default customAxiosInstance;

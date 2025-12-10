@@ -1,13 +1,10 @@
 package com.github.s8u.streamarchive.security
 
 import com.github.s8u.streamarchive.config.properties.JwtProperties
-import com.github.s8u.streamarchive.service.AuthService
-import com.github.s8u.streamarchive.service.JwtCookieService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Lazy
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -19,12 +16,10 @@ import org.springframework.web.filter.OncePerRequestFilter
 class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userDetailsService: UserDetailsService,
-    private val jwtProperties: JwtProperties,
-    @Lazy private val authService: AuthService,
-    private val jwtCookieService: JwtCookieService
+    private val jwtProperties: JwtProperties
 ) : OncePerRequestFilter() {
 
-    private val logger = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
+    private val log = LoggerFactory.getLogger(JwtAuthenticationFilter::class.java)
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -33,35 +28,10 @@ class JwtAuthenticationFilter(
     ) {
         val accessToken = extractAccessTokenFromCookie(request)
 
-        // 인증
+        // Access Token이 유효하면 인증 설정
+        // 유효하지 않으면 인증 없이 진행 → Spring Security가 401/403 반환
         if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
             setAuthentication(accessToken, request)
-        }
-        // Access Token 재발급
-        else {
-            logger.debug("Access token invalid, attempting auto-refresh")
-
-            val refreshToken = extractRefreshTokenFromCookie(request)
-            if (refreshToken != null) {
-                try {
-                    val newTokens = authService.refresh(refreshToken)
-
-                    // 새 쿠키 설정
-                    jwtCookieService.setAccessTokenCookie(response, newTokens.accessToken)
-                    jwtCookieService.setRefreshTokenCookie(response, newTokens.refreshToken)
-
-                    // 새 AT로 인증
-                    setAuthentication(newTokens.accessToken, request)
-
-                    logger.info("Access token auto-refreshed successfully")
-                } catch (refreshException: Exception) {
-                    logger.debug("Auto-refresh failed", refreshException)
-                    SecurityContextHolder.clearContext()
-                }
-            } else {
-                logger.debug("No refresh token available for auto-refresh")
-                SecurityContextHolder.clearContext()
-            }
         }
 
         filterChain.doFilter(request, response)
@@ -70,12 +40,6 @@ class JwtAuthenticationFilter(
     private fun extractAccessTokenFromCookie(request: HttpServletRequest): String? {
         return request.cookies?.find {
             it.name == jwtProperties.cookie.accessTokenName
-        }?.value
-    }
-
-    private fun extractRefreshTokenFromCookie(request: HttpServletRequest): String? {
-        return request.cookies?.find {
-            it.name == jwtProperties.cookie.refreshTokenName
         }?.value
     }
 
@@ -90,7 +54,6 @@ class JwtAuthenticationFilter(
         )
         authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
         SecurityContextHolder.getContext().authentication = authentication
-        logger.debug("Set authentication for user: $username")
+        log.debug("Set authentication for user: $username")
     }
-
 }

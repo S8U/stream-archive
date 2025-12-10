@@ -47,7 +47,7 @@ data class SignupResponse(
 }
 
 data class RefreshTokenRequest(
-    val refreshToken: String
+    val refreshToken: String? = null
 )
 
 data class RefreshTokenResponse(
@@ -56,7 +56,7 @@ data class RefreshTokenResponse(
 )
 
 data class LogoutRequest(
-    val refreshToken: String
+    val refreshToken: String? = null
 )
 
 data class UserMeResponse(

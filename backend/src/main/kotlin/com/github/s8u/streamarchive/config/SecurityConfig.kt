@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.config
 
 import com.github.s8u.streamarchive.enums.Role
 import com.github.s8u.streamarchive.security.JwtAuthenticationFilter
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -53,6 +54,15 @@ class SecurityConfig(
                 auth
                     .requestMatchers("/admin/**").hasRole(Role.ADMIN.name)
                     .anyRequest().permitAll()
+            }
+            .exceptionHandling {
+                it.authenticationEntryPoint { _, response, _ ->
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                }
+
+                it.accessDeniedHandler { _, response, _ ->
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN)
+                }
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
