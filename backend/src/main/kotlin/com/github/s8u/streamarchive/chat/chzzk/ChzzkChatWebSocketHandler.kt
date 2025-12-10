@@ -90,11 +90,7 @@ class ChzzkChatWebSocketHandler(
                         val msg = node.path("msg").asText()
                         val msgTime = node.path("msgTime").asLong()
 
-                        val time = LocalDateTime.ofInstant(
-                            Instant.ofEpochMilli(msgTime),
-                            ZoneId.systemDefault()
-                        )
-
+                        val time = LocalDateTime.now()
                         val offsetMillis = Duration.between(recordStartedAt, time).toMillis()
 
                         val chatMessageDto = ChatMessageDto(
