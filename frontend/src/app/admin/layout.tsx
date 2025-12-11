@@ -12,7 +12,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarProvider,
-    SidebarTrigger
+    SidebarTrigger,
+    useSidebar
 } from "@/components/ui/sidebar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
@@ -92,6 +93,34 @@ const menuConfig: MenuGroup[] = [
     },
 ];
 
+function SidebarMenuContent() {
+    const { setOpenMobile } = useSidebar();
+
+    return (
+        <>
+            {menuConfig.map((group) => (
+                <SidebarGroup key={group.label}>
+                    <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            {group.items.map((item) => (
+                                <SidebarMenuItem key={item.href}>
+                                    <SidebarMenuButton asChild>
+                                        <Link href={item.href} onClick={() => setOpenMobile(false)}>
+                                            <item.icon />
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+            ))}
+        </>
+    );
+}
+
 export default function AdminLayout({
     children,
 }: Readonly<{
@@ -136,25 +165,7 @@ export default function AdminLayout({
                     </Link>
                 </SidebarHeader>
                 <SidebarContent>
-                    {menuConfig.map((group) => (
-                        <SidebarGroup key={group.label}>
-                            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-                            <SidebarGroupContent>
-                                <SidebarMenu>
-                                    {group.items.map((item) => (
-                                        <SidebarMenuItem key={item.href}>
-                                            <SidebarMenuButton asChild>
-                                                <Link href={item.href}>
-                                                    <item.icon />
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    ))}
-                                </SidebarMenu>
-                            </SidebarGroupContent>
-                        </SidebarGroup>
-                    ))}
+                    <SidebarMenuContent />
                 </SidebarContent>
                 <SidebarFooter>
                     <SidebarMenu>

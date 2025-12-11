@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { Clock, HomeIcon, Library, Menu, ThumbsUp } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { searchChannels } from "@/lib/api/endpoints/channel/channel";
 import { ModeToggle } from "@/components/common/mode-toggle";
 import { SearchBar } from "./search-bar";
 import { UserMenu } from "./user-menu";
+import { SidebarContent } from "./sidebar-content";
 
 export default async function AppLayout({
     children,
@@ -25,64 +24,6 @@ export default async function AppLayout({
 
     const channels = data?.content || [];
 
-    const SidebarContent = () => (
-        <div className="flex flex-col h-full py-4">
-            {/* 메인 메뉴 */}
-            <div className="px-3 mb-4">
-                <Link
-                    href="/public"
-                    className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
-                >
-                    <HomeIcon className="w-5 h-5" />
-                    <span>홈</span>
-                </Link>
-
-                <Link
-                    href="/public"
-                    className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
-                >
-                    <Library className="w-5 h-5" />
-                    <span>보관함</span>
-                </Link>
-
-                <Link
-                    href="/my/history"
-                    className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
-                >
-                    <Clock className="w-5 h-5" />
-                    <span>시청 기록</span>
-                </Link>
-
-                <Link
-                    href="/public"
-                    className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
-                >
-                    <ThumbsUp className="w-5 h-5" />
-                    <span>좋아요</span>
-                </Link>
-            </div>
-
-            <Separator className="mb-4" />
-
-            {/* 채널 목록 */}
-            <div className="px-3 overflow-y-auto">
-                <h3 className="px-3 mb-2 text-sm font-semibold text-muted-foreground">채널</h3>
-                {channels.map((channel) => (
-                    <Link
-                        key={channel.uuid}
-                        href={"/channels/" + channel.uuid}
-                        className="flex items-center gap-4 px-3 py-2 rounded-lg hover:bg-secondary transition"
-                    >
-                        <Avatar className="w-8 h-8">
-                            <AvatarImage src={channel.profileUrl} />
-                            <AvatarFallback>{channel.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <span>{channel.name}</span>
-                    </Link>
-                ))}
-            </div>
-        </div>
-    );
 
     return (
         <div className={"bg-background"}>
@@ -104,7 +45,7 @@ export default async function AppLayout({
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-64">
-                                <SidebarContent />
+                                <SidebarContent channels={channels} isSheet />
                             </SheetContent>
                         </Sheet>
 
@@ -129,7 +70,7 @@ export default async function AppLayout({
             {/* PC 사이드바 */}
             <div className="hidden md:block fixed w-60 h-full">
                 {/*<Separator orientation="vertical" className="absolute right-0"></Separator>*/}
-                <SidebarContent />
+                <SidebarContent channels={channels} />
             </div>
 
             {/* 내용 */}
