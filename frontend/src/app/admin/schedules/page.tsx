@@ -39,6 +39,7 @@ const DAYS_MAP: Record<string, string> = {
     SUNDAY: "일",
 };
 
+const searchFieldOptions = ["id", "channelName"] as const;
 const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
 const scheduleTypeOptions = ["__none__", "ONCE", "ALWAYS", "N_DAYS_OF_EVERY_WEEK", "SPECIFIC_DAY"] as const;
 
@@ -51,6 +52,7 @@ export default function RecordSchedulesPage() {
     const [selectedSchedule, setSelectedSchedule] = useState<AdminRecordScheduleResponse | null>(null);
 
     // URL 상태 (nuqs)
+    const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("channelName"));
     const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
     const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
     const [searchScheduleType, setSearchScheduleType] = useQueryState("type", parseAsStringLiteral(scheduleTypeOptions).withDefault("__none__"));
@@ -61,7 +63,8 @@ export default function RecordSchedulesPage() {
     // Build search params
     const searchParams = {
         request: {
-            channelName: searchQuery || undefined,
+            id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
+            channelName: searchField === "channelName" ? searchQuery : undefined,
             platformType: searchPlatformType !== "__none__" ? (searchPlatformType as AdminRecordScheduleSearchRequestPlatformType) : undefined,
             scheduleType: searchScheduleType !== "__none__" ? (searchScheduleType as AdminRecordScheduleSearchRequestScheduleType) : undefined,
         },
@@ -83,6 +86,7 @@ export default function RecordSchedulesPage() {
     };
 
     const handleReset = () => {
+        setSearchField("channelName");
         setSearchQuery("");
         setSearchPlatformType("__none__");
         setSearchScheduleType("__none__");
@@ -198,6 +202,18 @@ export default function RecordSchedulesPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
+                            <span className="text-muted-foreground">검색 기준:</span>
+                            <SelectValue placeholder="검색 기준" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="id">ID</SelectItem>
+                                <SelectItem value="channelName">채널명</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                     <Select value={searchPlatformType} onValueChange={(value) => setSearchPlatformType(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">플랫폼:</span>

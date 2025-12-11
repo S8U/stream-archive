@@ -8,6 +8,7 @@
 import type { AdminChannelPlatformSearchRequestPlatformType } from "./adminChannelPlatformSearchRequestPlatformType";
 
 export interface AdminChannelPlatformSearchRequest {
+  id?: number;
   channelName?: string;
   platformType?: AdminChannelPlatformSearchRequestPlatformType;
   platformChannelId?: string;

@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { PlatformBadge } from "@/components/common/platform-badge";
 
-const searchFieldOptions = ["channelName", "platformChannelId"] as const;
+const searchFieldOptions = ["id", "channelName", "platformChannelId"] as const;
 const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
 const syncProfileOptions = ["__none__", "true", "false"] as const;
 
@@ -51,6 +51,7 @@ export default function ChannelPlatformsPage() {
     // Build search params
     const searchParams = {
         request: {
+            id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
             channelName: searchField === "channelName" ? searchQuery : undefined,
             platformChannelId: searchField === "platformChannelId" ? searchQuery : undefined,
             platformType: searchPlatformType !== "__none__" ? (searchPlatformType as AdminChannelPlatformSearchRequestPlatformType) : undefined,
@@ -160,6 +161,7 @@ export default function ChannelPlatformsPage() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
+                                <SelectItem value="id">ID</SelectItem>
                                 <SelectItem value="channelName">채널명</SelectItem>
                                 <SelectItem value="platformChannelId">플랫폼 채널 ID</SelectItem>
                             </SelectGroup>
@@ -216,7 +218,6 @@ export default function ChannelPlatformsPage() {
                     <TableHeader className="bg-muted">
                         <TableRow>
                             <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
-                            <TableHead className="border-r font-semibold w-[80px] text-center">채널 ID</TableHead>
                             <TableHead className="border-r font-semibold">채널 정보</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">플랫폼</TableHead>
                             <TableHead className="border-r font-semibold">플랫폼 채널 ID</TableHead>
@@ -249,9 +250,6 @@ export default function ChannelPlatformsPage() {
                                 <TableRow key={platform.id}>
                                     {/* ID */}
                                     <TableCell className="border-r text-center">{platform.id}</TableCell>
-
-                                    {/* 채널 ID */}
-                                    <TableCell className="border-r text-center">{platform.channel.id}</TableCell>
 
                                     {/* 채널 정보 */}
                                     <TableCell className="border-r">

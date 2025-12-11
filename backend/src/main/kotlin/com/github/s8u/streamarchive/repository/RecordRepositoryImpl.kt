@@ -26,7 +26,10 @@ class RecordRepositoryImpl(
             .leftJoin(record.channel, channel).fetchJoin()
             .leftJoin(record.video, video).fetchJoin()
             .where(
+                request.id?.let { record.id.eq(it) },
                 request.channelName?.let { record.channel.name.containsIgnoreCase(it) },
+                request.title?.let { record.video.title.containsIgnoreCase(it) },
+                request.platformStreamId?.let { record.platformStreamId.containsIgnoreCase(it) },
                 request.platformType?.let { record.platformType.eq(it) },
                 request.isEnded?.let { record.isEnded.eq(it) },
                 request.isCancelled?.let { record.isCancelled.eq(it) },
@@ -44,7 +47,10 @@ class RecordRepositoryImpl(
             .leftJoin(video).on(record.videoId.eq(video.id))
             .leftJoin(channel).on(video.channelId.eq(channel.id))
             .where(
+                request.id?.let { record.id.eq(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
+                request.title?.let { video.title.containsIgnoreCase(it) },
+                request.platformStreamId?.let { record.platformStreamId.containsIgnoreCase(it) },
                 request.platformType?.let { record.platformType.eq(it) },
                 request.isEnded?.let { record.isEnded.eq(it) },
                 request.isCancelled?.let { record.isCancelled.eq(it) },

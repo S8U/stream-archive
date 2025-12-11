@@ -10,6 +10,7 @@ import type { AdminRecordScheduleSearchRequestScheduleType } from "./adminRecord
 import type { AdminRecordScheduleSearchRequestRecordQuality } from "./adminRecordScheduleSearchRequestRecordQuality";
 
 export interface AdminRecordScheduleSearchRequest {
+  id?: number;
   channelName?: string;
   platformType?: AdminRecordScheduleSearchRequestPlatformType;
   scheduleType?: AdminRecordScheduleSearchRequestScheduleType;

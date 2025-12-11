@@ -8,7 +8,10 @@
 import type { AdminRecordSearchRequestPlatformType } from "./adminRecordSearchRequestPlatformType";
 
 export interface AdminRecordSearchRequest {
+  id?: number;
   channelName?: string;
+  title?: string;
+  platformStreamId?: string;
   platformType?: AdminRecordSearchRequestPlatformType;
   isEnded?: boolean;
   isCancelled?: boolean;

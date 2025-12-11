@@ -10,15 +10,15 @@ import type { SortObject } from "./sortObject";
 import type { PageableObject } from "./pageableObject";
 
 export interface PagePublicVideoResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
   content?: PublicVideoResponse[];
   number?: number;
   sort?: SortObject;
-  numberOfElements?: number;
   pageable?: PageableObject;
+  numberOfElements?: number;
   empty?: boolean;
 }

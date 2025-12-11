@@ -8,7 +8,9 @@
 import type { AdminUserSearchRequestRole } from "./adminUserSearchRequestRole";
 
 export interface AdminUserSearchRequest {
-  keyword?: string;
+  id?: number;
+  username?: string;
+  name?: string;
   role?: AdminUserSearchRequestRole;
   createdAtFrom?: string;
   createdAtTo?: string;

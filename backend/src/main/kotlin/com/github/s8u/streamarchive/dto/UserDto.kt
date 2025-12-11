@@ -10,7 +10,9 @@ data class AdminUserUpdateRequest(
 )
 
 data class AdminUserSearchRequest(
-    val keyword: String? = null,
+    val id: Long? = null,
+    val username: String? = null,
+    val name: String? = null,
     val role: Role? = null,
     val createdAtFrom: LocalDateTime? = null,
     val createdAtTo: LocalDateTime? = null

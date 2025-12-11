@@ -24,6 +24,7 @@ data class AdminRecordScheduleUpdateRequest(
 )
 
 data class AdminRecordScheduleSearchRequest(
+    val id: Long? = null,
     val channelName: String? = null,
     val platformType: PlatformType? = null,
     val scheduleType: RecordScheduleType? = null,

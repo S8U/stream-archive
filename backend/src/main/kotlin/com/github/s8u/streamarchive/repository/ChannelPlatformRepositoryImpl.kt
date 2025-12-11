@@ -23,6 +23,7 @@ class ChannelPlatformRepositoryImpl(
             .selectFrom(channelPlatform)
             .leftJoin(channelPlatform.channel, channel).fetchJoin()
             .where(
+                request.id?.let { channelPlatform.id.eq(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { channelPlatform.platformType.eq(it) },
                 request.platformChannelId?.let { channelPlatform.platformChannelId.containsIgnoreCase(it) },
@@ -38,6 +39,7 @@ class ChannelPlatformRepositoryImpl(
             .from(channelPlatform)
             .leftJoin(channel).on(channelPlatform.channel.id.eq(channel.id))
             .where(
+                request.id?.let { channelPlatform.id.eq(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { channelPlatform.platformType.eq(it) },
                 request.platformChannelId?.let { channelPlatform.platformChannelId.containsIgnoreCase(it) },

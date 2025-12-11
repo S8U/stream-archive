@@ -8,6 +8,8 @@
 import type { AdminVideoSearchRequestContentPrivacy } from "./adminVideoSearchRequestContentPrivacy";
 
 export interface AdminVideoSearchRequest {
+  id?: number;
+  uuid?: string;
   title?: string;
   channelName?: string;
   contentPrivacy?: AdminVideoSearchRequestContentPrivacy;

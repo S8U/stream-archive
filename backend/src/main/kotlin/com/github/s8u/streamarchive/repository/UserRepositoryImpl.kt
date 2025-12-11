@@ -20,10 +20,9 @@ class UserRepositoryImpl(
         val results = queryFactory
             .selectFrom(user)
             .where(
-                request.keyword?.let {
-                    user.username.containsIgnoreCase(it)
-                        .or(user.name.containsIgnoreCase(it))
-                },
+                request.id?.let { user.id.eq(it) },
+                request.username?.let { user.username.containsIgnoreCase(it) },
+                request.name?.let { user.name.containsIgnoreCase(it) },
                 request.role?.let { user.role.eq(it) },
                 request.createdAtFrom?.let { user.createdAt.goe(it) },
                 request.createdAtTo?.let { user.createdAt.loe(it) }
@@ -37,10 +36,9 @@ class UserRepositoryImpl(
             .select(user.count())
             .from(user)
             .where(
-                request.keyword?.let {
-                    user.username.containsIgnoreCase(it)
-                        .or(user.name.containsIgnoreCase(it))
-                },
+                request.id?.let { user.id.eq(it) },
+                request.username?.let { user.username.containsIgnoreCase(it) },
+                request.name?.let { user.name.containsIgnoreCase(it) },
                 request.role?.let { user.role.eq(it) },
                 request.createdAtFrom?.let { user.createdAt.goe(it) },
                 request.createdAtTo?.let { user.createdAt.loe(it) }

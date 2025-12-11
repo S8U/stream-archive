@@ -17,7 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
 
-const searchFieldOptions = ["title", "channelName"] as const;
+const searchFieldOptions = ["id", "uuid", "channelName", "title"] as const;
 const privacyOptions = ["__none__", "PUBLIC", "UNLISTED", "PRIVATE"] as const;
 
 export default function VideosPage() {
@@ -38,8 +38,10 @@ export default function VideosPage() {
     // Build search params
     const searchParams = {
         request: {
-            title: searchField === "title" ? searchQuery : undefined,
+            id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
+            uuid: searchField === "uuid" ? searchQuery : undefined,
             channelName: searchField === "channelName" ? searchQuery : undefined,
+            title: searchField === "title" ? searchQuery : undefined,
             contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminVideoSearchRequestContentPrivacy) : undefined,
         },
         pageable: {
@@ -167,8 +169,10 @@ export default function VideosPage() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectItem value="title">제목</SelectItem>
+                                <SelectItem value="id">ID</SelectItem>
+                                <SelectItem value="uuid">UUID</SelectItem>
                                 <SelectItem value="channelName">채널명</SelectItem>
+                                <SelectItem value="title">제목</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

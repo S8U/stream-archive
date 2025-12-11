@@ -30,6 +30,8 @@ class VideoRepositoryImpl(
             .leftJoin(video.channel, channel).fetchJoin()
             .leftJoin(video.record, record).fetchJoin()
             .where(
+                request.id?.let { video.id.eq(it) },
+                request.uuid?.let { video.uuid.eq(it) },
                 request.title?.let { video.title.containsIgnoreCase(it) },
                 request.channelName?.let { video.channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },
@@ -46,6 +48,8 @@ class VideoRepositoryImpl(
             .from(video)
             .leftJoin(channel).on(video.channelId.eq(channel.id))
             .where(
+                request.id?.let { video.id.eq(it) },
+                request.uuid?.let { video.uuid.eq(it) },
                 request.title?.let { video.title.containsIgnoreCase(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },

@@ -5,7 +5,10 @@ import com.github.s8u.streamarchive.enums.PlatformType
 import java.time.LocalDateTime
 
 data class AdminRecordSearchRequest(
+    val id: Long? = null,
     val channelName: String? = null,
+    val title: String? = null,
+    val platformStreamId: String? = null,
     val platformType: PlatformType? = null,
     val isEnded: Boolean? = null,
     val isCancelled: Boolean? = null,

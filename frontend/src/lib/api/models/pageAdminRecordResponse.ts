@@ -10,15 +10,15 @@ import type { SortObject } from "./sortObject";
 import type { PageableObject } from "./pageableObject";
 
 export interface PageAdminRecordResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   size?: number;
   content?: AdminRecordResponse[];
   number?: number;
   sort?: SortObject;
-  numberOfElements?: number;
   pageable?: PageableObject;
+  numberOfElements?: number;
   empty?: boolean;
 }

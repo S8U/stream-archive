@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { UserFormDialog } from "@/components/admin/user-form-dialog";
 
-const searchFieldOptions = ["username", "name"] as const;
+const searchFieldOptions = ["id", "username", "name"] as const;
 const roleOptions = ["__none__", "ADMIN", "USER"] as const;
 
 export default function UsersPage() {
@@ -36,7 +36,9 @@ export default function UsersPage() {
     // Build search params
     const searchParams = {
         request: {
-            keyword: searchQuery || undefined,
+            id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
+            username: searchField === "username" ? searchQuery : undefined,
+            name: searchField === "name" ? searchQuery : undefined,
             role: searchRole !== "__none__" ? (searchRole as AdminUserSearchRequestRole) : undefined,
         },
         pageable: {
@@ -150,6 +152,7 @@ export default function UsersPage() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
+                                <SelectItem value="id">ID</SelectItem>
                                 <SelectItem value="username">아이디</SelectItem>
                                 <SelectItem value="name">이름</SelectItem>
                             </SelectGroup>

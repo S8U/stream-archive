@@ -11,6 +11,8 @@ data class AdminVideoUpdateRequest(
 )
 
 data class AdminVideoSearchRequest(
+    val id: Long? = null,
+    val uuid: String? = null,
     val title: String? = null,
     val channelName: String? = null,
     val contentPrivacy: ContentPrivacy? = null,

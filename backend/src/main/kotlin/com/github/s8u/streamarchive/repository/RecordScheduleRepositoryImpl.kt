@@ -23,6 +23,7 @@ class RecordScheduleRepositoryImpl(
             .selectFrom(recordSchedule)
             .leftJoin(recordSchedule.channel, channel).fetchJoin()
             .where(
+                request.id?.let { recordSchedule.id.eq(it) },
                 request.channelName?.let { recordSchedule.channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { recordSchedule.platformType.eq(it) },
                 request.scheduleType?.let { recordSchedule.scheduleType.eq(it) },
@@ -38,6 +39,7 @@ class RecordScheduleRepositoryImpl(
             .from(recordSchedule)
             .leftJoin(recordSchedule.channel, channel)
             .where(
+                request.id?.let { recordSchedule.id.eq(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.platformType?.let { recordSchedule.platformType.eq(it) },
                 request.scheduleType?.let { recordSchedule.scheduleType.eq(it) },

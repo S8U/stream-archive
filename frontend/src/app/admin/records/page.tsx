@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { PlatformBadge } from "@/components/common/platform-badge";
 import Link from "next/link";
 
+const searchFieldOptions = ["id", "channelName", "title", "platformStreamId"] as const;
 const platformOptions = ["__all__", "CHZZK", "TWITCH", "SOOP"] as const;
 const statusOptions = ["__all__", "recording", "ended", "cancelled"] as const;
 
@@ -24,6 +25,7 @@ export default function RecordsPage() {
     const queryClient = useQueryClient();
 
     // URL 상태 (nuqs)
+    const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("title"));
     const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
     const [searchPlatform, setSearchPlatform] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__all__"));
     const [searchStatus, setSearchStatus] = useQueryState("status", parseAsStringLiteral(statusOptions).withDefault("__all__"));
@@ -47,7 +49,10 @@ export default function RecordsPage() {
 
     const searchParams = {
         request: {
-            channelName: searchQuery || undefined,
+            id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
+            channelName: searchField === "channelName" ? searchQuery : undefined,
+            title: searchField === "title" ? searchQuery : undefined,
+            platformStreamId: searchField === "platformStreamId" ? searchQuery : undefined,
             platformType: searchPlatform !== "__all__" ? (searchPlatform as AdminRecordSearchRequestPlatformType) : undefined,
             ...getStatusParams(searchStatus),
         },
@@ -67,6 +72,7 @@ export default function RecordsPage() {
     };
 
     const handleReset = () => {
+        setSearchField("title");
         setSearchQuery("");
         setSearchPlatform("__all__");
         setSearchStatus("__all__");
@@ -109,6 +115,20 @@ export default function RecordsPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                        <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
+                            <span className="text-muted-foreground">검색 기준:</span>
+                            <SelectValue placeholder="검색 기준" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value="id">ID</SelectItem>
+                                <SelectItem value="channelName">채널명</SelectItem>
+                                <SelectItem value="title">제목</SelectItem>
+                                <SelectItem value="platformStreamId">스트림 ID</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                     <Select value={searchPlatform} onValueChange={(value) => setSearchPlatform(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <span className="text-muted-foreground">플랫폼:</span>
