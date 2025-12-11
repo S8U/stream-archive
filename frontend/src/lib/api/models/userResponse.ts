@@ -5,13 +5,13 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { UserMeResponseRole } from "./userMeResponseRole";
+import type { UserResponseRole } from "./userResponseRole";
 
-export interface UserMeResponse {
+export interface UserResponse {
   id: number;
   uuid: string;
   username: string;
   name: string;
   email: string;
-  role: UserMeResponseRole;
+  role: UserResponseRole;
 }

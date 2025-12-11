@@ -12,7 +12,7 @@ data class LoginRequest(
 data class LoginResponse(
     val accessToken: String,
     val refreshToken: String,
-    val user: UserMeResponse
+    val user: UserResponse
 )
 
 data class SignupRequest(
@@ -58,25 +58,3 @@ data class RefreshTokenResponse(
 data class LogoutRequest(
     val refreshToken: String? = null
 )
-
-data class UserMeResponse(
-    val id: Long,
-    val uuid: String,
-    val username: String,
-    val name: String,
-    val email: String,
-    val role: Role
-) {
-    companion object {
-        fun from(user: User): UserMeResponse {
-            return UserMeResponse(
-                id = user.id!!,
-                uuid = user.uuid,
-                username = user.username,
-                name = user.name,
-                email = user.email,
-                role = user.role
-            )
-        }
-    }
-}

@@ -44,3 +44,35 @@ data class AdminUserResponse(
         }
     }
 }
+
+data class UserUpdateRequest(
+    val name: String? = null,
+    val email: String? = null
+)
+
+data class UserUpdatePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String
+)
+
+data class UserResponse(
+    val id: Long,
+    val uuid: String,
+    val username: String,
+    val name: String,
+    val email: String,
+    val role: Role
+) {
+    companion object {
+        fun from(user: User): UserResponse {
+            return UserResponse(
+                id = user.id!!,
+                uuid = user.uuid,
+                username = user.username,
+                name = user.name,
+                email = user.email,
+                role = user.role
+            )
+        }
+    }
+}

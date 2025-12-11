@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UserMeResponseRole =
-  (typeof UserMeResponseRole)[keyof typeof UserMeResponseRole];
+export type UserResponseRole =
+  (typeof UserResponseRole)[keyof typeof UserResponseRole];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserMeResponseRole = {
+export const UserResponseRole = {
   ADMIN: "ADMIN",
   USER: "USER",
 } as const;

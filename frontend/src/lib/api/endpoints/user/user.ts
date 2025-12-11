@@ -5,20 +5,27 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { UserMeResponse } from "../../models";
+import type {
+  UserResponse,
+  UserUpdatePasswordRequest,
+  UserUpdateRequest,
+} from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
 
@@ -31,7 +38,7 @@ export const getUserMe = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<UserMeResponse>(
+  return customAxiosInstance<UserResponse>(
     { url: `/users/me`, method: "GET", signal },
     options,
   );
@@ -157,3 +164,176 @@ export function useGetUserMe<
 
   return query;
 }
+
+/**
+ * @summary 내 정보 수정
+ */
+export const updateUserMe = (
+  userUpdateRequest: UserUpdateRequest,
+  options?: SecondParameter<typeof customAxiosInstance>,
+) => {
+  return customAxiosInstance<UserResponse>(
+    {
+      url: `/users/me`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: userUpdateRequest,
+    },
+    options,
+  );
+};
+
+export const getUpdateUserMeMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateUserMe>>,
+    TError,
+    { data: UserUpdateRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateUserMe>>,
+  TError,
+  { data: UserUpdateRequest },
+  TContext
+> => {
+  const mutationKey = ["updateUserMe"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateUserMe>>,
+    { data: UserUpdateRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateUserMe(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateUserMeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateUserMe>>
+>;
+export type UpdateUserMeMutationBody = UserUpdateRequest;
+export type UpdateUserMeMutationError = unknown;
+
+/**
+ * @summary 내 정보 수정
+ */
+export const useUpdateUserMe = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateUserMe>>,
+      TError,
+      { data: UserUpdateRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateUserMe>>,
+  TError,
+  { data: UserUpdateRequest },
+  TContext
+> => {
+  const mutationOptions = getUpdateUserMeMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 비밀번호 변경
+ */
+export const updateUserPassword = (
+  userUpdatePasswordRequest: UserUpdatePasswordRequest,
+  options?: SecondParameter<typeof customAxiosInstance>,
+) => {
+  return customAxiosInstance<void>(
+    {
+      url: `/users/me/password`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: userUpdatePasswordRequest,
+    },
+    options,
+  );
+};
+
+export const getUpdateUserPasswordMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateUserPassword>>,
+    TError,
+    { data: UserUpdatePasswordRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateUserPassword>>,
+  TError,
+  { data: UserUpdatePasswordRequest },
+  TContext
+> => {
+  const mutationKey = ["updateUserPassword"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateUserPassword>>,
+    { data: UserUpdatePasswordRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateUserPassword(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateUserPasswordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateUserPassword>>
+>;
+export type UpdateUserPasswordMutationBody = UserUpdatePasswordRequest;
+export type UpdateUserPasswordMutationError = unknown;
+
+/**
+ * @summary 비밀번호 변경
+ */
+export const useUpdateUserPassword = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateUserPassword>>,
+      TError,
+      { data: UserUpdatePasswordRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateUserPassword>>,
+  TError,
+  { data: UserUpdatePasswordRequest },
+  TContext
+> => {
+  const mutationOptions = getUpdateUserPasswordMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
