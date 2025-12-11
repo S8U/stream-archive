@@ -6,7 +6,6 @@ import java.time.LocalDateTime
 
 data class AdminUserUpdateRequest(
     val name: String?,
-    val email: String?,
     val role: Role?
 )
 
@@ -22,7 +21,6 @@ data class AdminUserResponse(
     val uuid: String,
     val username: String,
     val name: String,
-    val email: String,
     val role: Role,
     val lastLoginAt: LocalDateTime?,
     val createdAt: LocalDateTime,
@@ -35,7 +33,6 @@ data class AdminUserResponse(
                 uuid = user.uuid,
                 username = user.username,
                 name = user.name,
-                email = user.email,
                 role = user.role,
                 lastLoginAt = user.lastLoginAt,
                 createdAt = user.createdAt,
@@ -46,8 +43,7 @@ data class AdminUserResponse(
 }
 
 data class UserUpdateRequest(
-    val name: String? = null,
-    val email: String? = null
+    val name: String? = null
 )
 
 data class UserUpdatePasswordRequest(
@@ -60,7 +56,6 @@ data class UserResponse(
     val uuid: String,
     val username: String,
     val name: String,
-    val email: String,
     val role: Role
 ) {
     companion object {
@@ -70,7 +65,6 @@ data class UserResponse(
                 uuid = user.uuid,
                 username = user.username,
                 name = user.name,
-                email = user.email,
                 role = user.role
             )
         }

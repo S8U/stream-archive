@@ -28,7 +28,6 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
   
   // 프로필 수정 폼
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   
   // 비밀번호 변경 폼
   const [currentPassword, setCurrentPassword] = useState('');
@@ -42,7 +41,6 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
   useEffect(() => {
     if (open && user) {
       setName(user.name);
-      setEmail(user.email);
     }
     if (!open) {
       setCurrentPassword('');
@@ -54,7 +52,7 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
   const handleUpdateProfile = async () => {
     try {
       await updateMeMutation.mutateAsync({
-        data: { name, email }
+        data: { name }
       });
       queryClient.invalidateQueries({ queryKey: ['/users/me'] });
       toast.success('프로필이 수정되었습니다.');
@@ -111,15 +109,6 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">이메일</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <Button

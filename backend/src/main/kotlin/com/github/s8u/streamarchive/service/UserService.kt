@@ -43,7 +43,6 @@ class UserService(
         }
 
         request.name?.let { user.name = it }
-        request.email?.let { user.email = it }
         request.role?.let { user.role = it }
 
         return AdminUserResponse.from(user)
@@ -65,7 +64,6 @@ class UserService(
             ?: throw BusinessException("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED)
 
         request.name?.let { user.name = it }
-        request.email?.let { user.email = it }
 
         return UserResponse.from(userRepository.save(user))
     }

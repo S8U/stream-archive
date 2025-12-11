@@ -23,7 +23,6 @@ class UserRepositoryImpl(
                 request.keyword?.let {
                     user.username.containsIgnoreCase(it)
                         .or(user.name.containsIgnoreCase(it))
-                        .or(user.email.containsIgnoreCase(it))
                 },
                 request.role?.let { user.role.eq(it) },
                 request.createdAtFrom?.let { user.createdAt.goe(it) },
@@ -41,7 +40,6 @@ class UserRepositoryImpl(
                 request.keyword?.let {
                     user.username.containsIgnoreCase(it)
                         .or(user.name.containsIgnoreCase(it))
-                        .or(user.email.containsIgnoreCase(it))
                 },
                 request.role?.let { user.role.eq(it) },
                 request.createdAtFrom?.let { user.createdAt.goe(it) },

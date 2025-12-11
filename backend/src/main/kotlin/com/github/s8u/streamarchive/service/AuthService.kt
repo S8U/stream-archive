@@ -1,7 +1,10 @@
 package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.config.properties.JwtProperties
-import com.github.s8u.streamarchive.dto.*
+import com.github.s8u.streamarchive.dto.LoginRequest
+import com.github.s8u.streamarchive.dto.LoginResponse
+import com.github.s8u.streamarchive.dto.RefreshTokenResponse
+import com.github.s8u.streamarchive.dto.SignupRequest
 import com.github.s8u.streamarchive.entity.RefreshToken
 import com.github.s8u.streamarchive.entity.User
 import com.github.s8u.streamarchive.enums.Role
@@ -66,36 +69,29 @@ class AuthService(
 
         return LoginResponse(
             accessToken = accessToken,
-            refreshToken = refreshToken,
-            user = UserResponse.from(user)
+            refreshToken = refreshToken
         )
     }
 
     @Transactional
-    fun signup(request: SignupRequest): SignupResponse {
+    fun signup(request: SignupRequest) {
         logger.info("Signup attempt for username: {}", request.username)
 
         if (userRepository.findByUsername(request.username) != null) {
             throw BusinessException("이미 존재하는 아이디입니다.", HttpStatus.BAD_REQUEST)
         }
 
-        if (userRepository.findByEmail(request.email) != null) {
-            throw BusinessException("이미 존재하는 이메일입니다.", HttpStatus.BAD_REQUEST)
-        }
-
         val user = User(
             uuid = UUID.randomUUID().toString(),
             username = request.username,
             name = request.name,
-            email = request.email,
             password = passwordEncoder.encode(request.password),
             role = Role.USER
         )
 
-        val savedUser = userRepository.save(user)
-        logger.info("Signup successful for username: {}", request.username)
+        userRepository.save(user)
 
-        return SignupResponse.from(savedUser)
+        logger.info("Signup successful for username: {}", request.username)
     }
 
     @Transactional

@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { UserFormDialog } from "@/components/admin/user-form-dialog";
 
-const searchFieldOptions = ["username", "name", "email"] as const;
+const searchFieldOptions = ["username", "name"] as const;
 const roleOptions = ["__none__", "ADMIN", "USER"] as const;
 
 export default function UsersPage() {
@@ -152,7 +152,6 @@ export default function UsersPage() {
                             <SelectGroup>
                                 <SelectItem value="username">아이디</SelectItem>
                                 <SelectItem value="name">이름</SelectItem>
-                                <SelectItem value="email">이메일</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -189,8 +188,7 @@ export default function UsersPage() {
                         <TableRow>
                             <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
                             <TableHead className="border-r font-semibold w-[150px]">아이디</TableHead>
-                            <TableHead className="border-r font-semibold w-[150px]">이름</TableHead>
-                            <TableHead className="border-r font-semibold">이메일</TableHead>
+                            <TableHead className="border-r font-semibold">이름</TableHead>
                             <TableHead className="border-r font-semibold w-[80px] text-center">역할</TableHead>
                             <TableHead className="border-r font-semibold w-[180px] text-center">마지막 로그인</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">가입일</TableHead>
@@ -200,19 +198,19 @@ export default function UsersPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8">
+                                <TableCell colSpan={7} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={7} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !usersData?.content || usersData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                     등록된 사용자가 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -227,9 +225,6 @@ export default function UsersPage() {
 
                                     {/* 이름 */}
                                     <TableCell className="border-r">{user.name}</TableCell>
-
-                                    {/* 이메일 */}
-                                    <TableCell className="border-r">{user.email}</TableCell>
 
                                     {/* 역할 */}
                                     <TableCell className="border-r text-center">

@@ -12,7 +12,6 @@ export interface AdminUserResponse {
   uuid: string;
   username: string;
   name: string;
-  email: string;
   role: AdminUserResponseRole;
   lastLoginAt?: string;
   createdAt: string;

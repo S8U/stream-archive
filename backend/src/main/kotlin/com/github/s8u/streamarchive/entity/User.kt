@@ -14,7 +14,6 @@ import java.time.LocalDateTime
     name = "users",
     indexes = [
         Index(name = "idx_users_username", columnList = "username"),
-        Index(name = "idx_users_email", columnList = "email"),
         Index(name = "idx_users_role", columnList = "role"),
         Index(name = "idx_users_is_active", columnList = "is_active")
     ]
@@ -43,10 +42,6 @@ class User(
     @Column(nullable = false, length = 255)
     @Comment("비밀번호")
     var password: String,
-
-    @Column(nullable = false, unique = true, length = 255)
-    @Comment("이메일")
-    var email: String,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

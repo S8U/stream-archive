@@ -54,14 +54,14 @@ export function UserFormDialog({
             <DialogContent className="sm:max-w-100">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <DialogHeader>
-                        <DialogTitle>사용자 역할 변경</DialogTitle>
+                        <DialogTitle>사용자 수정</DialogTitle>
                         <DialogDescription>
-                            사용자의 역할을 변경합니다.
+                            사용자 정보를 수정합니다.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4">
                         <div className="grid gap-3">
-                            <Label>사용자명</Label>
+                            <Label>아이디</Label>
                             <div className="px-3 py-2 bg-muted rounded-md text-sm">
                                 {user.username}
                             </div>
@@ -70,12 +70,6 @@ export function UserFormDialog({
                             <Label>이름</Label>
                             <div className="px-3 py-2 bg-muted rounded-md text-sm">
                                 {user.name}
-                            </div>
-                        </div>
-                        <div className="grid gap-3">
-                            <Label>이메일</Label>
-                            <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                                {user.email}
                             </div>
                         </div>
                         <div className="grid gap-3">

@@ -13,7 +13,6 @@ CREATE TABLE users
     uuid            VARCHAR(36)  NOT NULL UNIQUE COMMENT '사용자 UUID',
     username        VARCHAR(100) NOT NULL UNIQUE COMMENT '사용자명',
     password        VARCHAR(255) NOT NULL COMMENT '비밀번호',
-    email           VARCHAR(255) NOT NULL UNIQUE COMMENT '이메일',
     role            ENUM ('ADMIN', 'USER') NOT NULL DEFAULT 'USER' COMMENT '역할',
     last_login_at   DATETIME     NULL COMMENT '마지막 로그인 일시',
     is_active       BOOLEAN      NOT NULL        DEFAULT TRUE COMMENT '활성 상태',
@@ -28,7 +27,6 @@ CREATE TABLE users
     updated_ip      VARCHAR(45)  NULL COMMENT '수정 시 IP',
 
     INDEX idx_users_username (username),
-    INDEX idx_users_email (email),
     INDEX idx_users_role (role),
     INDEX idx_users_is_active (is_active)
 ) COMMENT '사용자';

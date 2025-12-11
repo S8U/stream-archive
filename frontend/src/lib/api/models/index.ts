@@ -92,8 +92,6 @@ export * from "./searchAdminVideosParams";
 export * from "./searchChannelsParams";
 export * from "./searchVideosParams";
 export * from "./signupRequest";
-export * from "./signupResponse";
-export * from "./signupResponseRole";
 export * from "./sortObject";
 export * from "./userResponse";
 export * from "./userResponseRole";

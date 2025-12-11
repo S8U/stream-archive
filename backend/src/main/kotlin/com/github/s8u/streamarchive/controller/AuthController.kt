@@ -39,8 +39,8 @@ class AuthController(
     @Operation(summary = "회원가입")
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    fun signup(@RequestBody request: SignupRequest): SignupResponse {
-        return authService.signup(request)
+    fun signup(@RequestBody request: SignupRequest) {
+        authService.signup(request)
     }
 
     @Operation(summary = "토큰 갱신")

@@ -9,6 +9,5 @@ import type { AdminUserUpdateRequestRole } from "./adminUserUpdateRequestRole";
 
 export interface AdminUserUpdateRequest {
   name?: string;
-  email?: string;
   role?: AdminUserUpdateRequestRole;
 }

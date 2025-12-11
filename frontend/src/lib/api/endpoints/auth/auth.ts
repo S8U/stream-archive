@@ -20,7 +20,6 @@ import type {
   RefreshTokenRequest,
   RefreshTokenResponse,
   SignupRequest,
-  SignupResponse,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
@@ -35,7 +34,7 @@ export const signup = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<SignupResponse>(
+  return customAxiosInstance<void>(
     {
       url: `/auth/signup`,
       method: "POST",

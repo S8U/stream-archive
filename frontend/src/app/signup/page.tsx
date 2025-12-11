@@ -32,7 +32,7 @@ export default function SignupPage() {
 
         try {
             await signupMutation.mutateAsync({
-                data: { username, name, email: "", password },
+                data: { username, name, password },
             });
 
             // 회원가입 성공 후 자동 로그인
