@@ -117,8 +117,10 @@ export default function RecordsPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">검색 기준:</span>
-                            <SelectValue placeholder="검색 기준" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">검색 기준:</span>
+                                <SelectValue placeholder="검색 기준" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -131,8 +133,10 @@ export default function RecordsPage() {
                     </Select>
                     <Select value={searchPlatform} onValueChange={(value) => setSearchPlatform(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">플랫폼:</span>
-                            <SelectValue placeholder="전체" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">플랫폼:</span>
+                                <SelectValue placeholder="전체" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -145,8 +149,10 @@ export default function RecordsPage() {
                     </Select>
                     <Select value={searchStatus} onValueChange={(value) => setSearchStatus(value as typeof statusOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">상태:</span>
-                            <SelectValue placeholder="전체" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">상태:</span>
+                                <SelectValue placeholder="전체" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>

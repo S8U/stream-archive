@@ -147,8 +147,10 @@ export default function UsersPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">검색 기준:</span>
-                            <SelectValue placeholder="검색 기준" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">검색 기준:</span>
+                                <SelectValue placeholder="검색 기준" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -160,8 +162,10 @@ export default function UsersPage() {
                     </Select>
                     <Select value={searchRole} onValueChange={(value) => setSearchRole(value as typeof roleOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">역할:</span>
-                            <SelectValue placeholder="역할" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">역할:</span>
+                                <SelectValue placeholder="역할" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>

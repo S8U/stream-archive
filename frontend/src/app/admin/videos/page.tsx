@@ -164,8 +164,10 @@ export default function VideosPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">검색 기준:</span>
-                            <SelectValue placeholder="검색 기준" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">검색 기준:</span>
+                                <SelectValue placeholder="검색 기준" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -178,8 +180,10 @@ export default function VideosPage() {
                     </Select>
                     <Select value={searchContentPrivacy} onValueChange={(value) => setSearchContentPrivacy(value as typeof privacyOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[128px]">
-                            <span className="text-muted-foreground">공개 범위:</span>
-                            <SelectValue placeholder="공개 범위" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">공개 범위:</span>
+                                <SelectValue placeholder="공개 범위" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>

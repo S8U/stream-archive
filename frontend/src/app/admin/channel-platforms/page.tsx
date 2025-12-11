@@ -156,8 +156,10 @@ export default function ChannelPlatformsPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">검색 기준:</span>
-                            <SelectValue placeholder="검색 기준" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">검색 기준:</span>
+                                <SelectValue placeholder="검색 기준" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -169,8 +171,10 @@ export default function ChannelPlatformsPage() {
                     </Select>
                     <Select value={searchPlatformType} onValueChange={(value) => setSearchPlatformType(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">플랫폼:</span>
-                            <SelectValue placeholder="플랫폼" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">플랫폼:</span>
+                                <SelectValue placeholder="플랫폼" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -183,8 +187,10 @@ export default function ChannelPlatformsPage() {
                     </Select>
                     <Select value={searchIsSyncProfile} onValueChange={(value) => setSearchIsSyncProfile(value as typeof syncProfileOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
-                            <span className="text-muted-foreground">동기화:</span>
-                            <SelectValue placeholder="동기화 여부" />
+                            <div className="flex w-full justify-between gap-2">
+                                <span className="text-muted-foreground">동기화:</span>
+                                <SelectValue placeholder="동기화 여부" />
+                            </div>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
