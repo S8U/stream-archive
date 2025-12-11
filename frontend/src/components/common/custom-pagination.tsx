@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryState, parseAsInteger } from "nuqs";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
     Pagination,
     PaginationContent,
@@ -17,6 +18,8 @@ interface CustomPaginationProps {
     page?: number;
     /** 외부에서 page 변경 핸들러를 전달할 경우 (0-based) */
     onPageChange?: (page: number) => void;
+    /** true면 nuqs 사용 (CSR), false면 router.push 사용 (SSR 페이지용) */
+    useShallowRouting?: boolean;
 }
 
 const getPageNumbers = (currentPage: number, totalPages: number) => {
@@ -39,8 +42,17 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
     return pages;
 };
 
-export function CustomPagination({ totalPages, page: externalPage, onPageChange }: CustomPaginationProps) {
-    // nuqs로 URL 상태 관리 (1-based)
+export function CustomPagination({ 
+    totalPages, 
+    page: externalPage, 
+    onPageChange,
+    useShallowRouting = false 
+}: CustomPaginationProps) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    
+    // nuqs로 URL 상태 관리 (1-based) - shallow routing 모드에서만 사용
     const [urlPage, setUrlPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
     // 외부 page가 전달되면 사용, 아니면 URL 상태 사용
@@ -56,9 +68,14 @@ export function CustomPagination({ totalPages, page: externalPage, onPageChange 
         if (onPageChange) {
             // 외부 핸들러가 있으면 호출 (URL 업데이트는 외부에서)
             onPageChange(newPage);
-        } else {
-            // 없으면 직접 URL 업데이트
+        } else if (useShallowRouting) {
+            // shallow routing 모드 (CSR 페이지용)
             setUrlPage(newPage + 1);
+        } else {
+            // 전체 탐색 모드 (SSR 페이지용)
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("page", String(newPage + 1));
+            router.push(`${pathname}?${params.toString()}`);
         }
     };
 
