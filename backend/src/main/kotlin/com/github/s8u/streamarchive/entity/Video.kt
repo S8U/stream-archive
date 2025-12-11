@@ -63,6 +63,10 @@ class Video(
     var contentPrivacy: ContentPrivacy,
 
     @Column(nullable = false)
+    @Comment("채팅 싱크 오프셋 (밀리초)")
+    var chatSyncOffsetMillis: Long = 0,
+
+    @Column(nullable = false)
     @Comment("활성 상태")
     var isActive: Boolean = true,
 

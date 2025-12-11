@@ -101,12 +101,15 @@ class RecordService(
             return null
         }
 
+        val strategy = platformStrategyFactory.getPlatformStrategy(stream.platformType)
+
         // Video 생성
         val video = Video(
             uuid = UUID.randomUUID().toString(),
             channelId = channelId,
             title = stream.title ?: "Untitled",
-            contentPrivacy = ContentPrivacy.PUBLIC
+            contentPrivacy = ContentPrivacy.PUBLIC,
+            chatSyncOffsetMillis = strategy.getChatSyncOffsetMillis()
         )
         val savedVideo = videoRepository.save(video)
 
@@ -133,7 +136,6 @@ class RecordService(
                 HttpStatus.NOT_FOUND
             )
 
-            val strategy = platformStrategyFactory.getPlatformStrategy(stream.platformType)
             val streamUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
             val streamlinkArgs = strategy.getStreamlinkArgs()
 

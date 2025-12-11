@@ -26,7 +26,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
             {/* 우측: 채팅창 */}
             <div className="flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-4 lg:mt-0 min-h-0">
-                <ChatHistory videoUuid={video.uuid} currentTimeMs={currentTimeMs} />
+                <ChatHistory videoUuid={video.uuid} currentTimeMs={currentTimeMs} chatSyncOffsetMillis={video.chatSyncOffsetMillis} />
             </div>
         </div>
     );

@@ -77,7 +77,7 @@ export default function VideosPage() {
         setSelectedVideo(null);
     };
 
-    const handleDialogSubmit = async (data: { title: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy }) => {
+    const handleDialogSubmit = async (data: { title: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
         if (!selectedVideo) return;
 
         try {

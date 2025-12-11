@@ -7,7 +7,8 @@ import java.time.LocalDateTime
 
 data class AdminVideoUpdateRequest(
     val title: String?,
-    val contentPrivacy: ContentPrivacy?
+    val contentPrivacy: ContentPrivacy?,
+    val chatSyncOffsetMillis: Long?
 )
 
 data class AdminVideoSearchRequest(
@@ -30,6 +31,7 @@ data class AdminVideoResponse(
     val thumbnailUrl: String,
     val playlistUrl: String,
     val contentPrivacy: ContentPrivacy,
+    val chatSyncOffsetMillis: Long,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val record: RecordInfo?
@@ -74,6 +76,7 @@ data class AdminVideoResponse(
                 thumbnailUrl = thumbnailUrl,
                 playlistUrl = playlistUrl,
                 contentPrivacy = video.contentPrivacy,
+                chatSyncOffsetMillis = video.chatSyncOffsetMillis,
                 createdAt = video.createdAt,
                 updatedAt = video.updatedAt,
                 record = video.record?.let { record ->
@@ -107,6 +110,7 @@ data class PublicVideoResponse(
     val fileSize: Long,
     val thumbnailUrl: String,
     val playlistUrl: String,
+    val chatSyncOffsetMillis: Long,
     val createdAt: LocalDateTime,
     val record: RecordInfo?
 ) {
@@ -147,6 +151,7 @@ data class PublicVideoResponse(
                 fileSize = video.fileSize,
                 thumbnailUrl = thumbnailUrl,
                 playlistUrl = playlistUrl,
+                chatSyncOffsetMillis = video.chatSyncOffsetMillis,
                 createdAt = video.createdAt,
                 record = video.record?.let { record ->
                     RecordInfo(

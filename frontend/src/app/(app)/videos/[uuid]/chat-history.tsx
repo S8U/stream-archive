@@ -9,6 +9,7 @@ import type { ChatHistoryResponse } from '@/lib/api/models/chatHistoryResponse';
 interface ChatHistoryProps {
     videoUuid: string;
     currentTimeMs: number;
+    chatSyncOffsetMillis: number;
 }
 
 // 시간 포맷팅 (ms -> MM:SS)
@@ -56,12 +57,10 @@ const CHAT_LOAD_MILLIS = 3000;
 const LOAD_BEFORE_CHAT_MILLIS = 60000;
 // 채팅 최대 개수
 const MAX_NUMBER_OF_CHAT = 300;
-// 채팅 싱크 오프셋 (ms) - 녹화 중 딜레이로 인해 채팅 싱크 맞춰주어야함
-const CHAT_SYNC_OFFSET_MS = -5000;
 
-export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs }: ChatHistoryProps) {
-    // 싱크 오프셋 적용
-    const currentTimeMs = rawCurrentTimeMs + CHAT_SYNC_OFFSET_MS;
+export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSyncOffsetMillis }: ChatHistoryProps) {
+    // 싱크 오프셋 적용 (음수로 적용하여 채팅이 영상보다 앞서 표시되도록)
+    const currentTimeMs = rawCurrentTimeMs - chatSyncOffsetMillis;
     // 화면에 표시할 채팅
     const [displayedChats, setDisplayedChats] = useState<ChatHistoryResponse[]>([]);
     // 미리 불러온 채팅 버퍼
@@ -187,7 +186,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs }: Chat
                                     className="leading-relaxed"
                                     ref={isLast ? lastChatRef : null}
                                 >
-                                    <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis - CHAT_SYNC_OFFSET_MS)}]</span>{' '}
+                                    <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]</span>{' '}
                                     <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>:{' '}
                                     <span>{chat.message}</span>
                                 </div>

@@ -76,6 +76,10 @@ class ChzzkStrategy(
         return true
     }
 
+    override fun getChatSyncOffsetMillis(): Long {
+        return 5000L
+    }
+
     override fun getChatWebSocketUrl(): String {
         return "wss://kr-ss1.chat.naver.com/chat"
     }

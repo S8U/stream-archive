@@ -16,6 +16,7 @@ export interface PublicVideoResponse {
   fileSize: number;
   thumbnailUrl: string;
   playlistUrl: string;
+  chatSyncOffsetMillis: number;
   createdAt: string;
   record?: RecordInfo;
 }

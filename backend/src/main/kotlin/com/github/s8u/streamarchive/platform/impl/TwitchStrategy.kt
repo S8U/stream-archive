@@ -87,6 +87,10 @@ class TwitchStrategy(
         return args
     }
 
+    override fun getChatSyncOffsetMillis(): Long {
+        return 15000L
+    }
+
     override fun isSupportChatRecord(): Boolean {
         return true
     }

@@ -21,7 +21,7 @@ interface VideoFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     video: AdminVideoResponse | null;
-    onSubmit: (data: { title: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy }) => Promise<void>;
+    onSubmit: (data: { title: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => Promise<void>;
     isSubmitting: boolean;
 }
 
@@ -34,12 +34,14 @@ export function VideoFormDialog({
 }: VideoFormDialogProps) {
     const [formTitle, setFormTitle] = useState("");
     const [formPrivacy, setFormPrivacy] = useState<AdminVideoUpdateRequestContentPrivacy>("PUBLIC");
+    const [formChatSyncOffset, setFormChatSyncOffset] = useState(0);
 
     // 다이얼로그가 열릴 때마다 폼 초기화
     useEffect(() => {
         if (open && video) {
             setFormTitle(video.title);
             setFormPrivacy(video.contentPrivacy as AdminVideoUpdateRequestContentPrivacy);
+            setFormChatSyncOffset(video.chatSyncOffsetMillis);
         }
     }, [open, video]);
 
@@ -48,6 +50,7 @@ export function VideoFormDialog({
         await onSubmit({
             title: formTitle,
             contentPrivacy: formPrivacy,
+            chatSyncOffsetMillis: formChatSyncOffset,
         });
     };
 
@@ -85,6 +88,19 @@ export function VideoFormDialog({
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="grid gap-3">
+                            <Label>채팅 싱크 오프셋 (ms)</Label>
+                            <div className="grid gap-1">
+                                <Input
+                                    type="number"
+                                    value={formChatSyncOffset}
+                                    onChange={(e) => setFormChatSyncOffset(parseInt(e.target.value || "0", 10))}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    채팅이 영상보다 늦게 나오면 값을 높이세요.
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

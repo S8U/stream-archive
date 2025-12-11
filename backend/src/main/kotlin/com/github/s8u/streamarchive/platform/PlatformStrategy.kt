@@ -19,6 +19,8 @@ interface PlatformStrategy {
 
     fun isSupportChatRecord(): Boolean
 
+    fun getChatSyncOffsetMillis(): Long = 0L
+
     fun getChatWebSocketUrl(): String?
 
     fun createChatWebSocketHandler(

@@ -81,6 +81,10 @@ class SoopStrategy(
         return false
     }
 
+    override fun getChatSyncOffsetMillis(): Long {
+        return 0
+    }
+
     override fun getChatWebSocketUrl(): String? {
         return null
     }

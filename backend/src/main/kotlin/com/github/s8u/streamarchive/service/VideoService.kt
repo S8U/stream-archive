@@ -69,6 +69,7 @@ class VideoService(
 
         request.title?.let { video.title = it }
         request.contentPrivacy?.let { video.contentPrivacy = it }
+        request.chatSyncOffsetMillis?.let { video.chatSyncOffsetMillis = it }
 
         val channelProfileUrl = urlBuilder.channelProfileUrl(video.channel?.uuid!!)
         return AdminVideoResponse.from(
