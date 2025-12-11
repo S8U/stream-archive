@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.platform.impl
 
 import com.github.s8u.streamarchive.chat.ChatMessageDto
 import com.github.s8u.streamarchive.chat.ChatWebSocketHandler
+import com.github.s8u.streamarchive.chat.twitch.TwitchChatWebSocketHandler
 import com.github.s8u.streamarchive.client.twitch.TwitchApiClient
 import com.github.s8u.streamarchive.client.twitch.TwitchStreamsRequestDto
 import com.github.s8u.streamarchive.client.twitch.TwitchUsersRequestDto
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+
 
 @Component
 class TwitchStrategy(
@@ -64,25 +66,33 @@ class TwitchStrategy(
             id = responseFirst.id,
             username = responseFirst.userLogin,
             title = responseFirst.title,
-            category = responseFirst.tags.joinToString { ", " },
+            category = responseFirst.tags?.joinToString { ", " },
             viewerCount = responseFirst.viewerCount,
-            thumbnailUrl = responseFirst.thumbnailUrl,
+            thumbnailUrl = responseFirst.thumbnailUrl?.replace("{width}", "1280")?.replace("{height}", "720"),
             startedAt = Instant.parse(responseFirst.startedAt).atZone(ZoneId.systemDefault()).toLocalDateTime()
         )
     }
 
-    override fun getStreamHeaders(): Map<String, String> {
-        return mapOf(
-            "Authorization" to "OAuth ${twitchProperties.personalOauthToken}"
-        )
+    override fun getStreamlinkArgs(): List<String> {
+        val args = mutableListOf<String>()
+
+        // 트위치 OAuth 토큰이 있으면 API 헤더 추가
+        if (!twitchProperties.personalOauthToken.isNullOrBlank()) {
+            args.add("--twitch-api-header=Authorization=OAuth ${twitchProperties.personalOauthToken}")
+        }
+
+        // 저지연 모드
+        args.add("--twitch-low-latency")
+
+        return args
     }
 
     override fun isSupportChatRecord(): Boolean {
-        return false
+        return true
     }
 
     override fun getChatWebSocketUrl(): String? {
-        return null
+        return "wss://irc-ws.chat.twitch.tv:443"
     }
 
     override fun createChatWebSocketHandler(
@@ -94,7 +104,14 @@ class TwitchStrategy(
         onChat: (ChatMessageDto) -> Unit,
         onConnectionClosed: () -> Unit
     ): ChatWebSocketHandler? {
-        return null
+        return TwitchChatWebSocketHandler(
+            recordId = recordId,
+            videoId = videoId,
+            platformChannelId = platformChannelId,
+            recordStartedAt = recordStartedAt,
+            onChat = onChat,
+            onConnectionClosed = onConnectionClosed
+        )
     }
 
 }

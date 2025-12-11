@@ -142,7 +142,7 @@ class ChzzkChatWebSocketHandler(
         )
 
         val json = objectMapper.writeValueAsString(packet)
-        session.sendMessage(TextMessage(json))
+        sendMessage(session, json)
 
         logger.debug("Chzzk chat channel connect packet sent (recordId: {})", recordId)
     }
@@ -154,9 +154,13 @@ class ChzzkChatWebSocketHandler(
         )
 
         val json = objectMapper.writeValueAsString(packet)
-        session.sendMessage(TextMessage(json))
+        sendMessage(session, json)
 
         logger.debug("Chzzk chat pong packet sent (recordId: {})", recordId)
+    }
+
+    private fun sendMessage(session: WebSocketSession, message: String) {
+        session.sendMessage(TextMessage(message))
     }
 
 }

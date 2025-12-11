@@ -15,7 +15,7 @@ interface PlatformStrategy {
 
     fun getStream(username: String): PlatformStreamDto?
 
-    fun getStreamHeaders(): Map<String, String> = emptyMap()
+    fun getStreamlinkArgs(): List<String> = emptyList()
 
     fun isSupportChatRecord(): Boolean
 

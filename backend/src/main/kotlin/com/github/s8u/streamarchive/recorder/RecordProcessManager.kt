@@ -40,7 +40,7 @@ class RecordProcessManager(
         streamUrl: String,
         quality: String,
         videoId: Long,
-        platformHeaders: Map<String, String> = emptyMap()
+        streamlinkArgs: List<String> = emptyList()
     ) {
         try {
             // 동영상 디렉토리 생성
@@ -51,33 +51,40 @@ class RecordProcessManager(
             val playlistPath = storageProperties.getVideoPlaylistPath(videoId)
             val segmentPattern = storageProperties.getVideoSegmentPattern(videoId)
 
-            // Streamlink 프로세스 빌더
-            val streamlinkArgs = mutableListOf("streamlink", streamUrl, quality, "-O")
-            platformHeaders.forEach { (key, value) ->
-                streamlinkArgs.add("--http-header")
-                streamlinkArgs.add("$key=$value")
-            }
+            // Streamlink
+            val streamlinkCommand = mutableListOf(
+                "streamlink",
+                streamUrl,
+                quality,
+                "-O"
+            )
+            streamlinkCommand.addAll(streamlinkArgs)
 
-            // FFmpeg 프로세스 빌더
-            val processBuilders = listOf(
-                ProcessBuilder(streamlinkArgs),
-                ProcessBuilder(
-                    "ffmpeg",
-                    "-y",                           // 덮어쓰기
-                    "-v", "error",                  // 에러만 로깅
-                    "-i", "pipe:0",                 // stdin에서 입력
-                    "-c:v", "copy",                 // 동영상 코덱 복사 (재인코딩 X)
-                    "-c:a", "copy",                 // 오디오 코덱 복사 (재인코딩 X)
-                    "-f", "hls",                    // HLS 형식
-                    "-hls_time", "3",               // 3초 세그먼트
-                    "-hls_list_size", "0",          // 무제한 세그먼트
-                    "-hls_segment_filename",
-                    segmentPattern,
-                    playlistPath.toString()
-                )
+            // FFmpeg
+            val ffmpegCommand = listOf(
+                "ffmpeg",
+                "-y",                           // 덮어쓰기
+                "-v", "error",                  // 에러만 로깅
+                "-i", "pipe:0",                 // stdin에서 입력
+                "-c:v", "copy",                 // 동영상 코덱 복사 (재인코딩 X)
+                "-c:a", "copy",                 // 오디오 코덱 복사 (재인코딩 X)
+                "-f", "hls",                    // HLS 형식
+                "-hls_time", "3",               // 3초 세그먼트
+                "-hls_list_size", "0",          // 무제한 세그먼트
+                "-hls_segment_filename",
+                segmentPattern,
+                playlistPath.toString()
             )
 
-            // 파이프라인 시작
+            logger.debug("Streamlink command: {}", streamlinkCommand.joinToString(" "))
+            logger.debug("FFmpeg command: {}", ffmpegCommand.joinToString(" "))
+            
+            // 녹화 프로세스 시작
+            val processBuilders = listOf(
+                ProcessBuilder(streamlinkCommand),
+                ProcessBuilder(ffmpegCommand)
+            )
+
             val recordProcesses = ProcessBuilder.startPipeline(processBuilders)
             processes[recordId] = recordProcesses
 

@@ -135,14 +135,14 @@ class RecordService(
 
             val strategy = platformStrategyFactory.getPlatformStrategy(stream.platformType)
             val streamUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
-            val streamHeaders = strategy.getStreamHeaders()
+            val streamlinkArgs = strategy.getStreamlinkArgs()
 
             recordProcessManager.startRecording(
                 recordId = savedRecord.id!!,
                 streamUrl = streamUrl,
                 quality = recordQuality.streamlinkValue,
                 videoId = savedVideo.id!!,
-                platformHeaders = streamHeaders
+                streamlinkArgs = streamlinkArgs
             )
 
             // 초기 메타데이터 저장

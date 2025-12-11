@@ -8,6 +8,8 @@ import com.github.s8u.streamarchive.properties.TwitchProperties
 import org.slf4j.LoggerFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.stereotype.Component
+import org.springframework.http.MediaType
+import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 
@@ -39,9 +41,12 @@ class TwitchApiClient(
     fun createOauthToken(): TwitchOauthResponseDto? {
         return restClient.post()
             .uri("https://id.twitch.tv/oauth2/token")
-            .header("client_id", twitchProperties.appClientId)
-            .header("client_secret", twitchProperties.appClientSecret)
-            .header("grant_type", "client_credentials")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .body(LinkedMultiValueMap<String, String>().apply {
+                add("client_id", twitchProperties.appClientId)
+                add("client_secret", twitchProperties.appClientSecret)
+                add("grant_type", "client_credentials")
+            })
             .retrieve()
             .body(TwitchOauthResponseDto::class.java)
     }
@@ -61,7 +66,11 @@ class TwitchApiClient(
     fun getUsers(request: TwitchUsersRequestDto): TwitchUsersResponseDto? {
         return executeWithRetry {
             restClient.get()
-                .uri("https://api.twitch.tv/helix/users")
+                .uri("https://api.twitch.tv/helix/users") { uriBuilder ->
+                    request.id?.forEach { uriBuilder.queryParam("id", it) }
+                    request.login?.forEach { uriBuilder.queryParam("login", it) }
+                    uriBuilder.build()
+                }
                 .header("Authorization", "Bearer $appOauthToken")
                 .header("Client-Id", twitchProperties.appClientId)
                 .retrieve()
@@ -76,7 +85,11 @@ class TwitchApiClient(
     fun getStreams(request: TwitchStreamsRequestDto): TwitchStreamsResponseDto? {
         return executeWithRetry {
             restClient.get()
-                .uri("https://api.twitch.tv/helix/streams")
+                .uri("https://api.twitch.tv/helix/streams") { uriBuilder ->
+                    request.userId?.let { uriBuilder.queryParam("user_id", it) }
+                    request.userLogin?.let { uriBuilder.queryParam("user_login", it) }
+                    uriBuilder.build()
+                }
                 .header("Authorization", "Bearer $appOauthToken")
                 .header("Client-Id", twitchProperties.appClientId)
                 .retrieve()

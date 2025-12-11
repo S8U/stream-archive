@@ -17,18 +17,18 @@ data class TwitchStreamsResponseDto(
 
 data class TwitchStreamResponseDto(
     val id: String,
-    val userId: String,
+    val userId: String? = null,
     val userLogin: String,
-    val userName: String,
-    val gameId: String,
-    val gameName: String,
-    val type: String,
-    val title: String,
-    val tags: List<String>,
-    val viewerCount: Int,
-    val startedAt: String,
-    val language: String,
-    val thumbnailUrl: String,
-    val tagIds: List<String>,
-    val isMature: Boolean
+    val userName: String? = null,
+    val gameId: String? = null,
+    val gameName: String? = null,
+    val type: String? = null,
+    val title: String? = null,
+    val tags: List<String>? = null,
+    val viewerCount: Int? = null,
+    val startedAt: String? = null,
+    val language: String? = null,
+    val thumbnailUrl: String? = null,
+    val tagIds: List<String>? = null,
+    val isMature: Boolean? = null
 )

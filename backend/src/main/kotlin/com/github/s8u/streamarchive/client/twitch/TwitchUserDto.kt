@@ -13,11 +13,11 @@ data class TwitchUserResponseDto(
     val id: String,
     val login: String,
     val displayName: String,
-    val type: String,
-    val broadcasterType: String,
-    val description: String,
-    val profileImageUrl: String,
-    val offlineImageUrl: String,
-    val email: String,
-    val createdAt: String
+    val type: String? = null,
+    val broadcasterType: String? = null,
+    val description: String? = null,
+    val profileImageUrl: String? = null,
+    val offlineImageUrl: String? = null,
+    val email: String? = null,
+    val createdAt: String? = null
 )
