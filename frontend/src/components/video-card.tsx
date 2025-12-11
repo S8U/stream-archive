@@ -91,7 +91,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     </Avatar>
                 </Link>
                 <div className="flex flex-col">
-                    <h3 className="text-md font-medium">{title}</h3>
+                    <h3 className="text-md font-medium line-clamp-2">{title}</h3>
                     <p className="text-sm text-muted-foreground">{channel.name}</p>
                     <p className="text-sm text-muted-foreground">{formatTimeAgo(createdAt)}</p>
                 </div>

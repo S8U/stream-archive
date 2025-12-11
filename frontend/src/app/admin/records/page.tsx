@@ -247,7 +247,7 @@ export default function RecordsPage() {
                                                 href={`/videos/${record.video.uuid}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="hover:underline truncate"
+                                                className="hover:underline truncate max-w-[300px]"
                                             >
                                                 {record.video.title}
                                             </Link>

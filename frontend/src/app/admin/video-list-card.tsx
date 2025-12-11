@@ -113,12 +113,12 @@ export function VideoListCard() {
                                                             href={`/videos/${record.video.uuid}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="hover:underline truncate"
+                                                            className="hover:underline truncate max-w-[300px]"
                                                         >
                                                             {record.video?.title}
                                                         </Link>
                                                     ) : (
-                                                        <span className="truncate">{record.video?.title}</span>
+                                                        <span className="truncate max-w-[300px]">{record.video?.title}</span>
                                                     )}
                                                 </div>
                                             </TableCell>

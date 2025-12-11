@@ -272,7 +272,7 @@ export default function VideosPage() {
                                                 href={`/videos/${video.uuid}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="hover:underline truncate"
+                                                className="hover:underline truncate max-w-[300px]"
                                             >
                                                 {video.title}
                                             </Link>
