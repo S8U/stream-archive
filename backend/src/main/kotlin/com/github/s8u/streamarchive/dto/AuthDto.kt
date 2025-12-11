@@ -1,9 +1,5 @@
 package com.github.s8u.streamarchive.dto
 
-import com.github.s8u.streamarchive.entity.User
-import com.github.s8u.streamarchive.enums.Role
-import java.time.LocalDateTime
-
 data class LoginRequest(
     val username: String,
     val password: String
