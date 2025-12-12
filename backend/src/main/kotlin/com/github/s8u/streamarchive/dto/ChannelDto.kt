@@ -70,3 +70,11 @@ data class PublicChannelResponse(
         }
     }
 }
+
+/**
+ * 채널 통계 응답 DTO
+ */
+data class ChannelStatsResponse(
+    val videoCount: Long,
+    val totalFileSize: Long
+)

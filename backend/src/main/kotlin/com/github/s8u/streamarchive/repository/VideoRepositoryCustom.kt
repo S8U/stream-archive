@@ -19,4 +19,8 @@ interface VideoRepositoryCustom {
         startDate: LocalDate,
         endDate: LocalDate
     ): List<AdminDashboardVideoHistoriesResponse.DailyStat>
+
+    // 채널별 통계
+    fun countByChannelId(channelId: Long): Long
+    fun sumFileSizeByChannelId(channelId: Long): Long
 }

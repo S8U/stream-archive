@@ -7,6 +7,7 @@ import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.repository.VideoRepository
 import com.github.s8u.streamarchive.util.UrlBuilder
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
@@ -23,6 +24,7 @@ import java.util.*
 class ChannelService(
     private val channelRepository: ChannelRepository,
     private val channelPlatformRepository: ChannelPlatformRepository,
+    private val videoRepository: VideoRepository,
     private val channelPlatformService: ChannelPlatformService,
     private val channelProfileService: ChannelProfileService,
     private val recordScheduleService: RecordScheduleService,
@@ -147,5 +149,25 @@ class ChannelService(
         }
 
         return FileSystemResource(profilePath)
+    }
+
+    @Transactional(readOnly = true)
+    fun getStatsByUuid(uuid: String): ChannelStatsResponse {
+        val channel = channelRepository.findByUuid(uuid) ?: throw BusinessException(
+            "채널을 찾을 수 없습니다.",
+            HttpStatus.NOT_FOUND
+        )
+
+        if (channel.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
+            throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+
+        val videoCount = videoRepository.countByChannelId(channel.id!!)
+        val totalFileSize = videoRepository.sumFileSizeByChannelId(channel.id!!)
+
+        return ChannelStatsResponse(
+            videoCount = videoCount,
+            totalFileSize = totalFileSize
+        )
     }
 }

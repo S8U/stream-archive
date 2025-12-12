@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.ChannelPlatformResponse
+import com.github.s8u.streamarchive.dto.ChannelStatsResponse
 import com.github.s8u.streamarchive.dto.PublicChannelResponse
 import com.github.s8u.streamarchive.dto.PublicChannelSearchRequest
 import com.github.s8u.streamarchive.service.ChannelPlatformService
@@ -51,5 +52,11 @@ class ChannelController(
     @GetMapping("/{uuid}/platforms")
     fun getChannelPlatforms(@PathVariable uuid: String): List<ChannelPlatformResponse> {
         return channelPlatformService.getByChannelUuidForPublic(uuid)
+    }
+
+    @Operation(summary = "채널 통계 조회")
+    @GetMapping("/{uuid}/stats")
+    fun getChannelStats(@PathVariable uuid: String): ChannelStatsResponse {
+        return channelService.getStatsByUuid(uuid)
     }
 }

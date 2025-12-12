@@ -20,6 +20,7 @@ import type {
 
 import type {
   ChannelPlatformResponse,
+  ChannelStatsResponse,
   PagePublicChannelResponse,
   PublicChannelResponse,
   SearchChannelsParams,
@@ -327,6 +328,173 @@ export function useGetChannelByUuid<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetChannelByUuidQueryOptions(uuid, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 채널 통계 조회
+ */
+export const getChannelStats = (
+  uuid: string,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<ChannelStatsResponse>(
+    { url: `/channels/${uuid}/stats`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetChannelStatsQueryKey = (uuid?: string) => {
+  return [`/channels/${uuid}/stats`] as const;
+};
+
+export const getGetChannelStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getChannelStats>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getChannelStats>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetChannelStatsQueryKey(uuid);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getChannelStats>>> = ({
+    signal,
+  }) => getChannelStats(uuid, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getChannelStats>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetChannelStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getChannelStats>>
+>;
+export type GetChannelStatsQueryError = unknown;
+
+export function useGetChannelStats<
+  TData = Awaited<ReturnType<typeof getChannelStats>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getChannelStats>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChannelStats>>,
+          TError,
+          Awaited<ReturnType<typeof getChannelStats>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetChannelStats<
+  TData = Awaited<ReturnType<typeof getChannelStats>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getChannelStats>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getChannelStats>>,
+          TError,
+          Awaited<ReturnType<typeof getChannelStats>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetChannelStats<
+  TData = Awaited<ReturnType<typeof getChannelStats>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getChannelStats>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 채널 통계 조회
+ */
+
+export function useGetChannelStats<
+  TData = Awaited<ReturnType<typeof getChannelStats>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getChannelStats>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetChannelStatsQueryOptions(uuid, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

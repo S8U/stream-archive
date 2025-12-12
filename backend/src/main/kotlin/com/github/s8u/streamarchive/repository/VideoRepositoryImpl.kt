@@ -140,4 +140,26 @@ class VideoRepositoryImpl(
 
         return result
     }
+
+    override fun countByChannelId(channelId: Long): Long {
+        return queryFactory
+            .select(video.count())
+            .from(video)
+            .where(
+                video.channelId.eq(channelId),
+                video.isActive.eq(true)
+            )
+            .fetchOne() ?: 0L
+    }
+
+    override fun sumFileSizeByChannelId(channelId: Long): Long {
+        return queryFactory
+            .select(video.fileSize.sum())
+            .from(video)
+            .where(
+                video.channelId.eq(channelId),
+                video.isActive.eq(true)
+            )
+            .fetchOne() ?: 0L
+    }
 }
