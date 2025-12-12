@@ -3,8 +3,11 @@ package com.github.s8u.streamarchive.controller
 import com.github.s8u.streamarchive.dto.ChatHistoryResponse
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
+import com.github.s8u.streamarchive.dto.SaveWatchHistoryRequest
+import com.github.s8u.streamarchive.dto.WatchHistoryResponse
 import com.github.s8u.streamarchive.service.VideoDataChatHistoryService
 import com.github.s8u.streamarchive.service.VideoService
+import com.github.s8u.streamarchive.service.WatchHistoryService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.Resource
@@ -14,6 +17,8 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -23,7 +28,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/videos")
 class VideoController(
     private val videoService: VideoService,
-    private val videoDataChatHistoryService: VideoDataChatHistoryService
+    private val videoDataChatHistoryService: VideoDataChatHistoryService,
+    private val watchHistoryService: WatchHistoryService
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
@@ -76,5 +82,20 @@ class VideoController(
         @RequestParam offsetEnd: Long
     ): List<ChatHistoryResponse> {
         return videoDataChatHistoryService.getChatHistoriesByVideoIdForPublic(uuid, offsetStart, offsetEnd)
+    }
+
+    @Operation(summary = "동영상 시청 기록 조회")
+    @GetMapping("/{uuid}/watch-history")
+    fun getVideoWatchHistory(@PathVariable uuid: String): WatchHistoryResponse? {
+        return watchHistoryService.getWatchHistory(uuid)
+    }
+
+    @Operation(summary = "동영상 시청 위치 저장")
+    @PostMapping("/{uuid}/watch-history")
+    fun saveVideoWatchHistory(
+        @PathVariable uuid: String,
+        @RequestBody request: SaveWatchHistoryRequest
+    ) {
+        watchHistoryService.saveWatchHistory(uuid, request)
     }
 }

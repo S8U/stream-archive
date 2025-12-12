@@ -5,15 +5,18 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
@@ -23,13 +26,272 @@ import type {
   GetVideoChatHistoryParams,
   PagePublicVideoResponse,
   PublicVideoResponse,
+  SaveWatchHistoryRequest,
   SearchVideosParams,
+  WatchHistoryResponse,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+/**
+ * @summary 동영상 시청 기록 조회
+ */
+export const getVideoWatchHistory = (
+  uuid: string,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<WatchHistoryResponse>(
+    { url: `/videos/${uuid}/watch-history`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetVideoWatchHistoryQueryKey = (uuid?: string) => {
+  return [`/videos/${uuid}/watch-history`] as const;
+};
+
+export const getGetVideoWatchHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoWatchHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoWatchHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVideoWatchHistoryQueryKey(uuid);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoWatchHistory>>
+  > = ({ signal }) => getVideoWatchHistory(uuid, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoWatchHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoWatchHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoWatchHistory>>
+>;
+export type GetVideoWatchHistoryQueryError = unknown;
+
+export function useGetVideoWatchHistory<
+  TData = Awaited<ReturnType<typeof getVideoWatchHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoWatchHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoWatchHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoWatchHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoWatchHistory<
+  TData = Awaited<ReturnType<typeof getVideoWatchHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoWatchHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoWatchHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoWatchHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoWatchHistory<
+  TData = Awaited<ReturnType<typeof getVideoWatchHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoWatchHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 시청 기록 조회
+ */
+
+export function useGetVideoWatchHistory<
+  TData = Awaited<ReturnType<typeof getVideoWatchHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoWatchHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoWatchHistoryQueryOptions(uuid, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 동영상 시청 위치 저장
+ */
+export const saveVideoWatchHistory = (
+  uuid: string,
+  saveWatchHistoryRequest: SaveWatchHistoryRequest,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<void>(
+    {
+      url: `/videos/${uuid}/watch-history`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: saveWatchHistoryRequest,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getSaveVideoWatchHistoryMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveVideoWatchHistory>>,
+    TError,
+    { uuid: string; data: SaveWatchHistoryRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveVideoWatchHistory>>,
+  TError,
+  { uuid: string; data: SaveWatchHistoryRequest },
+  TContext
+> => {
+  const mutationKey = ["saveVideoWatchHistory"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveVideoWatchHistory>>,
+    { uuid: string; data: SaveWatchHistoryRequest }
+  > = (props) => {
+    const { uuid, data } = props ?? {};
+
+    return saveVideoWatchHistory(uuid, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveVideoWatchHistoryMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveVideoWatchHistory>>
+>;
+export type SaveVideoWatchHistoryMutationBody = SaveWatchHistoryRequest;
+export type SaveVideoWatchHistoryMutationError = unknown;
+
+/**
+ * @summary 동영상 시청 위치 저장
+ */
+export const useSaveVideoWatchHistory = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof saveVideoWatchHistory>>,
+      TError,
+      { uuid: string; data: SaveWatchHistoryRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof saveVideoWatchHistory>>,
+  TError,
+  { uuid: string; data: SaveWatchHistoryRequest },
+  TContext
+> => {
+  const mutationOptions = getSaveVideoWatchHistoryMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 /**
  * @summary 동영상 목록 조회
  */

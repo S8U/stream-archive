@@ -6,11 +6,13 @@ import Hls from 'hls.js';
 interface VideoPlayerProps {
     playlistUrl: string;
     onTimeUpdate?: (currentTimeMs: number) => void;
+    initialPosition?: number | null;  // 초 단위
 }
 
-export function VideoPlayer({ playlistUrl, onTimeUpdate }: VideoPlayerProps) {
+export function VideoPlayer({ playlistUrl, onTimeUpdate, initialPosition }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
+    const hasRestoredPositionRef = useRef(false);
 
     useEffect(() => {
         if (!videoRef.current) return;
@@ -48,6 +50,22 @@ export function VideoPlayer({ playlistUrl, onTimeUpdate }: VideoPlayerProps) {
             }
         };
     }, [playlistUrl]);
+
+    // 초기 위치로 이동 (이어보기)
+    useEffect(() => {
+        if (!videoRef.current || !initialPosition || hasRestoredPositionRef.current) return;
+
+        const video = videoRef.current;
+        const handleCanPlay = () => {
+            if (!hasRestoredPositionRef.current && initialPosition > 0) {
+                video.currentTime = initialPosition;
+                hasRestoredPositionRef.current = true;
+            }
+        };
+
+        video.addEventListener('canplay', handleCanPlay);
+        return () => video.removeEventListener('canplay', handleCanPlay);
+    }, [initialPosition]);
 
     return (
         <div className="relative aspect-video bg-black overflow-hidden">

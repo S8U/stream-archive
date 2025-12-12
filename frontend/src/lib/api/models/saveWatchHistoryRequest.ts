@@ -6,9 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface VideoInfo {
-  uuid: string;
-  title: string;
-  thumbnailUrl: string;
-  duration: number;
+export interface SaveWatchHistoryRequest {
+  position: number;
 }
