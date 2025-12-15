@@ -10,15 +10,15 @@ import type { SortObject } from "./sortObject";
 import type { PageableObject } from "./pageableObject";
 
 export interface PageAdminChannelResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
+  first?: boolean;
+  last?: boolean;
   size?: number;
   content?: AdminChannelResponse[];
   number?: number;
   sort?: SortObject;
-  first?: boolean;
-  last?: boolean;
-  numberOfElements?: number;
   pageable?: PageableObject;
+  numberOfElements?: number;
   empty?: boolean;
 }

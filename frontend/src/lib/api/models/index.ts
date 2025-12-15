@@ -63,6 +63,7 @@ export * from "./chatHistoryResponse";
 export * from "./dailyStat";
 export * from "./getVideoChatHistoryParams";
 export * from "./getWatchHistoriesParams";
+export * from "./highlightResponse";
 export * from "./loginRequest";
 export * from "./loginResponse";
 export * from "./logoutRequest";

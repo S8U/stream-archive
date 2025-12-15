@@ -1,10 +1,12 @@
 package com.github.s8u.streamarchive.controller
 
 import com.github.s8u.streamarchive.dto.ChatHistoryResponse
+import com.github.s8u.streamarchive.dto.HighlightResponse
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
 import com.github.s8u.streamarchive.dto.SaveWatchHistoryRequest
 import com.github.s8u.streamarchive.dto.WatchHistoryResponse
+import com.github.s8u.streamarchive.service.HighlightService
 import com.github.s8u.streamarchive.service.VideoDataChatHistoryService
 import com.github.s8u.streamarchive.service.VideoService
 import com.github.s8u.streamarchive.service.WatchHistoryService
@@ -29,7 +31,8 @@ import org.springframework.web.bind.annotation.RestController
 class VideoController(
     private val videoService: VideoService,
     private val videoDataChatHistoryService: VideoDataChatHistoryService,
-    private val watchHistoryService: WatchHistoryService
+    private val watchHistoryService: WatchHistoryService,
+    private val highlightService: HighlightService
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
@@ -97,5 +100,11 @@ class VideoController(
         @RequestBody request: SaveWatchHistoryRequest
     ) {
         watchHistoryService.saveWatchHistory(uuid, request)
+    }
+
+    @Operation(summary = "동영상 하이라이트 구간 조회")
+    @GetMapping("/{uuid}/highlights")
+    fun getVideoHighlights(@PathVariable uuid: String): List<HighlightResponse> {
+        return highlightService.getHighlights(uuid)
     }
 }

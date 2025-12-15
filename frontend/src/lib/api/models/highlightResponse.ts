@@ -6,8 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface SortObject {
-  empty?: boolean;
-  unsorted?: boolean;
-  sorted?: boolean;
+export interface HighlightResponse {
+  startOffsetMillis: number;
+  endOffsetMillis: number;
+  chatCount: number;
+  intensity: number;
+  peakOffsetMillis: number;
 }
