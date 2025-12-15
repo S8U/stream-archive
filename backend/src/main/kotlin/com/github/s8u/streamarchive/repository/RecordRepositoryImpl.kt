@@ -23,8 +23,8 @@ class RecordRepositoryImpl(
     override fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<Record> {
         val results = queryFactory
             .selectFrom(record)
-            .leftJoin(record.channel, channel).fetchJoin()
-            .leftJoin(record.video, video).fetchJoin()
+            .join(record.channel, channel).fetchJoin() // FIXME: 임시로 삭제된 채널 녹화건은 안보이도록함
+            .join(record.video, video).fetchJoin() // FIXME: 임시로 삭제된 동영상 녹화건은 안보이도록함
             .where(
                 request.id?.let { record.id.eq(it) },
                 request.channelName?.let { record.channel.name.containsIgnoreCase(it) },
