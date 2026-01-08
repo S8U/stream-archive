@@ -95,6 +95,15 @@ const menuConfig: MenuGroup[] = [
 
 function SidebarMenuContent() {
     const { setOpenMobile } = useSidebar();
+    const pathname = usePathname();
+
+    // 현재 경로가 링크와 일치하는지 확인
+    const isActive = (href: string) => {
+        if (href === "/admin") {
+            return pathname === "/admin";
+        }
+        return pathname === href || pathname.startsWith(href + "/");
+    };
 
     return (
         <>
@@ -105,7 +114,7 @@ function SidebarMenuContent() {
                         <SidebarMenu>
                             {group.items.map((item) => (
                                 <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton asChild>
+                                    <SidebarMenuButton asChild isActive={isActive(item.href)}>
                                         <Link href={item.href} onClick={() => setOpenMobile(false)}>
                                             <item.icon />
                                             <span>{item.title}</span>
