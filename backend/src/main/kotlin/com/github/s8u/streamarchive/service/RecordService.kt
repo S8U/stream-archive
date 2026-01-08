@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -42,6 +43,7 @@ class RecordService(
     private val recordScheduleRepository: RecordScheduleRepository,
     private val recordScheduleService: RecordScheduleService,
     private val videoThumbnailService: VideoThumbnailService,
+    private val videoService: VideoService,
     private val urlBuilder: UrlBuilder,
     private val viewerHistoryService: VideoMetadataViewerHistoryService,
     private val titleHistoryService: VideoMetadataTitleHistoryService,
@@ -234,6 +236,27 @@ class RecordService(
                 record.platformStreamId,
                 isCancel
             )
+
+            // 녹화 시간 계산 및 10초 미만 녹화 삭제 처리
+            val recordingDurationSeconds = Duration.between(record.createdAt, record.endedAt).seconds
+
+            if (recordingDurationSeconds < 10) {
+                try {
+                    logger.warn(
+                        "Recording duration too short, deleting video: recordId={}, videoId={}, duration={}s",
+                        recordId,
+                        record.videoId,
+                        recordingDurationSeconds
+                    )
+
+                    videoService.delete(record.videoId)
+                    record.isCancelled = true
+                    recordRepository.save(record)
+                } catch (e: Exception) {
+                    logger.error("Failed to delete short recording video: recordId={}, videoId={}", recordId, record.videoId, e)
+                }
+                return
+            }
 
             // Video 메타데이터 업데이트
             try {
