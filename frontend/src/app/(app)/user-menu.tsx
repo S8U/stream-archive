@@ -71,7 +71,7 @@ export function UserMenu() {
           {isAdmin && (
             <>
               <DropdownMenuItem asChild>
-                <Link href="/admin" className="flex items-center gap-2">
+                <Link href="/admin" target="_blank" className="flex items-center gap-2">
                   <Settings className="w-4 h-4" />
                   관리 페이지
                 </Link>

@@ -193,7 +193,7 @@ export default function AdminLayout({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
                                     <DropdownMenuItem asChild>
-                                        <Link href="/">
+                                        <Link href="/" target="_blank">
                                             <Home />
                                             <span>메인 화면으로 가기</span>
                                         </Link>
