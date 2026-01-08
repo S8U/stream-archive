@@ -50,6 +50,10 @@ class RecordService(
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
     private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
 
+    fun isEndingRecord(recordId: Long): Boolean {
+        return endingRecords.contains(recordId)
+    }
+
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminRecordSearchRequest, pageable: Pageable): Page<AdminRecordResponse> {
         return recordRepository.searchForAdmin(request, pageable)

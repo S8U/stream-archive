@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.scheduler
 import com.github.s8u.streamarchive.recorder.RecordProcessManager
 import com.github.s8u.streamarchive.repository.RecordRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
+import com.github.s8u.streamarchive.service.RecordService
 import com.github.s8u.streamarchive.service.VideoMetadataService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -19,7 +20,8 @@ class RecordingMetadataUpdateScheduler(
     private val recordProcessManager: RecordProcessManager,
     private val recordRepository: RecordRepository,
     private val videoRepository: VideoRepository,
-    private val videoMetadataService: VideoMetadataService
+    private val videoMetadataService: VideoMetadataService,
+    private val recordService: RecordService
 ) {
     private val logger = LoggerFactory.getLogger(RecordingMetadataUpdateScheduler::class.java)
 
@@ -37,6 +39,12 @@ class RecordingMetadataUpdateScheduler(
         logger.debug("Updating metadata for {} active recordings", activeRecordIds.size)
 
         for (recordId in activeRecordIds) {
+            // 종료 중인 녹화 제외 (트랜잭션 충돌 방지)
+            if (recordService.isEndingRecord(recordId)) {
+                logger.debug("Skipping metadata update for ending record: recordId={}", recordId)
+                continue
+            }
+
             try {
                 val record = recordRepository.findById(recordId).orElse(null) ?: continue
                 val video = videoRepository.findById(record.videoId).orElse(null) ?: continue
