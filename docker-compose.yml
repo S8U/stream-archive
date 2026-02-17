@@ -1,0 +1,37 @@
+name: stream-archive
+
+services:
+  backend:
+    image: ${DOCKER_REGISTRY:-stream-archive}-backend:latest
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      - TZ=Asia/Seoul
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCKER_REGISTRY:-stream-archive}-frontend:latest
+    build:
+      context: ./frontend
+    env_file:
+      - ./frontend/.env
+    environment:
+      - TZ=Asia/Seoul
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  nginx:
+    image: ${DOCKER_REGISTRY:-stream-archive}-nginx:latest
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped

@@ -1,0 +1,17 @@
+.git
+.gitignore
+.idea
+*.iml
+.vscode
+node_modules
+.next
+out
+dist
+*.log
+logs
+npm-debug.log*
+pnpm-debug.log*
+.env*
+!.env.example
+coverage
+.nyc_output
