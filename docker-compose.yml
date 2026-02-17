@@ -9,6 +9,8 @@ services:
       - ./backend/.env
     environment:
       - TZ=Asia/Seoul
+    volumes:
+      - ./storage:/storage
     expose:
       - "8080"
     restart: unless-stopped
