@@ -32,6 +32,7 @@ import {
     Home
 } from "lucide-react";
 import Link from "next/link";
+import { Suspense } from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -236,7 +237,9 @@ export default function AdminLayout({
                     </div>
                 </header>
                 <div className="flex-1 px-6 py-4 md:px-10 md:py-6 min-w-0">
-                    {children}
+                    <Suspense fallback={null}>
+                        {children}
+                    </Suspense>
                 </div>
             </main>
         </SidebarProvider>

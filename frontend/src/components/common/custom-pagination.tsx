@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -42,7 +43,15 @@ const getPageNumbers = (currentPage: number, totalPages: number) => {
     return pages;
 };
 
-export function CustomPagination({ 
+export function CustomPagination(props: CustomPaginationProps) {
+    return (
+        <Suspense fallback={null}>
+            <CustomPaginationInner {...props} />
+        </Suspense>
+    );
+}
+
+function CustomPaginationInner({ 
     totalPages, 
     page: externalPage, 
     onPageChange,

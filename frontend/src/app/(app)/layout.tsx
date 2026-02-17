@@ -8,6 +8,8 @@ import { SearchBar } from "./search-bar";
 import { UserMenu } from "./user-menu";
 import { SidebarContent } from "./sidebar-content";
 
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({
     children,
 }: Readonly<{

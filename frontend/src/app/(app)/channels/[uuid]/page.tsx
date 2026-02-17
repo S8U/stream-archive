@@ -6,13 +6,15 @@ import { ChannelHeader } from '@/app/(app)/channels/[uuid]/channel-header';
 import { VideoCard } from '@/components/video-card';
 import { CustomPagination } from "@/components/common/custom-pagination";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
-    params: { uuid: string };
-    searchParams: { page?: string };
+    params: Promise<{ uuid: string }>;
+    searchParams: Promise<{ page?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { uuid } = params;
+    const { uuid } = await params;
 
     try {
         const channel = await getChannelByUuid(uuid);
@@ -49,8 +51,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ChannelPage({ params, searchParams }: Props) {
-    const { uuid } = params;
-    const page = Math.max(0, Number(searchParams.page || 1) - 1); // URL은 1-based, API는 0-based
+    const { uuid } = await params;
+    const resolvedSearchParams = await searchParams;
+    const page = Math.max(0, Number(resolvedSearchParams.page || 1) - 1); // URL은 1-based, API는 0-based
     const size = 20;
 
     let channel;

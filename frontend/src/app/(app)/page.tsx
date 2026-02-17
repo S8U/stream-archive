@@ -3,6 +3,8 @@ import { searchVideos } from "@/lib/api/endpoints/video/video";
 import { VideoCard } from "@/components/video-card";
 import { CustomPagination } from "@/components/common/custom-pagination";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
     title: "홈",
     description: "최신 동영상 목록을 확인하세요",
