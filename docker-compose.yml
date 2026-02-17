@@ -11,8 +11,8 @@ services:
       - TZ=Asia/Seoul
     volumes:
       - ./storage:/storage
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
     restart: unless-stopped
 
   frontend:
@@ -23,17 +23,6 @@ services:
       - ./frontend/.env
     environment:
       - TZ=Asia/Seoul
-    expose:
-      - "3000"
-    restart: unless-stopped
-
-  nginx:
-    image: ${DOCKER_REGISTRY:-stream-archive}-nginx:latest
-    build:
-      context: ./nginx
     ports:
-      - "80:80"
-    depends_on:
-      - backend
-      - frontend
+      - "3000:3000"
     restart: unless-stopped
