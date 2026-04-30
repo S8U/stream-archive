@@ -16,6 +16,8 @@ import com.github.s8u.streamarchive.recorder.RecordProcessManager
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
 import com.github.s8u.streamarchive.repository.RecordRepository
 import com.github.s8u.streamarchive.repository.RecordScheduleRepository
+import com.github.s8u.streamarchive.repository.VideoMetadataTitleHistoryRepository
+import com.github.s8u.streamarchive.repository.VideoMetadataViewerHistoryRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
 import com.github.s8u.streamarchive.util.UrlBuilder
 import org.slf4j.LoggerFactory
@@ -47,7 +49,9 @@ class RecordService(
     private val urlBuilder: UrlBuilder,
     private val viewerHistoryService: VideoMetadataViewerHistoryService,
     private val titleHistoryService: VideoMetadataTitleHistoryService,
-    private val categoryHistoryService: VideoMetadataCategoryHistoryService
+    private val categoryHistoryService: VideoMetadataCategoryHistoryService,
+    private val viewerHistoryRepository: VideoMetadataViewerHistoryRepository,
+    private val titleHistoryRepository: VideoMetadataTitleHistoryRepository
 ) {
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
     private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
@@ -254,6 +258,8 @@ class RecordService(
                     recordRepository.save(record)
                 } catch (e: Exception) {
                     logger.error("Failed to delete short recording video: recordId={}, videoId={}", recordId, record.videoId, e)
+                } finally {
+                    videoThumbnailService.clearPeakCache(recordId)
                 }
                 return
             }
@@ -277,6 +283,36 @@ class RecordService(
             } catch (e: Exception) {
                 // 메타데이터 업데이트 실패는 녹화 종료를 막지 않음
                 logger.error("Failed to update video metadata: recordId={}", recordId, e)
+            }
+
+            // 최고 시청자 시점의 썸네일/제목으로 갱신 (best-effort)
+            try {
+                videoThumbnailService.applyPeakThumbnail(record.videoId)
+
+                val peak = viewerHistoryRepository
+                    .findTopByVideoIdOrderByViewerCountDescOffsetMillisAsc(record.videoId)
+                if (peak != null) {
+                    val peakTitle = titleHistoryRepository
+                        .findTopByVideoIdAndOffsetMillisLessThanEqualOrderByOffsetMillisDesc(
+                            videoId = record.videoId,
+                            offsetMillis = peak.offsetMillis
+                        )
+                    if (peakTitle != null) {
+                        val video = videoRepository.findById(record.videoId).orElse(null)
+                        if (video != null && video.title != peakTitle.title) {
+                            video.title = peakTitle.title
+                            videoRepository.save(video)
+                            logger.info(
+                                "Updated video to peak title: videoId={}, peakViewer={}, offsetMillis={}",
+                                video.id, peak.viewerCount, peak.offsetMillis
+                            )
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to apply peak thumbnail/title: recordId={}", recordId, e)
+            } finally {
+                videoThumbnailService.clearPeakCache(recordId)
             }
         } finally {
             endingRecords.remove(recordId)

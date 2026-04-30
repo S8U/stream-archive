@@ -32,6 +32,10 @@ class StorageProperties {
         return getVideoPath(videoId).resolve("thumbnail.png")
     }
 
+    fun getVideoPeakThumbnailPath(videoId: Long): Path {
+        return getVideoPath(videoId).resolve("thumbnail-peak.png")
+    }
+
     fun getVideoPlaylistPath(videoId: Long): Path {
         return getVideoPath(videoId).resolve("playlist.m3u8")
     }
