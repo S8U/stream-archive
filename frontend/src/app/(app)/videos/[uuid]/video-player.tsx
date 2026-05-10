@@ -13,6 +13,7 @@ import {
     Loader2,
     ChevronLeft,
     ChevronRight,
+    PictureInPicture2,
 } from 'lucide-react';
 
 interface ViewerPoint {
@@ -126,6 +127,8 @@ export function VideoPlayer({
     const [volumeIndicator, setVolumeIndicator] = useState<{ value: number; nonce: number } | null>(null);
     const volumeIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    const [isPipSupported] = useState(() => typeof document !== 'undefined' && !!document.pictureInPictureEnabled);
+    const [isPip, setIsPip] = useState(false);
     const isUserActionRef = useRef(false); // 사용자가 직접 재생/일시정지한 경우에만 true
     const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -349,6 +352,31 @@ export function VideoPlayer({
         } else {
             container.requestFullscreen().catch(() => {});
         }
+    }, []);
+
+    // PiP 토글
+    const togglePip = useCallback(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (document.pictureInPictureElement) {
+            document.exitPictureInPicture().catch(() => {});
+        } else {
+            video.requestPictureInPicture().catch(() => {});
+        }
+    }, []);
+
+    // PiP 상태 동기화
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        const onEnter = () => setIsPip(true);
+        const onLeave = () => setIsPip(false);
+        video.addEventListener('enterpictureinpicture', onEnter);
+        video.addEventListener('leavepictureinpicture', onLeave);
+        return () => {
+            video.removeEventListener('enterpictureinpicture', onEnter);
+            video.removeEventListener('leavepictureinpicture', onLeave);
+        };
     }, []);
 
     // 와이드 토글
@@ -899,6 +927,18 @@ export function VideoPlayer({
                     </div>
 
                     <div className="flex-1" />
+
+                    {/* PiP */}
+                    {isPipSupported && (
+                        <ControlButton
+                            onClick={togglePip}
+                            label={isPip ? 'PIP 종료' : 'PIP 보기'}
+                            onHoverEnter={handleControlsEnter}
+                            onHoverLeave={handleControlsLeave}
+                        >
+                            <PictureInPicture2 size={20} />
+                        </ControlButton>
+                    )}
 
                     {/* 와이드스크린 */}
                     <ControlButton
