@@ -64,11 +64,12 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
 
     return (
         <div
-            className="flex flex-col gap-3 mb-4 md:mb-5"
+            className="relative flex flex-col gap-3 mb-4 md:mb-5"
             onMouseEnter={() => setHoveredVideoUuid(uuid)}
             onMouseLeave={() => setHoveredVideoUuid(null)}
         >
-            <Link href={`/videos/${uuid}`} className="relative aspect-video rounded-lg overflow-hidden">
+            <Link href={`/videos/${uuid}`} className="absolute inset-0 z-10" aria-label={title} />
+            <div className="relative aspect-video rounded-lg overflow-hidden">
                 <VideoPreview
                     thumbnailUrl={thumbnailUrl}
                     playlistUrl={playlistUrl}
@@ -80,19 +81,17 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                 ) : (
                     <Badge className="absolute right-2 bottom-2 rounded bg-black/70 text-white">{formatDuration(duration)}</Badge>
                 )}
-            </Link>
+            </div>
             <div className="flex gap-3">
-                <Link href={`/channels/${channel.uuid}`}>
+                <Link href={`/channels/${channel.uuid}`} className="relative z-20">
                     <Avatar className="w-9 h-9">
                         <AvatarImage src={channel.profileUrl} />
                         <AvatarFallback>{channel.name[0]}</AvatarFallback>
                     </Avatar>
                 </Link>
                 <div className="flex flex-col">
-                    <Link href={`/videos/${uuid}`} className="text-md font-medium line-clamp-2">
-                        {title}
-                    </Link>
-                    <Link href={`/channels/${channel.uuid}`} className="text-sm text-muted-foreground hover:text-foreground">
+                    <h3 className="text-md font-medium line-clamp-2">{title}</h3>
+                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 text-sm text-muted-foreground hover:text-foreground">
                         {channel.name}
                     </Link>
                     <p className="text-sm text-muted-foreground">{formatTimeAgo(createdAt)}</p>
