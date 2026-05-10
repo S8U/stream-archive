@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { AdminBadge, getPrivacyBadgeTone, getPrivacyLabel } from "@/components/common/admin-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
@@ -126,32 +126,6 @@ export default function VideosPage() {
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("ko-KR");
-    };
-
-    const getPrivacyLabel = (privacy: string) => {
-        switch (privacy) {
-            case "PUBLIC":
-                return "공개";
-            case "UNLISTED":
-                return "일부공개";
-            case "PRIVATE":
-                return "비공개";
-            default:
-                return privacy;
-        }
-    };
-
-    const getPrivacyVariant = (privacy: string): "default" | "secondary" | "outline" => {
-        switch (privacy) {
-            case "PUBLIC":
-                return "secondary";
-            case "UNLISTED":
-                return "outline";
-            case "PRIVATE":
-                return "outline";
-            default:
-                return "default";
-        }
     };
 
     const formatDuration = (seconds: number) => {
@@ -306,9 +280,9 @@ export default function VideosPage() {
 
                                     {/* 공개 범위 */}
                                     <TableCell className="border-r text-center">
-                                        <Badge variant={getPrivacyVariant(video.contentPrivacy)}>
+                                        <AdminBadge tone={getPrivacyBadgeTone(video.contentPrivacy)}>
                                             {getPrivacyLabel(video.contentPrivacy)}
-                                        </Badge>
+                                        </AdminBadge>
                                     </TableCell>
 
                                     {/* 생성일 */}

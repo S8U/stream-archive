@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { AdminBadge, getPrivacyBadgeTone, getPrivacyLabel } from "@/components/common/admin-badge";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
@@ -149,32 +149,6 @@ export default function ChannelsPage() {
         return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
     };
 
-    const getPrivacyLabel = (privacy: string) => {
-        switch (privacy) {
-            case "PUBLIC":
-                return "공개";
-            case "UNLISTED":
-                return "일부공개";
-            case "PRIVATE":
-                return "비공개";
-            default:
-                return privacy;
-        }
-    };
-
-    const getPrivacyVariant = (privacy: string): "default" | "secondary" | "outline" => {
-        switch (privacy) {
-            case "PUBLIC":
-                return "secondary";
-            case "UNLISTED":
-                return "outline";
-            case "PRIVATE":
-                return "outline";
-            default:
-                return "default";
-        }
-    };
-
     return (
         <div className="min-w-0">
             <h2 className="text-2xl font-bold">채널 관리</h2>
@@ -293,9 +267,9 @@ export default function ChannelsPage() {
 
                                     {/* 공개 범위 */}
                                     <TableCell className="border-r text-center">
-                                        <Badge variant={getPrivacyVariant(channel.contentPrivacy)}>
+                                        <AdminBadge tone={getPrivacyBadgeTone(channel.contentPrivacy)}>
                                             {getPrivacyLabel(channel.contentPrivacy)}
-                                        </Badge>
+                                        </AdminBadge>
                                     </TableCell>
 
                                     {/* 동영상 용량 */}

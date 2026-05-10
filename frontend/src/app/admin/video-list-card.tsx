@@ -3,8 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { PlatformBadge } from "@/components/common/platform-badge";
+import { AdminBadge } from "@/components/common/admin-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
 import Link from "next/link";
@@ -126,11 +126,11 @@ export function VideoListCard() {
                                             {/* 상태 */}
                                             <TableCell className="border-r text-center">
                                                 {!record.isEnded && !record.isCancelled ? (
-                                                    <Badge className="bg-red-100 text-red-700 hover:bg-red-100/80">녹화중</Badge>
+                                                    <AdminBadge tone="danger">녹화중</AdminBadge>
                                                 ) : record.isCancelled ? (
-                                                    <Badge variant="destructive">취소</Badge>
+                                                    <AdminBadge tone="neutral">취소</AdminBadge>
                                                 ) : (
-                                                    <Badge variant="secondary">완료</Badge>
+                                                    <AdminBadge tone="neutral">완료</AdminBadge>
                                                 )}
                                             </TableCell>
 

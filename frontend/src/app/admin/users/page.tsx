@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { AdminBadge } from "@/components/common/admin-badge";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
@@ -141,17 +141,6 @@ export default function UsersPage() {
         }
     };
 
-    const getRoleVariant = (role: string): "default" | "secondary" | "outline" | "destructive" => {
-        switch (role) {
-            case "ADMIN":
-                return "destructive";
-            case "USER":
-                return "secondary";
-            default:
-                return "default";
-        }
-    };
-
     return (
         <div className="min-w-0">
             <h2 className="text-2xl font-bold">사용자 관리</h2>
@@ -250,9 +239,9 @@ export default function UsersPage() {
 
                                     {/* 역할 */}
                                     <TableCell className="border-r text-center">
-                                        <Badge variant={getRoleVariant(user.role)}>
+                                        <AdminBadge tone={user.role === "ADMIN" ? "danger" : "neutral"}>
                                             {getRoleLabel(user.role)}
-                                        </Badge>
+                                        </AdminBadge>
                                     </TableCell>
 
                                     {/* 마지막 로그인 */}

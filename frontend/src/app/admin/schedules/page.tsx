@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { AdminBadge } from "@/components/common/admin-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
@@ -205,11 +205,11 @@ export default function RecordSchedulesPage() {
 
     const getScheduleTypeBadge = (type: string) => {
         switch (type) {
-            case "ONCE": return <Badge variant="secondary">한 번만</Badge>;
-            case "ALWAYS": return <Badge>항상</Badge>;
-            case "N_DAYS_OF_EVERY_WEEK": return <Badge variant="outline">매주 요일</Badge>;
-            case "SPECIFIC_DAY": return <Badge variant="outline">날짜 지정</Badge>;
-            default: return <Badge variant="outline">{type}</Badge>;
+            case "ONCE": return <AdminBadge tone="info">한 번만</AdminBadge>;
+            case "ALWAYS": return <AdminBadge tone="success">항상</AdminBadge>;
+            case "N_DAYS_OF_EVERY_WEEK": return <AdminBadge tone="info">매주 요일</AdminBadge>;
+            case "SPECIFIC_DAY": return <AdminBadge tone="warning">날짜 지정</AdminBadge>;
+            default: return <AdminBadge tone="neutral">{type}</AdminBadge>;
         }
     };
 
@@ -358,9 +358,9 @@ export default function RecordSchedulesPage() {
 
                                     {/* 화질 */}
                                     <TableCell className="border-r text-center">
-                                        <Badge variant={schedule.recordQuality === "BEST" ? "default" : "secondary"}>
+                                        <AdminBadge tone={schedule.recordQuality === "BEST" ? "success" : "neutral"}>
                                             {schedule.recordQuality === "BEST" ? "최고 화질" : "최저 화질"}
-                                        </Badge>
+                                        </AdminBadge>
                                     </TableCell>
 
                                     {/* 우선순위 */}

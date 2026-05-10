@@ -5,7 +5,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ban, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
@@ -16,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PlatformBadge } from "@/components/common/platform-badge";
 import Link from "next/link";
+import { AdminBadge } from "@/components/common/admin-badge";
 
 const searchFieldOptions = ["id", "channelName", "title", "platformStreamId"] as const;
 const platformOptions = ["__all__", "CHZZK", "TWITCH", "SOOP"] as const;
@@ -118,12 +118,12 @@ export default function RecordsPage() {
 
     const getStatusBadge = (record: AdminRecordResponse) => {
         if (record.isCancelled) {
-            return <Badge variant="outline">취소됨</Badge>;
+            return <AdminBadge tone="neutral">취소됨</AdminBadge>;
         }
         if (record.isEnded) {
-            return <Badge variant="secondary">종료됨</Badge>;
+            return <AdminBadge tone="neutral">종료됨</AdminBadge>;
         }
-        return <Badge className="bg-red-100 text-red-700 hover:bg-red-100/80">녹화중</Badge>;
+        return <AdminBadge tone="danger">녹화중</AdminBadge>;
     };
 
     return (

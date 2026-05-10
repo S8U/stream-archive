@@ -5,7 +5,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Plus, Trash2, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
@@ -26,6 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
 import { PlatformBadge } from "@/components/common/platform-badge";
+import { AdminBadge } from "@/components/common/admin-badge";
 
 const searchFieldOptions = ["id", "channelName", "platformChannelId"] as const;
 const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
@@ -309,9 +309,9 @@ export default function ChannelPlatformsPage() {
                                     {/* 프로필 동기화 */}
                                     <TableCell className="border-r text-center">
                                         {platform.isSyncProfile ? (
-                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80">켜짐</Badge>
+                                            <AdminBadge tone="success">켜짐</AdminBadge>
                                         ) : (
-                                            <Badge variant="secondary">꺼짐</Badge>
+                                            <AdminBadge tone="neutral">꺼짐</AdminBadge>
                                         )}
                                     </TableCell>
 

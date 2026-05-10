@@ -1,46 +1,37 @@
-import {Badge} from "@/components/ui/badge";
-import {cn} from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface PlatformBadgeProps {
     platform: string;
     className?: string;
 }
 
+const PLATFORM_BADGE_CLASSES: Record<string, string> = {
+    CHZZK: "border-emerald-200 bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300",
+    TWITCH: "border-violet-200 bg-violet-100 text-violet-700 hover:bg-violet-100/80 dark:border-violet-800 dark:bg-violet-950/60 dark:text-violet-300",
+    SOOP: "border-sky-200 bg-sky-100 text-sky-700 hover:bg-sky-100/80 dark:border-sky-800 dark:bg-sky-950/60 dark:text-sky-300",
+};
+
+function getPlatformLabel(platform: string): string {
+    switch (platform) {
+        case "CHZZK":
+            return "치지직";
+        case "TWITCH":
+            return "트위치";
+        case "SOOP":
+            return "SOOP";
+        default:
+            return platform;
+    }
+}
+
+function getPlatformBadgeClass(platform: string): string {
+    return PLATFORM_BADGE_CLASSES[platform] ?? "border-zinc-200 bg-zinc-100 text-zinc-700 hover:bg-zinc-100/80 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-200";
+}
+
 export function PlatformBadge({ platform, className }: PlatformBadgeProps) {
-    const getPlatformLabel = (platform: string): string => {
-        switch (platform) {
-            case "CHZZK":
-                return "치지직";
-            case "TWITCH":
-                return "트위치";
-            case "SOOP":
-                return "SOOP";
-            default:
-                return platform;
-        }
-    };
-
-    const getPlatformClasses = (platform: string): string => {
-        switch (platform) {
-            case "CHZZK":
-                return "bg-emerald-200/60 hover:bg-emerald-200/80 text-emerald-800 border-0";
-            case "TWITCH":
-                return "bg-blue-200/50 hover:bg-blue-200/70 text-blue-700 border-0";
-            case "SOOP":
-                return "bg-sky-200/50 hover:bg-sky-200/70 text-sky-700 border-0";
-            default:
-                return "bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border-0";
-        }
-    };
-
     return (
-        <Badge
-            variant="outline"
-            className={cn(
-                getPlatformClasses(platform),
-                className
-            )}
-        >
+        <Badge variant="outline" className={cn(getPlatformBadgeClass(platform), className)}>
             {getPlatformLabel(platform)}
         </Badge>
     );
