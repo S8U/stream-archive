@@ -19,7 +19,7 @@ export function VideoInfo({ video }: VideoInfoProps) {
             {/* 채널 정보 */}
             <Link
                 href={`/channels/${video.channel.uuid}`}
-                className="flex items-center gap-3"
+                className="inline-flex w-fit max-w-full items-center gap-3"
             >
                 <Avatar className="w-10 h-10">
                     <AvatarImage src={video.channel.profileUrl} />
