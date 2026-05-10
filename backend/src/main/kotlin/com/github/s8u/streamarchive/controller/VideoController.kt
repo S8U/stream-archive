@@ -4,8 +4,10 @@ import com.github.s8u.streamarchive.dto.ChatHistoryResponse
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
 import com.github.s8u.streamarchive.dto.SaveWatchHistoryRequest
+import com.github.s8u.streamarchive.dto.ViewerHistoryResponse
 import com.github.s8u.streamarchive.dto.WatchHistoryResponse
 import com.github.s8u.streamarchive.service.VideoDataChatHistoryService
+import com.github.s8u.streamarchive.service.VideoMetadataViewerHistoryService
 import com.github.s8u.streamarchive.service.VideoService
 import com.github.s8u.streamarchive.service.WatchHistoryService
 import io.swagger.v3.oas.annotations.Operation
@@ -29,7 +31,8 @@ import org.springframework.web.bind.annotation.RestController
 class VideoController(
     private val videoService: VideoService,
     private val videoDataChatHistoryService: VideoDataChatHistoryService,
-    private val watchHistoryService: WatchHistoryService
+    private val watchHistoryService: WatchHistoryService,
+    private val videoMetadataViewerHistoryService: VideoMetadataViewerHistoryService
 ) {
     @Operation(summary = "동영상 목록 조회")
     @GetMapping
@@ -82,6 +85,12 @@ class VideoController(
         @RequestParam offsetEnd: Long
     ): List<ChatHistoryResponse> {
         return videoDataChatHistoryService.getChatHistoriesByVideoIdForPublic(uuid, offsetStart, offsetEnd)
+    }
+
+    @Operation(summary = "동영상 시청자 수 이력 조회")
+    @GetMapping("/{uuid}/viewer-history")
+    fun getVideoViewerHistory(@PathVariable uuid: String): List<ViewerHistoryResponse> {
+        return videoMetadataViewerHistoryService.getViewerHistoriesByVideoUuidForPublic(uuid)
     }
 
     @Operation(summary = "동영상 시청 기록 조회")

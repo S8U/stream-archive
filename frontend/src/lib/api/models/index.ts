@@ -102,5 +102,6 @@ export * from "./userResponseRole";
 export * from "./userUpdatePasswordRequest";
 export * from "./userUpdateRequest";
 export * from "./videoInfo";
+export * from "./viewerHistoryResponse";
 export * from "./watchHistoryListResponse";
 export * from "./watchHistoryResponse";

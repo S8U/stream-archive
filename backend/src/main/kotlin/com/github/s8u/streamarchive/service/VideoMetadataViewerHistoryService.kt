@@ -1,12 +1,17 @@
 package com.github.s8u.streamarchive.service
 
+import com.github.s8u.streamarchive.dto.ViewerHistoryResponse
 import com.github.s8u.streamarchive.entity.VideoMetadataViewerHistory
+import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.event.StreamDetectedEvent
+import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.recorder.RecordProcessManager
 import com.github.s8u.streamarchive.repository.RecordRepository
 import com.github.s8u.streamarchive.repository.VideoMetadataViewerHistoryRepository
+import com.github.s8u.streamarchive.repository.VideoRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
+import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,7 +23,9 @@ import java.util.concurrent.ConcurrentHashMap
 class VideoMetadataViewerHistoryService(
     private val viewerHistoryRepository: VideoMetadataViewerHistoryRepository,
     private val recordRepository: RecordRepository,
-    private val recordProcessManager: RecordProcessManager
+    private val recordProcessManager: RecordProcessManager,
+    private val videoRepository: VideoRepository,
+    private val authenticationService: AuthenticationService
 ) {
     private val logger = LoggerFactory.getLogger(VideoMetadataViewerHistoryService::class.java)
 
@@ -81,6 +88,22 @@ class VideoMetadataViewerHistoryService(
         } catch (e: Exception) {
             logger.error("Failed to save viewer history from event", e)
         }
+    }
+
+    /**
+     * 시청자 수 이력 조회
+     */
+    @Transactional(readOnly = true)
+    fun getViewerHistoriesByVideoUuidForPublic(uuid: String): List<ViewerHistoryResponse> {
+        val video = videoRepository.findByUuid(uuid)
+            ?: throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+
+        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
+            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+
+        return viewerHistoryRepository.findByVideoIdOrderByOffsetMillisAsc(video.id!!)
+            .map { ViewerHistoryResponse.from(it) }
     }
 
 }

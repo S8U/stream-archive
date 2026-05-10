@@ -6,8 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface SortObject {
-  sorted?: boolean;
-  unsorted?: boolean;
-  empty?: boolean;
+export interface ViewerHistoryResponse {
+  viewerCount: number;
+  offsetMillis: number;
 }

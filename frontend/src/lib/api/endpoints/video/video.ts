@@ -28,6 +28,7 @@ import type {
   PublicVideoResponse,
   SaveWatchHistoryRequest,
   SearchVideosParams,
+  ViewerHistoryResponse,
   WatchHistoryResponse,
 } from "../../models";
 
@@ -752,6 +753,174 @@ export function useGetVideoSegment<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetVideoSegmentQueryOptions(uuid, filename, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 동영상 시청자 수 이력 조회
+ */
+export const getVideoViewerHistory = (
+  uuid: string,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<ViewerHistoryResponse[]>(
+    { url: `/videos/${uuid}/viewer-history`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetVideoViewerHistoryQueryKey = (uuid?: string) => {
+  return [`/videos/${uuid}/viewer-history`] as const;
+};
+
+export const getGetVideoViewerHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoViewerHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoViewerHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVideoViewerHistoryQueryKey(uuid);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoViewerHistory>>
+  > = ({ signal }) => getVideoViewerHistory(uuid, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoViewerHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoViewerHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoViewerHistory>>
+>;
+export type GetVideoViewerHistoryQueryError = unknown;
+
+export function useGetVideoViewerHistory<
+  TData = Awaited<ReturnType<typeof getVideoViewerHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoViewerHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoViewerHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoViewerHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoViewerHistory<
+  TData = Awaited<ReturnType<typeof getVideoViewerHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoViewerHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoViewerHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoViewerHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoViewerHistory<
+  TData = Awaited<ReturnType<typeof getVideoViewerHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoViewerHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 시청자 수 이력 조회
+ */
+
+export function useGetVideoViewerHistory<
+  TData = Awaited<ReturnType<typeof getVideoViewerHistory>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoViewerHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoViewerHistoryQueryOptions(uuid, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

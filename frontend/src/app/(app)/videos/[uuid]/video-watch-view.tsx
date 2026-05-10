@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { VideoPlayer } from '@/app/(app)/videos/[uuid]/video-player';
 import { VideoInfo } from '@/components/video-info';
 import { ChatHistory } from '@/app/(app)/videos/[uuid]/chat-history';
-import { useSaveVideoWatchHistory, useGetVideoWatchHistory } from '@/lib/api/endpoints/video/video';
+import { useSaveVideoWatchHistory, useGetVideoWatchHistory, useGetVideoViewerHistory } from '@/lib/api/endpoints/video/video';
 import { PublicVideoResponse } from "@/lib/api/models";
 
 interface VideoWatchViewProps {
@@ -28,12 +28,15 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     // 시청 위치 저장 mutation
     const saveWatchHistory = useSaveVideoWatchHistory();
 
-    // 시청 기록이 있으면 초기 위치 설정
+    // 라이브 여부: 녹화가 진행 중이면 라이브
+    const isLive = !!video.record && !video.record.isEnded && !video.record.isCancelled;
+
+    // 시청 기록이 있으면 초기 위치 설정 (라이브는 이어보기 의미 없음)
     useEffect(() => {
-        if (watchHistory?.lastPosition && watchHistory.lastPosition > 0) {
+        if (!isLive && watchHistory?.lastPosition && watchHistory.lastPosition > 0) {
             setInitialPosition(watchHistory.lastPosition);
         }
-    }, [watchHistory]);
+    }, [watchHistory, isLive]);
 
     // 현재 재생 위치 ref 업데이트
     useEffect(() => {
@@ -57,8 +60,9 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         );
     }, [video.uuid, saveWatchHistory]);
 
-    // 10초마다 시청 위치 저장
+    // 10초마다 시청 위치 저장 (라이브는 제외)
     useEffect(() => {
+        if (isLive) return;
         const interval = setInterval(() => {
             const currentPosition = currentPositionRef.current;
             if (currentPosition > 0) {
@@ -67,7 +71,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         }, 10000);
 
         return () => clearInterval(interval);
-    }, [savePosition]);
+    }, [savePosition, isLive]);
 
     // 페이지 이탈 시 마지막 위치 저장
     useEffect(() => {
@@ -87,19 +91,40 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [video.uuid]);
 
+    // 시청자 수 이력 조회 (라이브 중에는 주기적 갱신)
+    const { data: viewerHistory } = useGetVideoViewerHistory(video.uuid, {
+        query: {
+            refetchInterval: isLive ? 30_000 : false,
+            staleTime: isLive ? 0 : 60_000,
+        },
+    });
+
+    // 와이드 모드: 사이드바를 가리고 좌측 비디오를 viewport 가득, 우측 채팅 유지
+    const [isWide, setIsWide] = useState(false);
+
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden">
+        <div
+            className={
+                isWide
+                    ? 'fixed inset-0 z-[60] bg-background flex flex-col lg:flex-row overflow-hidden'
+                    : 'flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden'
+            }
+        >
             {/* 좌측: 동영상 + 정보 */}
-            <div className="flex-shrink-0 lg:flex-1 flex flex-col gap-4 overflow-y-auto">
+            <div className={`flex-shrink-0 lg:flex-1 flex flex-col gap-4 ${isWide ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                 <VideoPlayer
                     playlistUrl={video.playlistUrl}
                     onTimeUpdate={setCurrentTimeMs}
                     initialPosition={initialPosition}
+                    isLive={isLive}
+                    viewerHistory={viewerHistory}
+                    isWide={isWide}
+                    onWideToggle={setIsWide}
                 />
-                <VideoInfo video={video} />
+                {!isWide && <VideoInfo video={video} />}
             </div>
 
-            {/* 우측: 채팅창 */}
+            {/* 우측: 채팅창 (와이드 모드에서도 유지) */}
             <div className="flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-4 lg:mt-0 min-h-0">
                 <ChatHistory videoUuid={video.uuid} currentTimeMs={currentTimeMs} chatSyncOffsetMillis={video.chatSyncOffsetMillis} />
             </div>
