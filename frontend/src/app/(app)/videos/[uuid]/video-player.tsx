@@ -844,7 +844,7 @@ export function VideoPlayer({
                                     transform: 'translateX(-50%)',
                                 }}
                             >
-                                <div>{formatTime(hoverTime)}</div>
+                                <div className="font-bold">{formatTime(hoverTime)}</div>
                                 {hoverViewerCount !== null && (
                                     <div className="text-white/70">
                                         시청자 {hoverViewerCount.toLocaleString()}
