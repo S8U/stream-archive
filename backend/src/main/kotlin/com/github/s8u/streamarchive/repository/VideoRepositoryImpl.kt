@@ -166,4 +166,25 @@ class VideoRepositoryImpl(
             )
             .fetchOne() ?: 0L
     }
+
+    override fun sumFileSizeByChannelIds(channelIds: Collection<Long>): Map<Long, Long> {
+        if (channelIds.isEmpty()) {
+            return emptyMap()
+        }
+
+        val totalFileSize = video.fileSize.sum()
+
+        return queryFactory
+            .select(video.channelId, totalFileSize)
+            .from(video)
+            .where(
+                video.channelId.`in`(channelIds),
+                video.isActive.eq(true)
+            )
+            .groupBy(video.channelId)
+            .fetch()
+            .associate { tuple ->
+                tuple.get(video.channelId)!! to (tuple.get(totalFileSize) ?: 0L)
+            }
+    }
 }

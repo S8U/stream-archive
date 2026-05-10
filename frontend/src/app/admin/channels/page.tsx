@@ -140,6 +140,15 @@ export default function ChannelsPage() {
         return new Date(dateString).toLocaleDateString("ko-KR");
     };
 
+    const formatFileSize = (bytes: number) => {
+        if (bytes === 0) return "0 B";
+
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    };
+
     const getPrivacyLabel = (privacy: string) => {
         switch (privacy) {
             case "PUBLIC":
@@ -233,6 +242,7 @@ export default function ChannelsPage() {
                             <TableHead className="border-r font-semibold">채널 정보</TableHead>
                             <TableHead className="border-r font-semibold w-[350px]">UUID</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">공개 범위</TableHead>
+                            <TableHead className="border-r font-semibold w-[120px] text-center">동영상 용량</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
                             <TableHead className="font-semibold w-[280px] text-center">작업</TableHead>
                         </TableRow>
@@ -240,19 +250,19 @@ export default function ChannelsPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8">
+                                <TableCell colSpan={7} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={7} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !channelsData?.content || channelsData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                     등록된 채널이 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -286,6 +296,11 @@ export default function ChannelsPage() {
                                         <Badge variant={getPrivacyVariant(channel.contentPrivacy)}>
                                             {getPrivacyLabel(channel.contentPrivacy)}
                                         </Badge>
+                                    </TableCell>
+
+                                    {/* 동영상 용량 */}
+                                    <TableCell className="border-r text-center font-medium">
+                                        {formatFileSize(channel.totalVideoFileSize ?? 0)}
                                     </TableCell>
 
                                     {/* 생성일 */}

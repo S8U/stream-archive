@@ -12,6 +12,7 @@ export interface AdminChannelResponse {
   uuid: string;
   name: string;
   profileUrl: string;
+  totalVideoFileSize: number;
   contentPrivacy: AdminChannelResponseContentPrivacy;
   createdAt: string;
   updatedAt: string;

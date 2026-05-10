@@ -23,4 +23,5 @@ interface VideoRepositoryCustom {
     // 채널별 통계
     fun countByChannelId(channelId: Long): Long
     fun sumFileSizeByChannelId(channelId: Long): Long
+    fun sumFileSizeByChannelIds(channelIds: Collection<Long>): Map<Long, Long>
 }

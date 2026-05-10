@@ -35,13 +35,16 @@ class ChannelService(
 
     @Transactional(readOnly = true)
     fun searchForAdmin(request: AdminChannelSearchRequest, pageable: Pageable): Page<AdminChannelResponse> {
-        return channelRepository.searchForAdmin(request, pageable)
-            .map { channel ->
-                AdminChannelResponse.from(
-                    channel = channel,
-                    profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
-                )
-            }
+        val channels = channelRepository.searchForAdmin(request, pageable)
+        val totalVideoFileSizes = videoRepository.sumFileSizeByChannelIds(channels.content.mapNotNull { it.id })
+
+        return channels.map { channel ->
+            AdminChannelResponse.from(
+                channel = channel,
+                profileUrl = urlBuilder.channelProfileUrl(channel.uuid),
+                totalVideoFileSize = totalVideoFileSizes[channel.id] ?: 0L
+            )
+        }
     }
 
     @Transactional(readOnly = true)
@@ -60,9 +63,12 @@ class ChannelService(
         val channel = channelRepository.findById(id).orElseThrow {
             BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
+        val totalVideoFileSize = videoRepository.sumFileSizeByChannelIds(listOf(id))[id] ?: 0L
+
         return AdminChannelResponse.from(
             channel = channel,
-            profileUrl = urlBuilder.channelProfileUrl(channel.uuid)
+            profileUrl = urlBuilder.channelProfileUrl(channel.uuid),
+            totalVideoFileSize = totalVideoFileSize
         )
     }
 

@@ -26,17 +26,19 @@ data class AdminChannelResponse(
     val uuid: String,
     val name: String,
     val profileUrl: String,
+    val totalVideoFileSize: Long,
     val contentPrivacy: ContentPrivacy,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
     companion object {
-        fun from(channel: Channel, profileUrl: String): AdminChannelResponse {
+        fun from(channel: Channel, profileUrl: String, totalVideoFileSize: Long = 0): AdminChannelResponse {
             return AdminChannelResponse(
                 id = channel.id!!,
                 uuid = channel.uuid,
                 name = channel.name,
                 profileUrl = profileUrl,
+                totalVideoFileSize = totalVideoFileSize,
                 contentPrivacy = channel.contentPrivacy,
                 createdAt = channel.createdAt,
                 updatedAt = channel.updatedAt
