@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface VideoMetadataViewerHistoryRepository : JpaRepository<VideoMetadataViewerHistory, Long> {
     fun findByVideoIdOrderByOffsetMillisAsc(videoId: Long): List<VideoMetadataViewerHistory>
+
+    fun findTopByVideoIdOrderByViewerCountDescOffsetMillisAsc(videoId: Long): VideoMetadataViewerHistory?
 }

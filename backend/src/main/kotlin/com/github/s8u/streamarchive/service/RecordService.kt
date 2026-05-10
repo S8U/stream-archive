@@ -121,6 +121,7 @@ class RecordService(
 
         // 썸네일 저장
         videoThumbnailService.saveThumbnail(stream.thumbnailUrl, savedVideo.id!!)
+        videoThumbnailService.savePeakThumbnail(stream.thumbnailUrl, savedVideo.id!!)
 
         // Record 생성
         val record = Record(
@@ -258,6 +259,13 @@ class RecordService(
                 return
             }
 
+            // 대표 메타데이터를 시청자 수 피크 시점으로 확정
+            try {
+                applyPeakViewerMetadata(record.videoId)
+            } catch (e: Exception) {
+                logger.error("Failed to apply peak viewer metadata: recordId={}, videoId={}", recordId, record.videoId, e)
+            }
+
             // Video 메타데이터 업데이트
             try {
                 val video = videoRepository.findById(record.videoId).orElseThrow {
@@ -281,6 +289,27 @@ class RecordService(
         } finally {
             endingRecords.remove(recordId)
         }
+    }
+
+    private fun applyPeakViewerMetadata(videoId: Long) {
+        val peakViewerHistory = viewerHistoryService.findPeakViewerHistory(videoId) ?: return
+        val video = videoRepository.findById(videoId).orElseThrow {
+            BusinessException("동영상을 찾을 수 없습니다: $videoId", HttpStatus.NOT_FOUND)
+        }
+
+        titleHistoryService.findTitleAtOrBefore(videoId, peakViewerHistory.offsetMillis)?.let { peakTitle ->
+            video.title = peakTitle
+            videoRepository.save(video)
+        }
+
+        videoThumbnailService.applyPeakThumbnail(videoId)
+
+        logger.info(
+            "Applied peak viewer metadata: videoId={}, viewerCount={}, offsetMillis={}",
+            videoId,
+            peakViewerHistory.viewerCount,
+            peakViewerHistory.offsetMillis
+        )
     }
 
     @Async

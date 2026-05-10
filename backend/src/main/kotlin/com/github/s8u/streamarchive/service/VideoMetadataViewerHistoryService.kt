@@ -24,7 +24,8 @@ class VideoMetadataViewerHistoryService(
     private val recordRepository: RecordRepository,
     private val recordProcessManager: RecordProcessManager,
     private val videoRepository: VideoRepository,
-    private val contentPrivacyService: ContentPrivacyService
+    private val contentPrivacyService: ContentPrivacyService,
+    private val videoThumbnailService: VideoThumbnailService
 ) {
     private val logger = LoggerFactory.getLogger(VideoMetadataViewerHistoryService::class.java)
 
@@ -36,6 +37,11 @@ class VideoMetadataViewerHistoryService(
      */
     fun clearCache(recordId: Long) {
         lastViewerCountCache.remove(recordId)
+    }
+
+    @Transactional(readOnly = true)
+    fun findPeakViewerHistory(videoId: Long): VideoMetadataViewerHistory? {
+        return viewerHistoryRepository.findTopByVideoIdOrderByViewerCountDescOffsetMillisAsc(videoId)
     }
 
     /**
@@ -81,8 +87,13 @@ class VideoMetadataViewerHistoryService(
 
             // 시청자 수가 변경된 경우에만 저장
             if (currentViewerCount != null && currentViewerCount != lastViewerCount) {
+                val previousPeakViewerCount = findPeakViewerHistory(activeRecord.videoId)?.viewerCount
                 val offsetMillis = Duration.between(activeRecord.createdAt, LocalDateTime.now()).toMillis()
                 saveViewerCount(activeRecord.id!!, activeRecord.videoId, currentViewerCount, offsetMillis)
+
+                if (previousPeakViewerCount == null || currentViewerCount > previousPeakViewerCount) {
+                    videoThumbnailService.savePeakThumbnail(event.stream.thumbnailUrl, activeRecord.videoId)
+                }
             }
         } catch (e: Exception) {
             logger.error("Failed to save viewer history from event", e)

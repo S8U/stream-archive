@@ -19,6 +19,29 @@ class VideoThumbnailService(
     private val logger = LoggerFactory.getLogger(VideoThumbnailService::class.java)
 
     fun saveThumbnail(thumbnailUrl: String?, videoId: Long) {
+        saveThumbnailToPath(thumbnailUrl, videoId, storageProperties.getVideoThumbnailPath(videoId))
+    }
+
+    fun savePeakThumbnail(thumbnailUrl: String?, videoId: Long) {
+        saveThumbnailToPath(thumbnailUrl, videoId, storageProperties.getVideoPeakThumbnailPath(videoId))
+    }
+
+    fun applyPeakThumbnail(videoId: Long) {
+        val peakThumbnailPath = storageProperties.getVideoPeakThumbnailPath(videoId)
+        if (!Files.exists(peakThumbnailPath)) {
+            logger.debug("Peak thumbnail does not exist: videoId={}", videoId)
+            return
+        }
+
+        val thumbnailPath = storageProperties.getVideoThumbnailPath(videoId)
+        Files.createDirectories(thumbnailPath.parent)
+        Files.copy(peakThumbnailPath, thumbnailPath, StandardCopyOption.REPLACE_EXISTING)
+        Files.deleteIfExists(peakThumbnailPath)
+
+        logger.info("Applied peak thumbnail: videoId={}", videoId)
+    }
+
+    private fun saveThumbnailToPath(thumbnailUrl: String?, videoId: Long, filePath: java.nio.file.Path) {
         if (thumbnailUrl == null) {
             logger.warn("Thumbnail URL is null for videoId: {}", videoId)
             return
@@ -27,7 +50,6 @@ class VideoThumbnailService(
         try {
             val inputStream = ImageDownloadUtil.downloadImage(thumbnailUrl) ?: return
 
-            val filePath = storageProperties.getVideoThumbnailPath(videoId)
             Files.createDirectories(filePath.parent)
 
             inputStream.use {

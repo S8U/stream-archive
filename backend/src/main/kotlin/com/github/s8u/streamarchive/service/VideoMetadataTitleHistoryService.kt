@@ -5,6 +5,7 @@ import com.github.s8u.streamarchive.event.StreamDetectedEvent
 import com.github.s8u.streamarchive.recorder.RecordProcessManager
 import com.github.s8u.streamarchive.repository.RecordRepository
 import com.github.s8u.streamarchive.repository.VideoMetadataTitleHistoryRepository
+import com.github.s8u.streamarchive.repository.VideoRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -18,7 +19,8 @@ import java.util.concurrent.ConcurrentHashMap
 class VideoMetadataTitleHistoryService(
     private val titleHistoryRepository: VideoMetadataTitleHistoryRepository,
     private val recordRepository: RecordRepository,
-    private val recordProcessManager: RecordProcessManager
+    private val recordProcessManager: RecordProcessManager,
+    private val videoRepository: VideoRepository
 ) {
     private val logger = LoggerFactory.getLogger(VideoMetadataTitleHistoryService::class.java)
 
@@ -76,10 +78,27 @@ class VideoMetadataTitleHistoryService(
             if (currentTitle != null && currentTitle != lastTitle) {
                 val offsetMillis = Duration.between(activeRecord.createdAt, LocalDateTime.now()).toMillis()
                 saveTitle(activeRecord.id!!, activeRecord.videoId, currentTitle, offsetMillis)
+                updateVideoTitle(activeRecord.videoId, currentTitle)
             }
         } catch (e: Exception) {
             logger.error("Failed to save title history from event", e)
         }
+    }
+
+    @Transactional(readOnly = true)
+    fun findTitleAtOrBefore(videoId: Long, offsetMillis: Long): String? {
+        return titleHistoryRepository.findTopByVideoIdAndOffsetMillisLessThanEqualOrderByOffsetMillisDesc(
+            videoId = videoId,
+            offsetMillis = offsetMillis
+        )?.title
+    }
+
+    private fun updateVideoTitle(videoId: Long, title: String) {
+        val video = videoRepository.findById(videoId).orElse(null) ?: return
+        video.title = title
+        videoRepository.save(video)
+
+        logger.debug("Updated active recording video title: videoId={}, title={}", videoId, title)
     }
 
 }
