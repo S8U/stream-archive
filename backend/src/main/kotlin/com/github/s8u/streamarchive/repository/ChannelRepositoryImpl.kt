@@ -29,7 +29,7 @@ class ChannelRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(channel.createdAt.desc())
+            .orderBy(channel.name.asc(), channel.id.asc())
             .fetch()
 
         val total = queryFactory
@@ -55,7 +55,7 @@ class ChannelRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(channel.createdAt.desc())
+            .orderBy(channel.name.asc(), channel.id.asc())
             .fetch()
 
         val total = queryFactory
