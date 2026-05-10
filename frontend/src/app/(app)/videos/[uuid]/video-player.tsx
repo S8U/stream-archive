@@ -127,7 +127,7 @@ export function VideoPlayer({
     const [volumeIndicator, setVolumeIndicator] = useState<{ value: number; nonce: number } | null>(null);
     const volumeIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const [isPipSupported] = useState(() => typeof document !== 'undefined' && !!document.pictureInPictureEnabled);
+    const [isPipSupported, setIsPipSupported] = useState(false);
     const [isPip, setIsPip] = useState(false);
     const isUserActionRef = useRef(false); // 사용자가 직접 재생/일시정지한 경우에만 true
     const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -137,6 +137,10 @@ export function VideoPlayer({
 
     const [seekIndicator, setSeekIndicator] = useState<{ direction: 'backward' | 'forward'; seconds: number } | null>(null);
     const seekIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        setIsPipSupported(!!document.pictureInPictureEnabled);
+    }, []);
 
     // HLS 로드
     useEffect(() => {
