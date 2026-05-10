@@ -52,6 +52,10 @@ function formatTime(seconds: number): string {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+function getFiniteDuration(video: HTMLMediaElement): number {
+    return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+}
+
 interface ControlButtonProps {
     onClick: () => void;
     label: string;
@@ -200,10 +204,10 @@ export function VideoPlayer({
 
     // 초기 위치 복원
     useEffect(() => {
-        if (!videoRef.current || !initialPosition || hasRestoredPositionRef.current) return;
+        if (!videoRef.current || !initialPosition || !Number.isFinite(initialPosition) || hasRestoredPositionRef.current) return;
         const video = videoRef.current;
         const handleCanPlay = () => {
-            if (!hasRestoredPositionRef.current && initialPosition > 0) {
+            if (!hasRestoredPositionRef.current && Number.isFinite(initialPosition) && initialPosition > 0) {
                 video.currentTime = initialPosition;
                 hasRestoredPositionRef.current = true;
             }
@@ -342,7 +346,9 @@ export function VideoPlayer({
     const seekTo = useCallback((time: number) => {
         const video = videoRef.current;
         if (!video) return;
-        const clamped = Math.max(0, Math.min(video.duration || 0, time));
+        if (!Number.isFinite(time)) return;
+        const duration = getFiniteDuration(video);
+        const clamped = Math.max(0, duration > 0 ? Math.min(duration, time) : time);
         video.currentTime = clamped;
         setCurrentTime(clamped);
     }, []);
@@ -416,13 +422,13 @@ export function VideoPlayer({
             setCurrentTime(video.currentTime);
             if (onTimeUpdate) onTimeUpdate(video.currentTime * 1000);
         };
-        const handleDurationChange = () => setDuration(video.duration || 0);
+        const handleDurationChange = () => setDuration(getFiniteDuration(video));
         const handleVolumeChange = () => {
             setVolume(video.volume);
             setIsMuted(video.muted);
         };
         const handleLoadedMetadata = () => {
-            setDuration(video.duration || 0);
+            setDuration(getFiniteDuration(video));
             setVolume(video.volume);
             setIsMuted(video.muted);
         };
@@ -534,9 +540,10 @@ export function VideoPlayer({
                 case 'Digit8':
                 case 'Digit9': {
                     e.preventDefault();
-                    if (video.duration > 0) {
+                    const duration = getFiniteDuration(video);
+                    if (duration > 0) {
                         const digit = parseInt(e.code.slice(-1), 10);
-                        seekTo(video.duration * (digit / 10));
+                        seekTo(duration * (digit / 10));
                         showControls();
                     }
                     break;
