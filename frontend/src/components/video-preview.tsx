@@ -12,6 +12,10 @@ interface VideoPreviewProps {
     isHovered: boolean;
 }
 
+function isInterruptedPlayback(error: unknown): boolean {
+    return error instanceof DOMException && error.name === 'AbortError';
+}
+
 export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: VideoPreviewProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -24,15 +28,24 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
         }
 
         const video = videoRef.current;
+        let cancelled = false;
+
+        const markVideoLoaded = () => {
+            if (!cancelled) {
+                setIsVideoLoaded(true);
+            }
+        };
+
+        const handlePlaybackError = (error: unknown) => {
+            if (!cancelled && !isInterruptedPlayback(error)) {
+                console.error('Video playback failed:', error);
+            }
+        };
 
         // Safari 네이티브 HLS 지원 체크
         if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = playlistUrl;
-            video.play().then(() => {
-                setIsVideoLoaded(true);
-            }).catch(err => {
-                console.error('Video playback failed:', err);
-            });
+            video.play().then(markVideoLoaded).catch(handlePlaybackError);
         }
         // 다른 브라우저는 hls.js 사용
         else if (Hls.isSupported()) {
@@ -47,11 +60,7 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
             hls.attachMedia(video);
 
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                video.play().then(() => {
-                    setIsVideoLoaded(true);
-                }).catch(err => {
-                    console.error('Video playback failed:', err);
-                });
+                video.play().then(markVideoLoaded).catch(handlePlaybackError);
             });
 
             hls.on(Hls.Events.ERROR, (_event, data) => {
@@ -65,6 +74,7 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
 
         return () => {
             // Cleanup
+            cancelled = true;
             if (hlsRef.current) {
                 hlsRef.current.destroy();
                 hlsRef.current = null;
