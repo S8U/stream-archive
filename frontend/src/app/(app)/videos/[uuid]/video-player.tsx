@@ -127,6 +127,7 @@ export function VideoPlayer({
     const volumeIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const isUserActionRef = useRef(false); // 사용자가 직접 재생/일시정지한 경우에만 true
+    const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [playPauseIndicator, setPlayPauseIndicator] = useState<{ kind: 'play' | 'pause'; nonce: number } | null>(null);
     const playPauseIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -374,8 +375,6 @@ export function VideoPlayer({
         };
         const handlePause = () => {
             setIsPlaying(false);
-            setIsControlsVisible(true);
-            if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
             if (isUserActionRef.current) {
                 showPlayPauseIndicator('pause');
                 isUserActionRef.current = false;
@@ -576,18 +575,24 @@ export function VideoPlayer({
         hideControlsImmediately();
     }, [hideControlsImmediately]);
 
-    // 컨테이너 클릭 (재생/일시정지)
+    // 컨테이너 클릭 (재생/일시정지) — 더블클릭과 구분하기 위해 딜레이 후 실행
     const handleContainerClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-        // 컨트롤 영역 안의 클릭은 무시
         const controls = controlsRef.current;
         if (controls && controls.contains(e.target as Node)) return;
-        togglePlay();
+        if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = setTimeout(() => {
+            togglePlay();
+        }, 200);
     }, [togglePlay]);
 
-    // 더블클릭 (풀스크린)
+    // 더블클릭 (풀스크린) — 싱글클릭 타이머를 취소하고 풀스크린 실행
     const handleContainerDoubleClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
         const controls = controlsRef.current;
         if (controls && controls.contains(e.target as Node)) return;
+        if (clickTimerRef.current) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+        }
         toggleFullscreen();
     }, [toggleFullscreen]);
 
@@ -650,7 +655,10 @@ export function VideoPlayer({
 
         if (points.length < 2) return null;
 
-        return `M${points.join(' L')}`;
+        // 첫/끝 포인트를 각각 x=0, x=100 끝까지 수평으로 연장 후 아래쪽으로 닫아 채우기
+        const firstY = points[0].split(',')[1];
+        const lastY = points[points.length - 1].split(',')[1];
+        return `M0,${firstY} L${points.join(' L')} L100,${lastY} L100,100 L0,100 Z`;
     }, [viewerHistory, duration]);
 
     return (
@@ -758,27 +766,23 @@ export function VideoPlayer({
                 >
                     <div
                         ref={timelineRef}
-                        className="relative h-0.5 bg-white/30 rounded-full cursor-pointer group/timeline hover:h-1 transition-all"
+                        className="relative h-1 bg-white/20 rounded-full cursor-pointer group/timeline hover:bg-white/40 transition-colors"
                         onMouseDown={handleTimelineMouseDown}
                         onMouseMove={handleTimelineMouseMove}
                         onMouseLeave={handleTimelineMouseLeave}
                     >
-                        {/* 시청자 수 그래프 (선그래프) */}
+                        {/* 시청자 수 그래프 (hover 시 표시) */}
                         {viewerGraphPath && (
                             <svg
-                                className="absolute -top-10 left-0 w-full h-10 pointer-events-none overflow-visible"
+                                className="absolute -top-10 left-0 w-full h-10 pointer-events-none overflow-visible opacity-0 group-hover/timeline:opacity-100 transition-opacity duration-200"
                                 viewBox="0 0 100 100"
                                 preserveAspectRatio="none"
                                 aria-hidden="true"
                             >
                                 <path
                                     d={viewerGraphPath}
-                                    fill="none"
-                                    stroke="rgba(255, 255, 255, 0.7)"
-                                    strokeWidth={1.5}
-                                    strokeLinejoin="round"
-                                    strokeLinecap="round"
-                                    vectorEffect="non-scaling-stroke"
+                                    fill="rgba(255, 255, 255, 0.2)"
+                                    stroke="none"
                                 />
                             </svg>
                         )}
@@ -806,7 +810,7 @@ export function VideoPlayer({
                         {/* hover 시간/시청자 툴팁 */}
                         {hoverTime !== null && (
                             <div
-                                className="absolute bottom-full mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded pointer-events-none whitespace-nowrap text-center"
+                                className="absolute bottom-full mb-6 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full pointer-events-none whitespace-nowrap text-center"
                                 style={{
                                     left: `${tooltipX}px`,
                                     transform: 'translateX(-50%)',
