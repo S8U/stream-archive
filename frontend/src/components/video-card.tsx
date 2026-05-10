@@ -63,14 +63,12 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
     const [hoveredVideoUuid, setHoveredVideoUuid] = useState<string | null>(null);
 
     return (
-        <Link
-            key={uuid}
-            href={`/videos/${uuid}`}
+        <div
             className="flex flex-col gap-3 mb-4 md:mb-5"
             onMouseEnter={() => setHoveredVideoUuid(uuid)}
             onMouseLeave={() => setHoveredVideoUuid(null)}
         >
-            <div className="relative aspect-video rounded-lg overflow-hidden">
+            <Link href={`/videos/${uuid}`} className="relative aspect-video rounded-lg overflow-hidden">
                 <VideoPreview
                     thumbnailUrl={thumbnailUrl}
                     playlistUrl={playlistUrl}
@@ -82,7 +80,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                 ) : (
                     <Badge className="absolute right-2 bottom-2 rounded bg-black/70 text-white">{formatDuration(duration)}</Badge>
                 )}
-            </div>
+            </Link>
             <div className="flex gap-3">
                 <Link href={`/channels/${channel.uuid}`}>
                     <Avatar className="w-9 h-9">
@@ -91,11 +89,15 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     </Avatar>
                 </Link>
                 <div className="flex flex-col">
-                    <h3 className="text-md font-medium line-clamp-2">{title}</h3>
-                    <p className="text-sm text-muted-foreground">{channel.name}</p>
+                    <Link href={`/videos/${uuid}`} className="text-md font-medium line-clamp-2">
+                        {title}
+                    </Link>
+                    <Link href={`/channels/${channel.uuid}`} className="text-sm text-muted-foreground hover:text-foreground">
+                        {channel.name}
+                    </Link>
                     <p className="text-sm text-muted-foreground">{formatTimeAgo(createdAt)}</p>
                 </div>
             </div>
-        </Link>
+        </div>
     );
 }
