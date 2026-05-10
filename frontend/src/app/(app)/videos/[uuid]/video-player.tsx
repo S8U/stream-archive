@@ -169,9 +169,7 @@ export function VideoPlayer({
             // localStorage 접근 실패 무시
         }
 
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = playlistUrl;
-        } else if (Hls.isSupported()) {
+        if (Hls.isSupported()) {
             const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
             hlsRef.current = hls;
             hls.loadSource(playlistUrl);
@@ -181,6 +179,8 @@ export function VideoPlayer({
                     console.error('HLS fatal error:', data);
                 }
             });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = playlistUrl;
         } else {
             console.error('HLS is not supported in this browser');
         }

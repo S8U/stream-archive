@@ -42,13 +42,7 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
             }
         };
 
-        // Safari 네이티브 HLS 지원 체크
-        if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = playlistUrl;
-            video.play().then(markVideoLoaded).catch(handlePlaybackError);
-        }
-        // 다른 브라우저는 hls.js 사용
-        else if (Hls.isSupported()) {
+        if (Hls.isSupported()) {
             const hls = new Hls({
                 enableWorker: true,
                 lowLatencyMode: false,
@@ -68,6 +62,9 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
                     console.error('HLS fatal error:', data);
                 }
             });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = playlistUrl;
+            video.play().then(markVideoLoaded).catch(handlePlaybackError);
         } else {
             console.error('HLS is not supported in this browser');
         }
