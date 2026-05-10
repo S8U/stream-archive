@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { searchVideos } from "@/lib/api/endpoints/video/video";
 import { VideoCard } from "@/components/video-card";
 import { CustomPagination } from "@/components/common/custom-pagination";
+import { getServerRequestOptions } from "@/lib/api/server-request-options";
 
 export const dynamic = "force-dynamic";
 
@@ -20,13 +21,17 @@ export default async function Home({ searchParams }: Props) {
     const size = 20;
     const query = params.q?.trim();
 
-    const data = await searchVideos({
-        request: query ? { title: query } : {},
-        pageable: {
-            page: page + 1,
-            size,
-        }
-    });
+    const requestOptions = await getServerRequestOptions();
+    const data = await searchVideos(
+        {
+            request: query ? { title: query } : {},
+            pageable: {
+                page: page + 1,
+                size,
+            }
+        },
+        requestOptions
+    );
 
     const videos = data?.content || [];
     const totalPages = data?.totalPages || 0;

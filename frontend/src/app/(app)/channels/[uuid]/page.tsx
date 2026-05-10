@@ -5,6 +5,7 @@ import { searchVideos } from '@/lib/api/endpoints/video/video';
 import { ChannelHeader } from '@/app/(app)/channels/[uuid]/channel-header';
 import { VideoCard } from '@/components/video-card';
 import { CustomPagination } from "@/components/common/custom-pagination";
+import { getServerRequestOptions } from "@/lib/api/server-request-options";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +16,10 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { uuid } = await params;
+    const requestOptions = await getServerRequestOptions();
 
     try {
-        const channel = await getChannelByUuid(uuid);
+        const channel = await getChannelByUuid(uuid, requestOptions);
 
         return {
             title: channel.name,
@@ -55,23 +57,27 @@ export default async function ChannelPage({ params, searchParams }: Props) {
     const resolvedSearchParams = await searchParams;
     const page = Math.max(0, Number(resolvedSearchParams.page || 1) - 1); // URL은 1-based, API는 0-based
     const size = 20;
+    const requestOptions = await getServerRequestOptions();
 
     let channel;
     try {
-        channel = await getChannelByUuid(uuid);
+        channel = await getChannelByUuid(uuid, requestOptions);
     } catch {
         notFound();
     }
 
-    const videosData = await searchVideos({
-        request: {
-            channelUuid: uuid,
+    const videosData = await searchVideos(
+        {
+            request: {
+                channelUuid: uuid,
+            },
+            pageable: {
+                page: page + 1,
+                size,
+            },
         },
-        pageable: {
-            page: page + 1,
-            size,
-        },
-    });
+        requestOptions
+    );
 
     const videos = videosData.content || [];
     const totalPages = videosData.totalPages || 0;

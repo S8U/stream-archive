@@ -2,7 +2,6 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.ViewerHistoryResponse
 import com.github.s8u.streamarchive.entity.VideoMetadataViewerHistory
-import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.event.StreamDetectedEvent
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.recorder.RecordProcessManager
@@ -25,7 +24,7 @@ class VideoMetadataViewerHistoryService(
     private val recordRepository: RecordRepository,
     private val recordProcessManager: RecordProcessManager,
     private val videoRepository: VideoRepository,
-    private val authenticationService: AuthenticationService
+    private val contentPrivacyService: ContentPrivacyService
 ) {
     private val logger = LoggerFactory.getLogger(VideoMetadataViewerHistoryService::class.java)
 
@@ -98,9 +97,7 @@ class VideoMetadataViewerHistoryService(
         val video = videoRepository.findByUuid(uuid)
             ?: throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
 
-        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessVideo(video)
 
         return viewerHistoryRepository.findByVideoIdOrderByOffsetMillisAsc(video.id!!)
             .map { ViewerHistoryResponse.from(it) }

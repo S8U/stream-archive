@@ -6,9 +6,9 @@ import com.github.s8u.streamarchive.dto.AdminVideoUpdateRequest
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
 import com.github.s8u.streamarchive.entity.Video
-import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
+import com.github.s8u.streamarchive.repository.ChannelRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
 import com.github.s8u.streamarchive.util.UrlBuilder
 import org.slf4j.LoggerFactory
@@ -26,7 +26,8 @@ import java.util.Comparator
 @Service
 class VideoService(
     private val videoRepository: VideoRepository,
-    private val authenticationService: AuthenticationService,
+    private val channelRepository: ChannelRepository,
+    private val contentPrivacyService: ContentPrivacyService,
     private val storageProperties: StorageProperties,
     private val urlBuilder: UrlBuilder
 ) {
@@ -106,6 +107,14 @@ class VideoService(
 
     @Transactional(readOnly = true)
     fun searchForPublic(request: PublicVideoSearchRequest, pageable: Pageable): Page<PublicVideoResponse> {
+        request.channelUuid?.let { channelUuid ->
+            val channel = channelRepository.findByUuid(channelUuid) ?: throw BusinessException(
+                "채널을 찾을 수 없습니다.",
+                HttpStatus.NOT_FOUND
+            )
+            contentPrivacyService.assertCanAccessChannel(channel)
+        }
+
         return videoRepository.searchForPublic(request, pageable)
             .map { video ->
                 if (video.channel == null) {
@@ -127,14 +136,7 @@ class VideoService(
             HttpStatus.NOT_FOUND
         )
 
-        // Privacy 체크
-        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
-
-        if (video.channel == null) {
-            throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessVideo(video)
 
         return PublicVideoResponse.from(
             video = video,
@@ -144,16 +146,14 @@ class VideoService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun getThumbnailByUuid(uuid: String): Resource {
         val video = videoRepository.findByUuid(uuid) ?: throw BusinessException(
             "동영상을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND
         )
 
-        // Privacy 체크
-        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessVideo(video)
 
         val thumbnailPath = storageProperties.getVideoThumbnailPath(video.id!!)
         if (!Files.exists(thumbnailPath)) {
@@ -163,15 +163,13 @@ class VideoService(
         return FileSystemResource(thumbnailPath)
     }
 
+    @Transactional(readOnly = true)
     fun getPlaylistByUuid(uuid: String): Resource {
         val video = videoRepository.findByUuid(uuid) ?: throw BusinessException(
             "동영상을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND)
 
-        // Privacy 체크
-        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessVideo(video)
 
         val playlistPath = storageProperties.getVideoPlaylistPath(video.id!!)
         if (!Files.exists(playlistPath)) {
@@ -181,6 +179,7 @@ class VideoService(
         return FileSystemResource(playlistPath)
     }
 
+    @Transactional(readOnly = true)
     fun getSegmentByUuid(uuid: String, filename: String): Resource {
         // 파일명 검증 (보안)
         if (!filename.matches(Regex("^segment_\\d+\\.ts$"))) {
@@ -192,10 +191,7 @@ class VideoService(
             HttpStatus.NOT_FOUND
         )
 
-        // Privacy 체크
-        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessVideo(video)
 
         val segmentPath = storageProperties.getVideoPath(video.id!!).resolve(filename)
         if (!Files.exists(segmentPath)) {

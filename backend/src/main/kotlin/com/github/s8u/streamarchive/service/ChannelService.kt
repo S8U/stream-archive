@@ -2,7 +2,6 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.dto.*
 import com.github.s8u.streamarchive.entity.Channel
-import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
@@ -28,7 +27,7 @@ class ChannelService(
     private val channelPlatformService: ChannelPlatformService,
     private val channelProfileService: ChannelProfileService,
     private val recordScheduleService: RecordScheduleService,
-    private val authenticationService: AuthenticationService,
+    private val contentPrivacyService: ContentPrivacyService,
     private val videoService: VideoService,
     private val storageProperties: StorageProperties,
     private val urlBuilder: UrlBuilder
@@ -74,9 +73,7 @@ class ChannelService(
             HttpStatus.NOT_FOUND
         )
 
-        if (channel.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessChannel(channel)
 
         return PublicChannelResponse.from(
             channel = channel,
@@ -142,6 +139,8 @@ class ChannelService(
             HttpStatus.NOT_FOUND
         )
 
+        contentPrivacyService.assertCanAccessChannel(channel)
+
         val profilePath = storageProperties.getChannelProfilePath(channel.id!!)
 
         if (!Files.exists(profilePath)) {
@@ -158,9 +157,7 @@ class ChannelService(
             HttpStatus.NOT_FOUND
         )
 
-        if (channel.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessChannel(channel)
 
         val videoCount = videoRepository.countByChannelId(channel.id!!)
         val totalFileSize = videoRepository.sumFileSizeByChannelId(channel.id!!)

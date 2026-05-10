@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getVideoByUuid } from '@/lib/api/endpoints/video/video';
 import { VideoWatchView } from '@/app/(app)/videos/[uuid]/video-watch-view';
+import { getServerRequestOptions } from "@/lib/api/server-request-options";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,10 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { uuid } = await params;
+    const requestOptions = await getServerRequestOptions();
 
     try {
-        const video = await getVideoByUuid(uuid);
+        const video = await getVideoByUuid(uuid, requestOptions);
 
         return {
             title: video.title,
@@ -48,10 +50,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function VideoPage({ params }: Props) {
     const { uuid } = await params;
+    const requestOptions = await getServerRequestOptions();
 
     let video;
     try {
-        video = await getVideoByUuid(uuid);
+        video = await getVideoByUuid(uuid, requestOptions);
     } catch {
         notFound();
     }

@@ -7,6 +7,7 @@ import { ModeToggle } from "@/components/common/mode-toggle";
 import { SearchBar } from "./search-bar";
 import { UserMenu } from "./user-menu";
 import { SidebarContent } from "./sidebar-content";
+import { getServerRequestOptions } from "@/lib/api/server-request-options";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +17,17 @@ export default async function AppLayout({
     children: React.ReactNode;
 }>) {
     // API 호출
-    const data = await searchChannels({
-        request: {},
-        pageable: {
-            page: 0,
-            size: 20,
+    const requestOptions = await getServerRequestOptions();
+    const data = await searchChannels(
+        {
+            request: {},
+            pageable: {
+                page: 0,
+                size: 20,
+            },
         },
-    });
+        requestOptions
+    );
 
     const channels = data?.content || [];
 

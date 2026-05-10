@@ -19,6 +19,7 @@ class WatchHistoryService(
     private val watchHistoryRepository: UserVideoWatchHistoryRepository,
     private val videoRepository: VideoRepository,
     private val authenticationService: AuthenticationService,
+    private val contentPrivacyService: ContentPrivacyService,
     private val urlBuilder: UrlBuilder
 ) {
 
@@ -31,6 +32,7 @@ class WatchHistoryService(
             "동영상을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND
         )
+        contentPrivacyService.assertCanAccessVideo(video)
 
         val history = watchHistoryRepository.findByUserIdAndVideoId(userId, video.id!!)
         return history?.let { WatchHistoryResponse.from(it) }
@@ -45,6 +47,7 @@ class WatchHistoryService(
             "동영상을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND
         )
+        contentPrivacyService.assertCanAccessVideo(video)
 
         val existing = watchHistoryRepository.findByUserIdAndVideoId(userId, video.id!!)
         if (existing != null) {
@@ -91,6 +94,7 @@ class WatchHistoryService(
             "동영상을 찾을 수 없습니다.",
             HttpStatus.NOT_FOUND
         )
+        contentPrivacyService.assertCanAccessVideo(video)
 
         watchHistoryRepository.deleteByUserIdAndVideoId(userId, video.id!!)
     }
@@ -103,4 +107,3 @@ class WatchHistoryService(
         watchHistoryRepository.deleteAllByUserId(userId)
     }
 }
-

@@ -68,6 +68,7 @@ class VideoRepositoryImpl(
             .leftJoin(record).on(video.id.eq(record.videoId)).fetchJoin()
             .where(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
+                if (request.channelUuid == null) channel.contentPrivacy.eq(ContentPrivacy.PUBLIC) else null,
                 video.isActive.eq(true),
                 request.title?.let { video.title.containsIgnoreCase(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
@@ -84,6 +85,7 @@ class VideoRepositoryImpl(
             .leftJoin(channel).on(video.channelId.eq(channel.id))
             .where(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
+                if (request.channelUuid == null) channel.contentPrivacy.eq(ContentPrivacy.PUBLIC) else null,
                 video.isActive.eq(true),
                 request.title?.let { video.title.containsIgnoreCase(it) },
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
@@ -147,6 +149,7 @@ class VideoRepositoryImpl(
             .from(video)
             .where(
                 video.channelId.eq(channelId),
+                video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 video.isActive.eq(true)
             )
             .fetchOne() ?: 0L
@@ -158,6 +161,7 @@ class VideoRepositoryImpl(
             .from(video)
             .where(
                 video.channelId.eq(channelId),
+                video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 video.isActive.eq(true)
             )
             .fetchOne() ?: 0L

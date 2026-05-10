@@ -2,7 +2,6 @@ package com.github.s8u.streamarchive.service
 
 import com.github.s8u.streamarchive.chat.ChatMessageDto
 import com.github.s8u.streamarchive.dto.ChatHistoryResponse
-import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.repository.VideoDataChatHistoryBulkRepository
 import com.github.s8u.streamarchive.repository.VideoDataChatHistoryRepository
@@ -18,7 +17,7 @@ class VideoDataChatHistoryService(
     private val videoDataChatHistoryRepository: VideoDataChatHistoryRepository,
     private val videoDataChatHistoryBulkRepository: VideoDataChatHistoryBulkRepository,
     private val videoRepository: VideoRepository,
-    private val authenticationService: AuthenticationService
+    private val contentPrivacyService: ContentPrivacyService
 ) {
     private val logger = LoggerFactory.getLogger(VideoDataChatHistoryService::class.java)
 
@@ -68,9 +67,7 @@ class VideoDataChatHistoryService(
         val video = videoRepository.findByUuid(uuid)
             ?: throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
 
-        if (video.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessVideo(video)
 
         // 채팅 이력 조회
         val chatHistories = videoDataChatHistoryRepository.findByVideoIdAndOffsetMillisGreaterThanEqualAndOffsetMillisLessThanOrderByOffsetMillisAsc(

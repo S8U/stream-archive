@@ -6,7 +6,6 @@ import com.github.s8u.streamarchive.dto.AdminChannelPlatformSearchRequest
 import com.github.s8u.streamarchive.dto.AdminChannelPlatformUpdateRequest
 import com.github.s8u.streamarchive.dto.ChannelPlatformResponse
 import com.github.s8u.streamarchive.entity.ChannelPlatform
-import com.github.s8u.streamarchive.enums.ContentPrivacy
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.platform.PlatformStrategyFactory
 import com.github.s8u.streamarchive.repository.ChannelPlatformRepository
@@ -24,7 +23,7 @@ class ChannelPlatformService(
     private val channelPlatformRepository: ChannelPlatformRepository,
     private val channelRepository: ChannelRepository,
     private val channelProfileService: ChannelProfileService,
-    private val authenticationService: AuthenticationService,
+    private val contentPrivacyService: ContentPrivacyService,
     private val platformStrategyFactory: PlatformStrategyFactory,
     private val urlBuilder: UrlBuilder
 ) {
@@ -60,15 +59,12 @@ class ChannelPlatformService(
             HttpStatus.NOT_FOUND
         )
 
-        if (channel.contentPrivacy == ContentPrivacy.PRIVATE && !authenticationService.isAdmin()) {
-            throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
-        }
+        contentPrivacyService.assertCanAccessChannel(channel)
 
         return channelPlatformRepository.findByChannelId(channel.id!!)
             .map { channelPlatform ->
                 val strategy = platformStrategyFactory.getPlatformStrategy(channelPlatform.platformType)
                 val streamUrl = strategy.getStreamUrl(channelPlatform.platformChannelId)
-                val channelProfileUrl = urlBuilder.channelProfileUrl(channelPlatform.channel?.uuid!!)
 
                 ChannelPlatformResponse.from(channelPlatform, streamUrl)
             }
