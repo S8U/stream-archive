@@ -218,7 +218,7 @@ export default function ChannelsPage() {
                             <TableHead className="border-r font-semibold w-[350px]">UUID</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">공개 범위</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
-                            <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
+                            <TableHead className="font-semibold w-[280px] text-center">작업</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -275,9 +275,19 @@ export default function ChannelsPage() {
                                     {/* 생성일 */}
                                     <TableCell className="border-r text-center">{formatDate(channel.createdAt)}</TableCell>
 
-                                    {/* 작업 (수정/삭제) */}
+                                    {/* 작업 */}
                                     <TableCell className="text-center">
-                                        <div className="flex gap-2 justify-center">
+                                        <div className="flex flex-wrap gap-2 justify-center">
+                                            <Button variant="secondary" size="sm" asChild>
+                                                <Link href={`/admin/records?field=channelName&q=${encodeURIComponent(channel.name)}&page=1`}>
+                                                    녹화 관리
+                                                </Link>
+                                            </Button>
+                                            <Button variant="secondary" size="sm" asChild>
+                                                <Link href={`/admin/videos?field=channelName&q=${encodeURIComponent(channel.name)}&page=1`}>
+                                                    동영상 관리
+                                                </Link>
+                                            </Button>
                                             <Button
                                                 variant="secondary"
                                                 size="icon"
