@@ -5,6 +5,7 @@ import { VideoPlayer } from '@/app/(app)/videos/[uuid]/video-player';
 import { VideoInfo } from '@/components/video-info';
 import { ChatHistory } from '@/app/(app)/videos/[uuid]/chat-history';
 import { useSaveVideoWatchHistory, useGetVideoWatchHistory, useGetVideoViewerHistory } from '@/lib/api/endpoints/video/video';
+import { useGetUserMe } from '@/lib/api/endpoints/user/user';
 import { PublicVideoResponse } from "@/lib/api/models";
 
 interface VideoWatchViewProps {
@@ -16,10 +17,17 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     const [initialPosition, setInitialPosition] = useState<number | null>(null);
     const lastSavedPositionRef = useRef(0);
     const currentPositionRef = useRef(0);
+    const { data: user } = useGetUserMe({
+        query: {
+            retry: false,
+        },
+    });
+    const isAuthenticated = !!user;
 
     // 시청 기록 조회
     const { data: watchHistory } = useGetVideoWatchHistory(video.uuid, {
         query: {
+            enabled: isAuthenticated,
             retry: false,
             staleTime: 0,
         }
@@ -45,6 +53,10 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
     // 시청 위치 저장 함수
     const savePosition = useCallback((position: number) => {
+        if (!isAuthenticated) {
+            return;
+        }
+
         // 마지막 저장 위치와 동일하면 저장하지 않음
         if (position === lastSavedPositionRef.current || position <= 0) {
             return;
@@ -58,7 +70,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                 }
             }
         );
-    }, [video.uuid, saveWatchHistory]);
+    }, [isAuthenticated, video.uuid, saveWatchHistory]);
 
     // 10초마다 시청 위치 저장 (라이브는 제외)
     useEffect(() => {
@@ -72,24 +84,6 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
         return () => clearInterval(interval);
     }, [savePosition, isLive]);
-
-    // 페이지 이탈 시 마지막 위치 저장
-    useEffect(() => {
-        const handleBeforeUnload = () => {
-            const currentPosition = currentPositionRef.current;
-            if (currentPosition > 0 && currentPosition !== lastSavedPositionRef.current) {
-                // navigator.sendBeacon 사용하여 비동기 요청
-                const data = JSON.stringify({ position: currentPosition });
-                navigator.sendBeacon(
-                    `/api/videos/${video.uuid}/watch-history`,
-                    new Blob([data], { type: 'application/json' })
-                );
-            }
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [video.uuid]);
 
     // 시청자 수 이력 조회 (라이브 중에는 주기적 갱신)
     const { data: viewerHistory } = useGetVideoViewerHistory(video.uuid, {
@@ -131,4 +125,3 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         </div>
     );
 }
-
