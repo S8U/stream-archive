@@ -84,7 +84,7 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
     }, [isHovered, playlistUrl]);
 
     return (
-        <div className="relative w-full h-full">
+        <div className="relative w-full h-full pointer-events-none">
             {/* 비디오 미리보기 */}
             {isHovered && (
                 <video
