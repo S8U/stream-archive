@@ -794,7 +794,7 @@ export function VideoPlayer({
                 >
                     <div
                         ref={timelineRef}
-                        className="relative h-1 bg-white/20 rounded-full cursor-pointer group/timeline hover:bg-white/40 transition-colors"
+                        className="relative h-1.5 bg-white/20 rounded-full cursor-pointer group/timeline hover:bg-white/40 transition-colors"
                         onMouseDown={handleTimelineMouseDown}
                         onMouseMove={handleTimelineMouseMove}
                         onMouseLeave={handleTimelineMouseLeave}
@@ -831,7 +831,7 @@ export function VideoPlayer({
 
                         {/* 썸 (재생 핸들) */}
                         <div
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/timeline:opacity-100 transition-opacity pointer-events-none"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-white rounded-full opacity-0 group-hover/timeline:opacity-100 transition-opacity pointer-events-none"
                             style={{ left: `${progressPercent}%` }}
                         />
 
