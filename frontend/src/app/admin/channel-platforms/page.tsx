@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Edit, Loader2, Plus, Trash2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelPlatformFormDialog } from "@/components/admin/channel-platform-form-dialog";
@@ -45,8 +45,19 @@ export default function ChannelPlatformsPage() {
     const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
     const [searchIsSyncProfile, setSearchIsSyncProfile] = useQueryState("sync", parseAsStringLiteral(syncProfileOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const [draftSearchField, setDraftSearchField] = useState(searchField);
+    const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
+    const [draftSearchPlatformType, setDraftSearchPlatformType] = useState(searchPlatformType);
+    const [draftSearchIsSyncProfile, setDraftSearchIsSyncProfile] = useState(searchIsSyncProfile);
 
     const size = 10;
+
+    useEffect(() => {
+        setDraftSearchField(searchField);
+        setDraftSearchQuery(searchQuery);
+        setDraftSearchPlatformType(searchPlatformType);
+        setDraftSearchIsSyncProfile(searchIsSyncProfile);
+    }, [searchField, searchQuery, searchPlatformType, searchIsSyncProfile]);
 
     // Build search params
     const searchParams = {
@@ -71,10 +82,18 @@ export default function ChannelPlatformsPage() {
 
     // Handlers
     const handleSearch = () => {
+        setSearchField(draftSearchField);
+        setSearchQuery(draftSearchQuery);
+        setSearchPlatformType(draftSearchPlatformType);
+        setSearchIsSyncProfile(draftSearchIsSyncProfile);
         setPage(1);
     };
 
     const handleReset = () => {
+        setDraftSearchField("channelName");
+        setDraftSearchQuery("");
+        setDraftSearchPlatformType("__none__");
+        setDraftSearchIsSyncProfile("__none__");
         setSearchField("channelName");
         setSearchQuery("");
         setSearchPlatformType("__none__");
@@ -154,7 +173,7 @@ export default function ChannelPlatformsPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                    <Select value={draftSearchField} onValueChange={(value) => setDraftSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">검색 기준:</span>
@@ -169,7 +188,7 @@ export default function ChannelPlatformsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchPlatformType} onValueChange={(value) => setSearchPlatformType(value as typeof platformOptions[number])}>
+                    <Select value={draftSearchPlatformType} onValueChange={(value) => setDraftSearchPlatformType(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">플랫폼:</span>
@@ -185,7 +204,7 @@ export default function ChannelPlatformsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchIsSyncProfile} onValueChange={(value) => setSearchIsSyncProfile(value as typeof syncProfileOptions[number])}>
+                    <Select value={draftSearchIsSyncProfile} onValueChange={(value) => setDraftSearchIsSyncProfile(value as typeof syncProfileOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">동기화:</span>
@@ -204,8 +223,9 @@ export default function ChannelPlatformsPage() {
                         type="text"
                         placeholder="검색어 입력"
                         className="w-full sm:flex-1 sm:min-w-[300px]"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={draftSearchQuery}
+                        onChange={(e) => setDraftSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
                     <Button variant="default" onClick={handleSearch}>검색</Button>
                     <Button variant="outline" onClick={handleReset}>초기화</Button>

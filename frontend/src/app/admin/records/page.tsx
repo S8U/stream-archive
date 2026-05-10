@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Ban, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useCancelAdminRecord, useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
@@ -30,8 +30,19 @@ export default function RecordsPage() {
     const [searchPlatform, setSearchPlatform] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__all__"));
     const [searchStatus, setSearchStatus] = useQueryState("status", parseAsStringLiteral(statusOptions).withDefault("__all__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const [draftSearchField, setDraftSearchField] = useState(searchField);
+    const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
+    const [draftSearchPlatform, setDraftSearchPlatform] = useState(searchPlatform);
+    const [draftSearchStatus, setDraftSearchStatus] = useState(searchStatus);
 
     const size = 10;
+
+    useEffect(() => {
+        setDraftSearchField(searchField);
+        setDraftSearchQuery(searchQuery);
+        setDraftSearchPlatform(searchPlatform);
+        setDraftSearchStatus(searchStatus);
+    }, [searchField, searchQuery, searchPlatform, searchStatus]);
 
     // Build search params
     const getStatusParams = (status: typeof statusOptions[number]) => {
@@ -68,10 +79,18 @@ export default function RecordsPage() {
 
     // Handlers
     const handleSearch = () => {
+        setSearchField(draftSearchField);
+        setSearchQuery(draftSearchQuery);
+        setSearchPlatform(draftSearchPlatform);
+        setSearchStatus(draftSearchStatus);
         setPage(1);
     };
 
     const handleReset = () => {
+        setDraftSearchField("title");
+        setDraftSearchQuery("");
+        setDraftSearchPlatform("__all__");
+        setDraftSearchStatus("__all__");
         setSearchField("title");
         setSearchQuery("");
         setSearchPlatform("__all__");
@@ -115,7 +134,7 @@ export default function RecordsPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                    <Select value={draftSearchField} onValueChange={(value) => setDraftSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">검색 기준:</span>
@@ -131,7 +150,7 @@ export default function RecordsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchPlatform} onValueChange={(value) => setSearchPlatform(value as typeof platformOptions[number])}>
+                    <Select value={draftSearchPlatform} onValueChange={(value) => setDraftSearchPlatform(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">플랫폼:</span>
@@ -147,7 +166,7 @@ export default function RecordsPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchStatus} onValueChange={(value) => setSearchStatus(value as typeof statusOptions[number])}>
+                    <Select value={draftSearchStatus} onValueChange={(value) => setDraftSearchStatus(value as typeof statusOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">상태:</span>
@@ -167,8 +186,9 @@ export default function RecordsPage() {
                         type="text"
                         placeholder="검색어 입력"
                         className="w-full sm:flex-1 sm:min-w-[300px]"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={draftSearchQuery}
+                        onChange={(e) => setDraftSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
                     <Button variant="default" onClick={handleSearch}>검색</Button>
                     <Button variant="outline" onClick={handleReset}>초기화</Button>

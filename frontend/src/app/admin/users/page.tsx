@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useSearchAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from "@/lib/api/endpoints/admin-user/admin-user";
@@ -30,8 +30,17 @@ export default function UsersPage() {
     const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
     const [searchRole, setSearchRole] = useQueryState("role", parseAsStringLiteral(roleOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const [draftSearchField, setDraftSearchField] = useState(searchField);
+    const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
+    const [draftSearchRole, setDraftSearchRole] = useState(searchRole);
 
     const size = 10;
+
+    useEffect(() => {
+        setDraftSearchField(searchField);
+        setDraftSearchQuery(searchQuery);
+        setDraftSearchRole(searchRole);
+    }, [searchField, searchQuery, searchRole]);
 
     // Build search params
     const searchParams = {
@@ -54,10 +63,16 @@ export default function UsersPage() {
 
     // Handlers
     const handleSearch = () => {
+        setSearchField(draftSearchField);
+        setSearchQuery(draftSearchQuery);
+        setSearchRole(draftSearchRole);
         setPage(1);
     };
 
     const handleReset = () => {
+        setDraftSearchField("username");
+        setDraftSearchQuery("");
+        setDraftSearchRole("__none__");
         setSearchField("username");
         setSearchQuery("");
         setSearchRole("__none__");
@@ -145,7 +160,7 @@ export default function UsersPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                    <Select value={draftSearchField} onValueChange={(value) => setDraftSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">검색 기준:</span>
@@ -160,7 +175,7 @@ export default function UsersPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchRole} onValueChange={(value) => setSearchRole(value as typeof roleOptions[number])}>
+                    <Select value={draftSearchRole} onValueChange={(value) => setDraftSearchRole(value as typeof roleOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">역할:</span>
@@ -179,8 +194,8 @@ export default function UsersPage() {
                         type="text"
                         placeholder="검색어 입력"
                         className="w-full sm:flex-1 sm:min-w-[300px]"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={draftSearchQuery}
+                        onChange={(e) => setDraftSearchQuery(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
                     <Button variant="default" onClick={handleSearch}>검색</Button>

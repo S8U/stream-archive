@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
@@ -32,8 +32,17 @@ export default function VideosPage() {
     const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
     const [searchContentPrivacy, setSearchContentPrivacy] = useQueryState("privacy", parseAsStringLiteral(privacyOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const [draftSearchField, setDraftSearchField] = useState(searchField);
+    const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
+    const [draftSearchContentPrivacy, setDraftSearchContentPrivacy] = useState(searchContentPrivacy);
 
     const size = 10;
+
+    useEffect(() => {
+        setDraftSearchField(searchField);
+        setDraftSearchQuery(searchQuery);
+        setDraftSearchContentPrivacy(searchContentPrivacy);
+    }, [searchField, searchQuery, searchContentPrivacy]);
 
     // Build search params
     const searchParams = {
@@ -57,10 +66,16 @@ export default function VideosPage() {
 
     // Handlers
     const handleSearch = () => {
+        setSearchField(draftSearchField);
+        setSearchQuery(draftSearchQuery);
+        setSearchContentPrivacy(draftSearchContentPrivacy);
         setPage(1);
     };
 
     const handleReset = () => {
+        setDraftSearchField("title");
+        setDraftSearchQuery("");
+        setDraftSearchContentPrivacy("__none__");
         setSearchField("title");
         setSearchQuery("");
         setSearchContentPrivacy("__none__");
@@ -162,7 +177,7 @@ export default function VideosPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                    <Select value={draftSearchField} onValueChange={(value) => setDraftSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">검색 기준:</span>
@@ -178,7 +193,7 @@ export default function VideosPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchContentPrivacy} onValueChange={(value) => setSearchContentPrivacy(value as typeof privacyOptions[number])}>
+                    <Select value={draftSearchContentPrivacy} onValueChange={(value) => setDraftSearchContentPrivacy(value as typeof privacyOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[128px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">공개 범위:</span>
@@ -198,8 +213,9 @@ export default function VideosPage() {
                         type="text"
                         placeholder="검색어 입력"
                         className="w-full sm:flex-1 sm:min-w-[300px]"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={draftSearchQuery}
+                        onChange={(e) => setDraftSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
                     <Button variant="default" onClick={handleSearch}>검색</Button>
                     <Button variant="outline" onClick={handleReset}>초기화</Button>

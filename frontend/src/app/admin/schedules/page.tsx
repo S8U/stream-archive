@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { RecordScheduleFormDialog } from "@/components/admin/record-schedule-form-dialog";
@@ -57,8 +57,19 @@ export default function RecordSchedulesPage() {
     const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
     const [searchScheduleType, setSearchScheduleType] = useQueryState("type", parseAsStringLiteral(scheduleTypeOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const [draftSearchField, setDraftSearchField] = useState(searchField);
+    const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
+    const [draftSearchPlatformType, setDraftSearchPlatformType] = useState(searchPlatformType);
+    const [draftSearchScheduleType, setDraftSearchScheduleType] = useState(searchScheduleType);
 
     const size = 10;
+
+    useEffect(() => {
+        setDraftSearchField(searchField);
+        setDraftSearchQuery(searchQuery);
+        setDraftSearchPlatformType(searchPlatformType);
+        setDraftSearchScheduleType(searchScheduleType);
+    }, [searchField, searchQuery, searchPlatformType, searchScheduleType]);
 
     // Build search params
     const searchParams = {
@@ -82,10 +93,18 @@ export default function RecordSchedulesPage() {
 
     // Handlers
     const handleSearch = () => {
+        setSearchField(draftSearchField);
+        setSearchQuery(draftSearchQuery);
+        setSearchPlatformType(draftSearchPlatformType);
+        setSearchScheduleType(draftSearchScheduleType);
         setPage(1);
     };
 
     const handleReset = () => {
+        setDraftSearchField("channelName");
+        setDraftSearchQuery("");
+        setDraftSearchPlatformType("__none__");
+        setDraftSearchScheduleType("__none__");
         setSearchField("channelName");
         setSearchQuery("");
         setSearchPlatformType("__none__");
@@ -202,7 +221,7 @@ export default function RecordSchedulesPage() {
             <div className="flex flex-col gap-4 mt-6 lg:flex-row lg:items-center lg:justify-between">
                 {/* 왼쪽: 검색 및 필터 영역 */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value as typeof searchFieldOptions[number])}>
+                    <Select value={draftSearchField} onValueChange={(value) => setDraftSearchField(value as typeof searchFieldOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">검색 기준:</span>
@@ -216,7 +235,7 @@ export default function RecordSchedulesPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchPlatformType} onValueChange={(value) => setSearchPlatformType(value as typeof platformOptions[number])}>
+                    <Select value={draftSearchPlatformType} onValueChange={(value) => setDraftSearchPlatformType(value as typeof platformOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">플랫폼:</span>
@@ -232,7 +251,7 @@ export default function RecordSchedulesPage() {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Select value={searchScheduleType} onValueChange={(value) => setSearchScheduleType(value as typeof scheduleTypeOptions[number])}>
+                    <Select value={draftSearchScheduleType} onValueChange={(value) => setDraftSearchScheduleType(value as typeof scheduleTypeOptions[number])}>
                         <SelectTrigger className="w-full sm:w-auto sm:min-w-[120px]">
                             <div className="flex w-full justify-between gap-2">
                                 <span className="text-muted-foreground">유형:</span>
@@ -253,8 +272,9 @@ export default function RecordSchedulesPage() {
                         type="text"
                         placeholder="검색어 입력"
                         className="w-full sm:flex-1 sm:min-w-[300px]"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        value={draftSearchQuery}
+                        onChange={(e) => setDraftSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
                     <Button variant="default" onClick={handleSearch}>검색</Button>
                     <Button variant="outline" onClick={handleReset}>초기화</Button>
