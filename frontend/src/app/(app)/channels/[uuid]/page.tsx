@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getChannelByUuid } from '@/lib/api/endpoints/channel/channel';
 import { searchVideos } from '@/lib/api/endpoints/video/video';
 import { ChannelHeader } from '@/app/(app)/channels/[uuid]/channel-header';
@@ -63,7 +62,11 @@ export default async function ChannelPage({ params, searchParams }: Props) {
     try {
         channel = await getChannelByUuid(uuid, requestOptions);
     } catch {
-        notFound();
+        return (
+            <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
+                <p className="text-muted-foreground">채널을 찾을 수 없습니다.</p>
+            </div>
+        );
     }
 
     const videosData = await searchVideos(

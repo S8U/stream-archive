@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getVideoByUuid } from '@/lib/api/endpoints/video/video';
 import { VideoWatchView } from '@/app/(app)/videos/[uuid]/video-watch-view';
 import { getServerRequestOptions } from "@/lib/api/server-request-options";
@@ -56,7 +55,11 @@ export default async function VideoPage({ params }: Props) {
     try {
         video = await getVideoByUuid(uuid, requestOptions);
     } catch {
-        notFound();
+        return (
+            <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
+                <p className="text-muted-foreground">동영상을 찾을 수 없습니다.</p>
+            </div>
+        );
     }
 
     return <VideoWatchView video={video} />;
