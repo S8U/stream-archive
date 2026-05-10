@@ -83,7 +83,7 @@ function ControlButton({ onClick, label, shortcut, align = 'center', onHoverEnte
             >
                 {children}
             </button>
-            <div className={`absolute bottom-full ${tooltipAlign} mb-3 px-2 py-1 bg-black/90 text-white text-xs rounded whitespace-nowrap pointer-events-none opacity-0 group-hover/btn:opacity-100 transition-opacity z-20`}>
+            <div className={`absolute bottom-full ${tooltipAlign} mb-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full whitespace-nowrap pointer-events-none opacity-0 group-hover/btn:opacity-100 transition-opacity z-20`}>
                 {label}
                 {shortcut && <span> ({shortcut})</span>}
             </div>
