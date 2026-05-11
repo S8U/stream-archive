@@ -21,6 +21,7 @@ import {
     useSearchAdminVideos,
     useUpdateAdminVideo,
 } from '@/lib/api/endpoints/admin-video/admin-video';
+import {useGetChannelPlatforms} from '@/lib/api/endpoints/channel/channel';
 import type {AdminVideoUpdateRequestContentPrivacy, PublicVideoResponse} from '@/lib/api/models';
 
 interface VideoInfoProps {
@@ -49,6 +50,15 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
             enabled: isAdmin,
         },
     });
+    const {data: platforms} = useGetChannelPlatforms(video.channel.uuid, {
+        query: {
+            enabled: !!platformType,
+        },
+    });
+    const platformLink = useMemo(
+        () => platforms?.find((platform) => platform.platformType === platformType)?.streamUrl,
+        [platforms, platformType]
+    );
     const adminVideo = adminVideosData?.content?.[0] ?? null;
     const updateMutation = useUpdateAdminVideo();
     const deleteMutation = useDeleteAdminVideo();
@@ -198,7 +208,17 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
                         <div className="min-w-0">
                             <dt className="text-muted-foreground">플랫폼</dt>
                             <dd className="mt-1">
-                                {platformType ? <PlatformBadge platform={platformType} /> : <span className="font-medium">-</span>}
+                                {platformType ? (
+                                    platformLink ? (
+                                        <a href={platformLink} target="_blank" rel="noopener noreferrer" className="inline-flex">
+                                            <PlatformBadge platform={platformType} />
+                                        </a>
+                                    ) : (
+                                        <PlatformBadge platform={platformType} />
+                                    )
+                                ) : (
+                                    <span className="font-medium">-</span>
+                                )}
                             </dd>
                         </div>
                     </dl>
