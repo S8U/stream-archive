@@ -198,7 +198,7 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
                     {video.description && (
                         <p className="mb-3 pr-10 whitespace-pre-wrap text-sm leading-6">{video.description}</p>
                     )}
-                    <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2 xl:grid-cols-4">
+                    <dl className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2 lg:mt-0 xl:grid-cols-4">
                         {stats.map((stat) => (
                             <div key={stat.label} className="min-w-0">
                                 <dt className="text-muted-foreground">{stat.label}</dt>
