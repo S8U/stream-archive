@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo, MouseEvent as ReactMouseEvent } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import Hls from 'hls.js';
 import {
     Play,
@@ -31,6 +31,21 @@ interface VideoPlayerProps {
     viewerHistory?: ViewerPoint[];
 }
 
+type FullscreenDocument = Document & {
+    webkitFullscreenElement?: Element | null;
+    webkitExitFullscreen?: () => Promise<void> | void;
+};
+
+type FullscreenElement = HTMLElement & {
+    webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
+type WebkitVideoElement = HTMLVideoElement & {
+    webkitDisplayingFullscreen?: boolean;
+    webkitEnterFullscreen?: () => void;
+    webkitExitFullscreen?: () => void;
+};
+
 const HIDE_DELAY_MS = 3000;
 const SEEK_STEP_SEC = 5;
 const SEEK_STEP_LONG_SEC = 10;
@@ -54,6 +69,10 @@ function formatTime(seconds: number): string {
 
 function getFiniteDuration(video: HTMLMediaElement): number {
     return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+}
+
+function isTouchOnlyPointer(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
 }
 
 interface ControlButtonProps {
@@ -218,11 +237,29 @@ export function VideoPlayer({
 
     // 풀스크린 변경 감지
     useEffect(() => {
+        const fullscreenDocument = document as FullscreenDocument;
+        const video = videoRef.current;
         const handler = () => {
-            setIsFullscreen(!!document.fullscreenElement);
+            setIsFullscreen(!!document.fullscreenElement || !!fullscreenDocument.webkitFullscreenElement);
         };
+        const handleVideoEnterFullscreen = () => {
+            setIsFullscreen(true);
+        };
+        const handleVideoExitFullscreen = () => {
+            setIsFullscreen(false);
+        };
+
         document.addEventListener('fullscreenchange', handler);
-        return () => document.removeEventListener('fullscreenchange', handler);
+        document.addEventListener('webkitfullscreenchange', handler);
+        video?.addEventListener('webkitbeginfullscreen', handleVideoEnterFullscreen);
+        video?.addEventListener('webkitendfullscreen', handleVideoExitFullscreen);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handler);
+            document.removeEventListener('webkitfullscreenchange', handler);
+            video?.removeEventListener('webkitbeginfullscreen', handleVideoEnterFullscreen);
+            video?.removeEventListener('webkitendfullscreen', handleVideoExitFullscreen);
+        };
     }, []);
 
     // 자동 숨김 처리
@@ -355,12 +392,41 @@ export function VideoPlayer({
 
     // 풀스크린 토글
     const toggleFullscreen = useCallback(() => {
-        const container = containerRef.current;
-        if (!container) return;
-        if (document.fullscreenElement) {
-            document.exitFullscreen().catch(() => {});
+        const container = containerRef.current as FullscreenElement | null;
+        const video = videoRef.current as WebkitVideoElement | null;
+        const fullscreenDocument = document as FullscreenDocument;
+
+        if (!container || !video) return;
+
+        if (document.fullscreenElement || fullscreenDocument.webkitFullscreenElement) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+                return;
+            }
+            fullscreenDocument.webkitExitFullscreen?.();
+            return;
+        }
+
+        if (video.webkitDisplayingFullscreen) {
+            video.webkitExitFullscreen?.();
+            return;
+        }
+
+        if (container.requestFullscreen) {
+            container.requestFullscreen().catch(() => {
+                video.webkitEnterFullscreen?.();
+            });
+        } else if (container.webkitRequestFullscreen) {
+            try {
+                const result = container.webkitRequestFullscreen();
+                if (result instanceof Promise) {
+                    result.catch(() => video.webkitEnterFullscreen?.());
+                }
+            } catch {
+                video.webkitEnterFullscreen?.();
+            }
         } else {
-            container.requestFullscreen().catch(() => {});
+            video.webkitEnterFullscreen?.();
         }
     }, []);
 
@@ -607,15 +673,34 @@ export function VideoPlayer({
 
     // 컨테이너 마우스 인터랙션
     const handleContainerMouseMove = useCallback(() => {
+        if (isTouchOnlyPointer()) return;
         showControls();
     }, [showControls]);
 
     const handleContainerMouseLeave = useCallback(() => {
+        if (isTouchOnlyPointer()) return;
         hideControlsImmediately();
     }, [hideControlsImmediately]);
 
+    // 모바일 터치는 재생/전체화면 대신 컨트롤 표시만 토글
+    const handleContainerTouchStart = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
+        if (!isTouchOnlyPointer()) return;
+        const controls = controlsRef.current;
+        if (controls && controls.contains(e.target as Node)) return;
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+
+        const video = videoRef.current;
+        if (isControlsVisible && video && !video.paused) {
+            setIsControlsVisible(false);
+            return;
+        }
+
+        showControls();
+    }, [isControlsVisible, showControls]);
+
     // 컨테이너 클릭 (재생/일시정지) — 더블클릭과 구분하기 위해 딜레이 후 실행
     const handleContainerClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+        if (isTouchOnlyPointer()) return;
         const controls = controlsRef.current;
         if (controls && controls.contains(e.target as Node)) return;
         if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
@@ -626,6 +711,7 @@ export function VideoPlayer({
 
     // 더블클릭 (풀스크린) — 싱글클릭 타이머를 취소하고 풀스크린 실행
     const handleContainerDoubleClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+        if (isTouchOnlyPointer()) return;
         const controls = controlsRef.current;
         if (controls && controls.contains(e.target as Node)) return;
         if (clickTimerRef.current) {
@@ -712,6 +798,7 @@ export function VideoPlayer({
             }`}
             onMouseMove={handleContainerMouseMove}
             onMouseLeave={handleContainerMouseLeave}
+            onTouchStart={handleContainerTouchStart}
             onClick={handleContainerClick}
             onDoubleClick={handleContainerDoubleClick}
             style={{ cursor: isControlsVisible ? 'default' : 'none' }}
