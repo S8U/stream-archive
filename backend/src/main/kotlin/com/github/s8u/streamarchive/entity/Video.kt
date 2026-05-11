@@ -49,6 +49,10 @@ class Video(
     @Comment("제목")
     var title: String,
 
+    @Column(columnDefinition = "TEXT")
+    @Comment("설명")
+    var description: String? = null,
+
     @Column(nullable = false)
     @Comment("재생 시간 (초)")
     var duration: Int = 0,

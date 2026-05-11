@@ -10,8 +10,8 @@ import type { PublicVideoResponse } from "./publicVideoResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PagePublicVideoResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;

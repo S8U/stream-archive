@@ -17,7 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
 
-const searchFieldOptions = ["id", "uuid", "channelName", "title"] as const;
+const searchFieldOptions = ["id", "uuid", "channelName", "title", "description"] as const;
 const privacyOptions = ["__none__", "PUBLIC", "UNLISTED", "PRIVATE"] as const;
 
 export default function VideosPage() {
@@ -51,6 +51,7 @@ export default function VideosPage() {
             uuid: searchField === "uuid" ? searchQuery : undefined,
             channelName: searchField === "channelName" ? searchQuery : undefined,
             title: searchField === "title" ? searchQuery : undefined,
+            description: searchField === "description" ? searchQuery : undefined,
             contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminVideoSearchRequestContentPrivacy) : undefined,
         },
         pageable: {
@@ -92,7 +93,7 @@ export default function VideosPage() {
         setSelectedVideo(null);
     };
 
-    const handleDialogSubmit = async (data: { title: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
+    const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
         if (!selectedVideo) return;
 
         try {
@@ -164,6 +165,7 @@ export default function VideosPage() {
                                 <SelectItem value="uuid">UUID</SelectItem>
                                 <SelectItem value="channelName">채널명</SelectItem>
                                 <SelectItem value="title">제목</SelectItem>
+                                <SelectItem value="description">설명</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

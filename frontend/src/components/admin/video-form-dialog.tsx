@@ -21,7 +21,7 @@ interface VideoFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     video: AdminVideoResponse | null;
-    onSubmit: (data: { title: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => Promise<void>;
+    onSubmit: (data: { title: string; description: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => Promise<void>;
     isSubmitting: boolean;
 }
 
@@ -33,6 +33,7 @@ export function VideoFormDialog({
     isSubmitting,
 }: VideoFormDialogProps) {
     const [formTitle, setFormTitle] = useState("");
+    const [formDescription, setFormDescription] = useState("");
     const [formPrivacy, setFormPrivacy] = useState<AdminVideoUpdateRequestContentPrivacy>("PUBLIC");
     const [formChatSyncOffset, setFormChatSyncOffset] = useState(0);
 
@@ -40,6 +41,7 @@ export function VideoFormDialog({
     useEffect(() => {
         if (open && video) {
             setFormTitle(video.title);
+            setFormDescription(video.description ?? "");
             setFormPrivacy(video.contentPrivacy as AdminVideoUpdateRequestContentPrivacy);
             setFormChatSyncOffset(video.chatSyncOffsetMillis);
         }
@@ -49,6 +51,7 @@ export function VideoFormDialog({
         e.preventDefault();
         await onSubmit({
             title: formTitle,
+            description: formDescription,
             contentPrivacy: formPrivacy,
             chatSyncOffsetMillis: formChatSyncOffset,
         });
@@ -72,6 +75,14 @@ export function VideoFormDialog({
                                 required
                                 value={formTitle}
                                 onChange={(e) => setFormTitle(e.target.value)}
+                            />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label>설명</Label>
+                            <textarea
+                                value={formDescription}
+                                onChange={(e) => setFormDescription(e.target.value)}
+                                className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-28 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
                             />
                         </div>
                         <div className="grid gap-3">

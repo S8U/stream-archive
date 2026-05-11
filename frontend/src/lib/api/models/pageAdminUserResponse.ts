@@ -10,8 +10,8 @@ import type { AdminUserResponse } from "./adminUserResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageAdminUserResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;

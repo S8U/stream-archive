@@ -7,6 +7,7 @@ import java.time.LocalDateTime
 
 data class AdminVideoUpdateRequest(
     val title: String?,
+    val description: String?,
     val contentPrivacy: ContentPrivacy?,
     val chatSyncOffsetMillis: Long?
 )
@@ -15,6 +16,7 @@ data class AdminVideoSearchRequest(
     val id: Long? = null,
     val uuid: String? = null,
     val title: String? = null,
+    val description: String? = null,
     val channelName: String? = null,
     val contentPrivacy: ContentPrivacy? = null,
     val createdAtFrom: LocalDateTime? = null,
@@ -26,6 +28,7 @@ data class AdminVideoResponse(
     val uuid: String,
     val channel: ChannelInfo,
     val title: String,
+    val description: String?,
     val duration: Int,
     val fileSize: Long,
     val thumbnailUrl: String,
@@ -71,6 +74,7 @@ data class AdminVideoResponse(
                     profileUrl = channelProfileUrl
                 ),
                 title = video.title,
+                description = video.description,
                 duration = video.duration,
                 fileSize = video.fileSize,
                 thumbnailUrl = thumbnailUrl,
@@ -98,6 +102,7 @@ data class AdminVideoResponse(
 
 data class PublicVideoSearchRequest(
     val title: String? = null,
+    val description: String? = null,
     val channelName: String? = null,
     val channelUuid: String? = null
 )
@@ -106,11 +111,13 @@ data class PublicVideoResponse(
     val uuid: String,
     val channel: ChannelInfo,
     val title: String,
+    val description: String?,
     val duration: Int,
     val fileSize: Long,
     val thumbnailUrl: String,
     val playlistUrl: String,
     val chatSyncOffsetMillis: Long,
+    val peakViewerCount: Int?,
     val createdAt: LocalDateTime,
     val record: RecordInfo?
 ) {
@@ -135,7 +142,8 @@ data class PublicVideoResponse(
             video: Video,
             channelProfileUrl: String,
             thumbnailUrl: String,
-            playlistUrl: String
+            playlistUrl: String,
+            peakViewerCount: Int?
         ): PublicVideoResponse {
             val channel = video.channel!!
 
@@ -147,11 +155,13 @@ data class PublicVideoResponse(
                     profileUrl = channelProfileUrl
                 ),
                 title = video.title,
+                description = video.description,
                 duration = video.duration,
                 fileSize = video.fileSize,
                 thumbnailUrl = thumbnailUrl,
                 playlistUrl = playlistUrl,
                 chatSyncOffsetMillis = video.chatSyncOffsetMillis,
+                peakViewerCount = peakViewerCount,
                 createdAt = video.createdAt,
                 record = video.record?.let { record ->
                     RecordInfo(

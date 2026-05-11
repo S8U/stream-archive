@@ -14,6 +14,7 @@ export interface AdminVideoResponse {
   uuid: string;
   channel: ChannelInfo;
   title: string;
+  description?: string;
   duration: number;
   fileSize: number;
   thumbnailUrl: string;

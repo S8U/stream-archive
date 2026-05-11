@@ -105,7 +105,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
             }
         >
             {/* 좌측: 동영상 + 정보 */}
-            <div className={`flex-shrink-0 lg:flex-1 flex flex-col gap-4 ${isWide ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+            <div className={`flex-shrink-0 lg:flex-1 flex flex-col gap-3 ${isWide ? 'overflow-hidden' : 'overflow-y-auto'}`}>
                 <VideoPlayer
                     playlistUrl={video.playlistUrl}
                     onTimeUpdate={setCurrentTimeMs}
@@ -119,7 +119,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
             </div>
 
             {/* 우측: 채팅창 (와이드 모드에서도 유지) */}
-            <div className="flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-4 lg:mt-0 min-h-0">
+            <div className="flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-3 lg:mt-0 min-h-0">
                 <ChatHistory videoUuid={video.uuid} currentTimeMs={currentTimeMs} chatSyncOffsetMillis={video.chatSyncOffsetMillis} />
             </div>
         </div>

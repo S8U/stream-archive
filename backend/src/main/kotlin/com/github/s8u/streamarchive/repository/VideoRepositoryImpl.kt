@@ -8,6 +8,7 @@ import com.github.s8u.streamarchive.entity.QRecord
 import com.github.s8u.streamarchive.entity.QVideo
 import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.enums.ContentPrivacy
+import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import java.time.LocalDate
 import org.springframework.data.domain.Page
@@ -32,7 +33,7 @@ class VideoRepositoryImpl(
             .where(
                 request.id?.let { video.id.eq(it) },
                 request.uuid?.let { video.uuid.eq(it) },
-                request.title?.let { video.title.containsIgnoreCase(it) },
+                videoTextContains(request.title, request.description),
                 request.channelName?.let { video.channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },
                 request.createdAtFrom?.let { video.createdAt.goe(it) },
@@ -50,7 +51,7 @@ class VideoRepositoryImpl(
             .where(
                 request.id?.let { video.id.eq(it) },
                 request.uuid?.let { video.uuid.eq(it) },
-                request.title?.let { video.title.containsIgnoreCase(it) },
+                videoTextContains(request.title, request.description),
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },
                 request.createdAtFrom?.let { video.createdAt.goe(it) },
@@ -70,7 +71,7 @@ class VideoRepositoryImpl(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 if (request.channelUuid == null) channel.contentPrivacy.eq(ContentPrivacy.PUBLIC) else null,
                 video.isActive.eq(true),
-                request.title?.let { video.title.containsIgnoreCase(it) },
+                videoTextContains(request.title, request.description),
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.channelUuid?.let { channel.uuid.eq(it) }
             )
@@ -87,13 +88,24 @@ class VideoRepositoryImpl(
                 video.contentPrivacy.eq(ContentPrivacy.PUBLIC),
                 if (request.channelUuid == null) channel.contentPrivacy.eq(ContentPrivacy.PUBLIC) else null,
                 video.isActive.eq(true),
-                request.title?.let { video.title.containsIgnoreCase(it) },
+                videoTextContains(request.title, request.description),
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.channelUuid?.let { channel.uuid.eq(it) }
             )
             .fetchOne() ?: 0L
 
         return PageImpl(results, pageable, total)
+    }
+
+    private fun videoTextContains(title: String?, description: String?): BooleanExpression? {
+        val titleExpression = title?.let { video.title.containsIgnoreCase(it) }
+        val descriptionExpression = description?.let { video.description.containsIgnoreCase(it) }
+
+        return when {
+            titleExpression != null && descriptionExpression != null -> titleExpression.or(descriptionExpression)
+            titleExpression != null -> titleExpression
+            else -> descriptionExpression
+        }
     }
 
     override fun sumDuration(): Long? {

@@ -10,8 +10,8 @@ import type { AdminRecordScheduleResponse } from "./adminRecordScheduleResponse"
 import type { SortObject } from "./sortObject";
 
 export interface PageAdminRecordScheduleResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;

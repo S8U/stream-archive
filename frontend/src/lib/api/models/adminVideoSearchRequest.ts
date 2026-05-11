@@ -11,6 +11,7 @@ export interface AdminVideoSearchRequest {
   id?: number;
   uuid?: string;
   title?: string;
+  description?: string;
   channelName?: string;
   contentPrivacy?: AdminVideoSearchRequestContentPrivacy;
   createdAtFrom?: string;

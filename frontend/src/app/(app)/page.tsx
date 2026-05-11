@@ -24,7 +24,7 @@ export default async function Home({ searchParams }: Props) {
     const requestOptions = await getServerRequestOptions();
     const data = await searchVideos(
         {
-            request: query ? { title: query } : {},
+            request: query ? { title: query, description: query } : {},
             pageable: {
                 page: page + 1,
                 size,

@@ -9,6 +9,7 @@ import com.github.s8u.streamarchive.entity.Video
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.repository.VideoMetadataViewerHistoryRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
 import com.github.s8u.streamarchive.util.UrlBuilder
 import org.slf4j.LoggerFactory
@@ -27,6 +28,7 @@ import java.util.Comparator
 class VideoService(
     private val videoRepository: VideoRepository,
     private val channelRepository: ChannelRepository,
+    private val viewerHistoryRepository: VideoMetadataViewerHistoryRepository,
     private val contentPrivacyService: ContentPrivacyService,
     private val storageProperties: StorageProperties,
     private val urlBuilder: UrlBuilder
@@ -69,6 +71,7 @@ class VideoService(
         }
 
         request.title?.let { video.title = it }
+        request.description?.let { video.description = it }
         request.contentPrivacy?.let { video.contentPrivacy = it }
         request.chatSyncOffsetMillis?.let { video.chatSyncOffsetMillis = it }
 
@@ -120,11 +123,17 @@ class VideoService(
                 if (video.channel == null) {
                     throw BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
                 }
+
+                val peakViewerCount = viewerHistoryRepository
+                    .findTopByVideoIdOrderByViewerCountDescOffsetMillisAsc(video.id!!)
+                    ?.viewerCount
+
                 PublicVideoResponse.from(
                     video = video,
                     channelProfileUrl = urlBuilder.channelProfileUrl(video.channel!!.uuid),
                     thumbnailUrl = urlBuilder.videoThumbnailUrl(video.uuid),
-                    playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid)
+                    playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid),
+                    peakViewerCount = peakViewerCount
                 )
             }
     }
@@ -138,11 +147,16 @@ class VideoService(
 
         contentPrivacyService.assertCanAccessVideo(video)
 
+        val peakViewerCount = viewerHistoryRepository
+            .findTopByVideoIdOrderByViewerCountDescOffsetMillisAsc(video.id!!)
+            ?.viewerCount
+
         return PublicVideoResponse.from(
             video = video,
             channelProfileUrl = urlBuilder.channelProfileUrl(video.channel!!.uuid),
             thumbnailUrl = urlBuilder.videoThumbnailUrl(video.uuid),
-            playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid)
+            playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid),
+            peakViewerCount = peakViewerCount
         )
     }
 

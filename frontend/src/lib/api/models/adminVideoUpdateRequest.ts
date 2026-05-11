@@ -9,6 +9,7 @@ import type { AdminVideoUpdateRequestContentPrivacy } from "./adminVideoUpdateRe
 
 export interface AdminVideoUpdateRequest {
   title?: string;
+  description?: string;
   contentPrivacy?: AdminVideoUpdateRequestContentPrivacy;
   chatSyncOffsetMillis?: number;
 }

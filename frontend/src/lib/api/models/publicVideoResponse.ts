@@ -12,11 +12,13 @@ export interface PublicVideoResponse {
   uuid: string;
   channel: ChannelInfo;
   title: string;
+  description?: string;
   duration: number;
   fileSize: number;
   thumbnailUrl: string;
   playlistUrl: string;
   chatSyncOffsetMillis: number;
+  peakViewerCount?: number;
   createdAt: string;
   record?: RecordInfo;
 }

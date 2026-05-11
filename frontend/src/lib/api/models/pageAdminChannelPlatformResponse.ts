@@ -10,8 +10,8 @@ import type { AdminChannelPlatformResponse } from "./adminChannelPlatformRespons
 import type { SortObject } from "./sortObject";
 
 export interface PageAdminChannelPlatformResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;

@@ -15,13 +15,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     try {
         const video = await getVideoByUuid(uuid, requestOptions);
+        const description = video.description || `${video.channel.name} 채널 동영상`;
 
         return {
             title: video.title,
-            description: `${video.channel.name} 채널 동영상`,
+            description,
             openGraph: {
                 title: video.title,
-                description: `${video.channel.name} 채널 동영상`,
+                description,
                 type: "video.other",
                 images: [
                     {
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             twitter: {
                 card: "summary_large_image",
                 title: video.title,
-                description: `${video.channel.name}의 동영상`,
+                description,
                 images: [video.thumbnailUrl],
             },
         };

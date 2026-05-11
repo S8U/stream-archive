@@ -10,8 +10,8 @@ import type { PublicChannelResponse } from "./publicChannelResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PagePublicChannelResponse {
-  totalElements?: number;
   totalPages?: number;
+  totalElements?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;

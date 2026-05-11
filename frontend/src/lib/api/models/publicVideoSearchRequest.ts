@@ -8,6 +8,7 @@
 
 export interface PublicVideoSearchRequest {
   title?: string;
+  description?: string;
   channelName?: string;
   channelUuid?: string;
 }
