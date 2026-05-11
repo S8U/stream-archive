@@ -105,7 +105,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
             }
         >
             {/* 좌측: 동영상 + 정보 */}
-            <div className={`flex-shrink-0 lg:flex-1 flex flex-col gap-3 ${isWide ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+            <div className={`flex-shrink-0 lg:flex-1 flex flex-col ${isWide ? 'overflow-hidden' : 'overflow-y-auto scrollbar-hide'}`}>
                 <VideoPlayer
                     playlistUrl={video.playlistUrl}
                     onTimeUpdate={setCurrentTimeMs}
@@ -115,7 +115,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                     isWide={isWide}
                     onWideToggle={setIsWide}
                 />
-                {!isWide && <VideoInfo video={video} />}
+                {!isWide && <VideoInfo video={video} isAdmin={user?.role === 'ADMIN'} />}
             </div>
 
             {/* 우측: 채팅창 (와이드 모드에서도 유지) */}
