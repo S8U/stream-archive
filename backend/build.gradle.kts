@@ -83,6 +83,21 @@ allOpen {
     annotation("jakarta.persistence.Embeddable")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("external")
+    }
+}
+
+tasks.register<Test>("externalApiTest") {
+    description = "Runs tests that call external platform APIs."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("external")
+    }
+
+    shouldRunAfter(tasks.test)
 }

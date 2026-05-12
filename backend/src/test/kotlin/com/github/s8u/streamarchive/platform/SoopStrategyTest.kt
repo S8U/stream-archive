@@ -4,11 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.github.s8u.streamarchive.platform.impl.SoopStrategy
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 
+@Tag("external")
 @SpringBootTest
 @ActiveProfiles("test")
 class SoopStrategyTest {
@@ -28,8 +34,8 @@ class SoopStrategyTest {
         val streamUrl = soopStrategy.getStreamUrl(userId)
 
         println("Stream URL: $streamUrl")
-        assert(streamUrl.contains("play.sooplive.co.kr"))
-        assert(streamUrl.contains(userId))
+        assertTrue(streamUrl.contains("play.sooplive.co.kr"))
+        assertTrue(streamUrl.contains(userId))
     }
 
     @Test
@@ -38,10 +44,10 @@ class SoopStrategyTest {
         val channel = soopStrategy.getChannel(userId)
 
         println("Channel: ${objectMapper.writeValueAsString(channel)}")
-        assert(channel != null)
-        assert(channel?.id == userId)
-        assert(channel?.username == userId)
-        assert(channel?.name != null)
+        val actual = assertNotNull(channel)
+        assertEquals(userId, actual.id)
+        assertEquals(userId, actual.username)
+        assertNotNull(actual.name)
     }
 
     @Test
@@ -50,7 +56,7 @@ class SoopStrategyTest {
         val channel = soopStrategy.getChannel(userId)
 
         println("Channel: $channel")
-        assert(channel == null)
+        assertNull(channel)
     }
 
     @Test
@@ -60,8 +66,8 @@ class SoopStrategyTest {
 
         println("Stream: ${objectMapper.writeValueAsString(stream)}")
         if (stream != null) {
-            assert(stream.username == userId)
-            assert(stream.id != null)
+            assertEquals(userId, stream.username)
+            assertNotNull(stream.id)
             println("Stream is live!")
         } else {
             println("No active stream")

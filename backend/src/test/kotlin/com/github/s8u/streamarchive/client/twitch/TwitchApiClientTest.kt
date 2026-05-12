@@ -2,11 +2,15 @@ package com.github.s8u.streamarchive.client.twitch
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 
+@Tag("external")
 @SpringBootTest
 @ActiveProfiles("test")
 class TwitchApiClientTest {
@@ -23,7 +27,8 @@ class TwitchApiClientTest {
         val response = twitchApiClient.createOauthToken()
 
         println("OAuth Token: ${response?.accessToken}")
-        assert(response?.accessToken?.isNotEmpty() == true)
+        val actual = assertNotNull(response)
+        assertTrue(actual.accessToken.isNotEmpty())
     }
 
     @Test
@@ -33,7 +38,8 @@ class TwitchApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response?.data?.isNotEmpty() == true)
+        val actual = assertNotNull(response)
+        assertTrue(actual.data.isNotEmpty())
     }
 
     @Test
@@ -52,7 +58,7 @@ class TwitchApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response != null)
+        assertNotNull(response)
     }
 
     @Test
@@ -60,6 +66,6 @@ class TwitchApiClientTest {
         val newToken = twitchApiClient.refreshOauthToken()
 
         println("Refreshed Token: $newToken")
-        assert(newToken?.isNotEmpty() == true)
+        assertTrue(assertNotNull(newToken).isNotEmpty())
     }
 }

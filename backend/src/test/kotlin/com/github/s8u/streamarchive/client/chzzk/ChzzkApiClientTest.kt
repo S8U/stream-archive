@@ -2,11 +2,15 @@ package com.github.s8u.streamarchive.client.chzzk
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 
+@Tag("external")
 @SpringBootTest
 @ActiveProfiles("test")
 class ChzzkApiClientTest {
@@ -25,8 +29,9 @@ class ChzzkApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response?.code == 200)
-        assert(response?.content != null)
+        val actual = assertNotNull(response)
+        assertEquals(200, actual.code)
+        assertNotNull(actual.content)
     }
 
     @Test
@@ -36,8 +41,9 @@ class ChzzkApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response?.code == 200)
-        assert(response?.content != null)
+        val actual = assertNotNull(response)
+        assertEquals(200, actual.code)
+        assertNotNull(actual.content)
     }
 
 }

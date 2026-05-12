@@ -2,11 +2,16 @@ package com.github.s8u.streamarchive.client.soop
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 
+@Tag("external")
 @SpringBootTest
 @ActiveProfiles("test")
 class SoopApiClientTest {
@@ -25,9 +30,9 @@ class SoopApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response != null)
-        assert(response?.station != null)
-        assert(response?.station?.userId == userId)
+        val actual = assertNotNull(response)
+        val station = assertNotNull(actual.station)
+        assertEquals(userId, station.userId)
     }
 
     @Test
@@ -37,7 +42,7 @@ class SoopApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response == null)
+        assertNull(response)
     }
 
     @Test
@@ -47,8 +52,8 @@ class SoopApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response != null)
-        assert(response?.channel != null)
+        val actual = assertNotNull(response)
+        assertNotNull(actual.channel)
     }
 
     @Test
@@ -58,10 +63,10 @@ class SoopApiClientTest {
 
         println("response: ${objectMapper.writeValueAsString(response)}")
 
-        assert(response != null)
-        assert(response?.channel != null)
+        val actual = assertNotNull(response)
+        val channel = assertNotNull(actual.channel)
         // RESULT가 0이면 방송 중이 아님
-        assert(response?.channel?.result == 0)
+        assertEquals(0, channel.result)
     }
 
 }
