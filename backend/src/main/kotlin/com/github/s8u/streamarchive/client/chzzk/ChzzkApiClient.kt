@@ -35,6 +35,7 @@ class ChzzkApiClient {
         return execute {
             restClient.get()
                 .uri("https://api.chzzk.naver.com/service/v1/channels/$channelId")
+                .chzzkHeaders()
                 .retrieve()
                 .body(object : ParameterizedTypeReference<ChzzkResponseDto<ChzzkChannelDto>>() {})
         }
@@ -47,6 +48,7 @@ class ChzzkApiClient {
         return execute {
             restClient.get()
                 .uri("https://api.chzzk.naver.com/service/v2/channels/$channelId/live-detail")
+                .chzzkHeaders()
                 .retrieve()
                 .body(object : ParameterizedTypeReference<ChzzkResponseDto<ChzzkLiveDetailDto>>() {})
         }
@@ -59,9 +61,19 @@ class ChzzkApiClient {
         return execute {
             restClient.get()
                 .uri("https://comm-api.game.naver.com/nng_main/v1/chats/access-token?channelId=$chatChannelId&chatType=STREAMING")
+                .chzzkHeaders()
                 .retrieve()
                 .body(object : ParameterizedTypeReference<ChzzkResponseDto<ChzzkChatAccessTokenDto>>() {})
         }
+    }
+
+    private fun RestClient.RequestHeadersSpec<*>.chzzkHeaders(): RestClient.RequestHeadersSpec<*> {
+        return this
+            .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .header("Accept", "application/json, text/plain, */*")
+            .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+            .header("Origin", "https://chzzk.naver.com")
+            .header("Referer", "https://chzzk.naver.com/")
     }
 
     private fun <T> execute(block: () -> T?): T? {

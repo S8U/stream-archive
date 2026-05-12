@@ -66,7 +66,7 @@ class TwitchStrategy(
             id = responseFirst.id,
             username = responseFirst.userLogin,
             title = responseFirst.title,
-            category = responseFirst.tags?.joinToString { ", " },
+            category = responseFirst.tags?.joinToString(", "),
             viewerCount = responseFirst.viewerCount,
             thumbnailUrl = responseFirst.thumbnailUrl?.replace("{width}", "1280")?.replace("{height}", "720"),
             startedAt = Instant.parse(responseFirst.startedAt).atZone(ZoneId.systemDefault()).toLocalDateTime()

@@ -68,6 +68,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("io.mockk:mockk:1.13.13")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -97,6 +98,20 @@ tasks.register<Test>("externalApiTest") {
 
     useJUnitPlatform {
         includeTags("external")
+        excludeTags("oauth")
+    }
+
+    shouldRunAfter(tasks.test)
+}
+
+tasks.register<Test>("externalOauthTest") {
+    description = "Runs tests that issue external OAuth tokens."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    useJUnitPlatform {
+        includeTags("oauth")
     }
 
     shouldRunAfter(tasks.test)
