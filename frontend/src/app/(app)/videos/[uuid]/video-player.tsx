@@ -41,6 +41,7 @@ type FullscreenElement = HTMLElement & {
 };
 
 type WebkitVideoElement = HTMLVideoElement & {
+    autoPictureInPicture?: boolean;
     webkitDisplayingFullscreen?: boolean;
     webkitEnterFullscreen?: () => void;
     webkitExitFullscreen?: () => void;
@@ -168,7 +169,11 @@ export function VideoPlayer({
     // HLS 로드
     useEffect(() => {
         if (!videoRef.current) return;
-        const video = videoRef.current;
+        const video = videoRef.current as WebkitVideoElement;
+
+        if ('autoPictureInPicture' in video) {
+            video.autoPictureInPicture = true;
+        }
 
         // 저장된 볼륨/음소거 복원
         try {
