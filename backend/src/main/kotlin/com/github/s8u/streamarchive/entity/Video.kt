@@ -16,7 +16,9 @@ import java.time.LocalDateTime
         Index(name = "idx_videos_channel_id", columnList = "channelId"),
         Index(name = "idx_videos_content_privacy", columnList = "contentPrivacy"),
         Index(name = "idx_videos_created_at", columnList = "createdAt"),
-        Index(name = "idx_videos_is_active", columnList = "isActive")
+        Index(name = "idx_videos_is_active", columnList = "isActive"),
+        Index(name = "idx_videos_is_archived", columnList = "isArchived"),
+        Index(name = "idx_videos_archived_created", columnList = "isArchived, createdAt")
     ]
 )
 @EntityListeners(AuditingEntityListener::class)
@@ -69,6 +71,20 @@ class Video(
     @Column(nullable = false)
     @Comment("채팅 싱크 오프셋 (밀리초)")
     var chatSyncOffsetMillis: Long = 0,
+
+    @Column(nullable = false)
+    @Comment("소장 여부")
+    var isArchived: Boolean = false,
+
+    @Comment("소장 처리 일시")
+    var archivedAt: LocalDateTime? = null,
+
+    @Comment("소장 처리한 사용자 ID")
+    var archivedBy: Long? = null,
+
+    @Column(length = 45)
+    @Comment("소장 처리 시 IP")
+    var archivedIp: String? = null,
 
     @Column(nullable = false)
     @Comment("활성 상태")

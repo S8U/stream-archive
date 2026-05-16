@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.controller
 
+import com.github.s8u.streamarchive.dto.AdminVideoArchiveRequest
 import com.github.s8u.streamarchive.dto.AdminVideoResponse
 import com.github.s8u.streamarchive.dto.AdminVideoSearchRequest
 import com.github.s8u.streamarchive.dto.AdminVideoUpdateRequest
@@ -39,6 +40,15 @@ class AdminVideoController(
         @RequestBody request: AdminVideoUpdateRequest
     ): AdminVideoResponse {
         return videoService.updateForAdmin(id, request)
+    }
+
+    @Operation(summary = "동영상 소장 여부 설정")
+    @PatchMapping("/{id}/archive")
+    fun setArchivedAdminVideo(
+        @PathVariable id: Long,
+        @RequestBody request: AdminVideoArchiveRequest
+    ): AdminVideoResponse {
+        return videoService.setArchivedForAdmin(id, request.isArchived)
     }
 
     @Operation(summary = "동영상 삭제")

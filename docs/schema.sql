@@ -119,6 +119,10 @@ CREATE TABLE videos
     file_size       BIGINT                                 NOT NULL DEFAULT 0 COMMENT '파일 크기 (바이트)',
     content_privacy ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE') NOT NULL COMMENT '콘텐츠 공개 범위',
     chat_sync_offset_millis BIGINT                         NOT NULL DEFAULT 0 COMMENT '채팅 싱크 오프셋 (밀리초)',
+    is_archived     BOOLEAN                                NOT NULL DEFAULT FALSE COMMENT '소장 여부',
+    archived_at     DATETIME                               NULL COMMENT '소장 처리 일시',
+    archived_by     BIGINT                                 NULL COMMENT '소장 처리한 사용자 ID',
+    archived_ip     VARCHAR(45)                            NULL COMMENT '소장 처리 시 IP',
     is_active       BOOLEAN                                NOT NULL DEFAULT TRUE COMMENT '활성 상태',
     deleted_at      DATETIME                               NULL COMMENT '삭제 일시',
     deleted_by      BIGINT                                 NULL COMMENT '삭제한 사용자 ID',
@@ -134,8 +138,24 @@ CREATE TABLE videos
     INDEX idx_videos_channel_id (channel_id),
     INDEX idx_videos_content_privacy (content_privacy),
     INDEX idx_videos_created_at (created_at),
-    INDEX idx_videos_is_active (is_active)
+    INDEX idx_videos_is_active (is_active),
+    INDEX idx_videos_is_archived (is_archived),
+    INDEX idx_videos_archived_created (is_archived, created_at)
 ) COMMENT '동영상';
+
+-- 5-1. 동영상 소장 이력 테이블
+CREATE TABLE video_archive_logs
+(
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '동영상 소장 이력 ID',
+    video_id    BIGINT      NOT NULL COMMENT '동영상 ID',
+    is_archived BOOLEAN     NOT NULL COMMENT '소장 여부 (해당 시점 전환값)',
+    action_by   BIGINT      NULL COMMENT '액션 수행 사용자 ID',
+    action_ip   VARCHAR(45) NULL COMMENT '액션 수행 시 IP',
+    created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
+
+    INDEX idx_video_archive_logs_video_id (video_id),
+    INDEX idx_video_archive_logs_created_at (created_at)
+) COMMENT '동영상 소장 이력';
 
 -- 6. 녹화 기록 테이블
 CREATE TABLE records

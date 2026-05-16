@@ -36,6 +36,7 @@ class VideoRepositoryImpl(
                 videoTextContains(request.title, request.description),
                 request.channelName?.let { video.channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },
+                request.isArchived?.let { video.isArchived.eq(it) },
                 request.createdAtFrom?.let { video.createdAt.goe(it) },
                 request.createdAtTo?.let { video.createdAt.loe(it) }
             )
@@ -54,6 +55,7 @@ class VideoRepositoryImpl(
                 videoTextContains(request.title, request.description),
                 request.channelName?.let { channel.name.containsIgnoreCase(it) },
                 request.contentPrivacy?.let { video.contentPrivacy.eq(it) },
+                request.isArchived?.let { video.isArchived.eq(it) },
                 request.createdAtFrom?.let { video.createdAt.goe(it) },
                 request.createdAtTo?.let { video.createdAt.loe(it) }
             )

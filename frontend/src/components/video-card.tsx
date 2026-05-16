@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Bookmark } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { VideoPreview } from '@/components/video-preview';
@@ -13,6 +14,7 @@ interface VideoCardProps {
     playlistUrl: string;
     duration: number;
     createdAt: string;
+    isArchived?: boolean;
     channel: {
         uuid: string;
         name: string;
@@ -59,7 +61,7 @@ function formatTimeAgo(dateString: string): string {
     return '방금 전';
 }
 
-export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, createdAt, channel, record }: VideoCardProps) {
+export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, createdAt, isArchived, channel, record }: VideoCardProps) {
     const [hoveredVideoUuid, setHoveredVideoUuid] = useState<string | null>(null);
 
     return (
@@ -89,8 +91,13 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                         <AvatarFallback>{channel.name[0]}</AvatarFallback>
                     </Avatar>
                 </Link>
-                <div className="flex flex-col">
-                    <h3 className="text-md font-medium line-clamp-2">{title}</h3>
+                <div className="flex flex-col min-w-0">
+                    <h3 className="text-md font-medium line-clamp-2">
+                        {title}
+                        {isArchived && (
+                            <Bookmark size={13} className="ml-1 inline-block flex-shrink-0 text-muted-foreground opacity-50" fill="currentColor" />
+                        )}
+                    </h3>
                     <Link href={`/channels/${channel.uuid}`} className="relative z-20 text-sm text-muted-foreground hover:text-foreground">
                         {channel.name}
                     </Link>

@@ -12,6 +12,10 @@ data class AdminVideoUpdateRequest(
     val chatSyncOffsetMillis: Long?
 )
 
+data class AdminVideoArchiveRequest(
+    val isArchived: Boolean
+)
+
 data class AdminVideoSearchRequest(
     val id: Long? = null,
     val uuid: String? = null,
@@ -19,6 +23,7 @@ data class AdminVideoSearchRequest(
     val description: String? = null,
     val channelName: String? = null,
     val contentPrivacy: ContentPrivacy? = null,
+    val isArchived: Boolean? = null,
     val createdAtFrom: LocalDateTime? = null,
     val createdAtTo: LocalDateTime? = null
 )
@@ -35,6 +40,10 @@ data class AdminVideoResponse(
     val playlistUrl: String,
     val contentPrivacy: ContentPrivacy,
     val chatSyncOffsetMillis: Long,
+    val isArchived: Boolean,
+    val archivedAt: LocalDateTime?,
+    val archivedBy: Long?,
+    val archivedIp: String?,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val record: RecordInfo?
@@ -81,6 +90,10 @@ data class AdminVideoResponse(
                 playlistUrl = playlistUrl,
                 contentPrivacy = video.contentPrivacy,
                 chatSyncOffsetMillis = video.chatSyncOffsetMillis,
+                isArchived = video.isArchived,
+                archivedAt = video.archivedAt,
+                archivedBy = video.archivedBy,
+                archivedIp = video.archivedIp,
                 createdAt = video.createdAt,
                 updatedAt = video.updatedAt,
                 record = video.record?.let { record ->
@@ -117,6 +130,7 @@ data class PublicVideoResponse(
     val thumbnailUrl: String,
     val playlistUrl: String,
     val chatSyncOffsetMillis: Long,
+    val isArchived: Boolean,
     val peakViewerCount: Int?,
     val createdAt: LocalDateTime,
     val record: RecordInfo?
@@ -161,6 +175,7 @@ data class PublicVideoResponse(
                 thumbnailUrl = thumbnailUrl,
                 playlistUrl = playlistUrl,
                 chatSyncOffsetMillis = video.chatSyncOffsetMillis,
+                isArchived = video.isArchived,
                 peakViewerCount = peakViewerCount,
                 createdAt = video.createdAt,
                 record = video.record?.let { record ->

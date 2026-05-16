@@ -10,11 +10,11 @@ import type { WatchHistoryListResponse } from "./watchHistoryListResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageWatchHistoryListResponse {
-  totalPages?: number;
   totalElements?: number;
+  totalPages?: number;
+  numberOfElements?: number;
   first?: boolean;
   last?: boolean;
-  numberOfElements?: number;
   pageable?: PageableObject;
   size?: number;
   content?: WatchHistoryListResponse[];

@@ -51,6 +51,7 @@ export default async function Home({ searchParams }: Props) {
                                 playlistUrl={video.playlistUrl}
                                 duration={video.duration}
                                 createdAt={video.createdAt}
+                                isArchived={video.isArchived}
                                 channel={video.channel}
                                 record={video.record}
                             />

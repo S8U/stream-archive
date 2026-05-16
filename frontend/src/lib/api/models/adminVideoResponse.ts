@@ -21,6 +21,10 @@ export interface AdminVideoResponse {
   playlistUrl: string;
   contentPrivacy: AdminVideoResponseContentPrivacy;
   chatSyncOffsetMillis: number;
+  isArchived: boolean;
+  archivedAt?: string;
+  archivedBy?: number;
+  archivedIp?: string;
   createdAt: string;
   updatedAt: string;
   record?: RecordInfo;

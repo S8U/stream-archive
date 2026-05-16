@@ -22,6 +22,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AdminVideoArchiveRequest,
   AdminVideoResponse,
   AdminVideoUpdateRequest,
   PageAdminVideoResponse,
@@ -364,6 +365,93 @@ export const useDeleteAdminVideo = <TError = unknown, TContext = unknown>(
   TContext
 > => {
   const mutationOptions = getDeleteAdminVideoMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 동영상 소장 여부 설정
+ */
+export const setArchivedAdminVideo = (
+  id: number,
+  adminVideoArchiveRequest: AdminVideoArchiveRequest,
+  options?: SecondParameter<typeof customAxiosInstance>,
+) => {
+  return customAxiosInstance<AdminVideoResponse>(
+    {
+      url: `/admin/videos/${id}/archive`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: adminVideoArchiveRequest,
+    },
+    options,
+  );
+};
+
+export const getSetArchivedAdminVideoMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setArchivedAdminVideo>>,
+    TError,
+    { id: number; data: AdminVideoArchiveRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setArchivedAdminVideo>>,
+  TError,
+  { id: number; data: AdminVideoArchiveRequest },
+  TContext
+> => {
+  const mutationKey = ["setArchivedAdminVideo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setArchivedAdminVideo>>,
+    { id: number; data: AdminVideoArchiveRequest }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return setArchivedAdminVideo(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetArchivedAdminVideoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setArchivedAdminVideo>>
+>;
+export type SetArchivedAdminVideoMutationBody = AdminVideoArchiveRequest;
+export type SetArchivedAdminVideoMutationError = unknown;
+
+/**
+ * @summary 동영상 소장 여부 설정
+ */
+export const useSetArchivedAdminVideo = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof setArchivedAdminVideo>>,
+      TError,
+      { id: number; data: AdminVideoArchiveRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof setArchivedAdminVideo>>,
+  TError,
+  { id: number; data: AdminVideoArchiveRequest },
+  TContext
+> => {
+  const mutationOptions = getSetArchivedAdminVideoMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

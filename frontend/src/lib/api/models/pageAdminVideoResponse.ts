@@ -10,11 +10,11 @@ import type { AdminVideoResponse } from "./adminVideoResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageAdminVideoResponse {
-  totalPages?: number;
   totalElements?: number;
+  totalPages?: number;
+  numberOfElements?: number;
   first?: boolean;
   last?: boolean;
-  numberOfElements?: number;
   pageable?: PageableObject;
   size?: number;
   content?: AdminVideoResponse[];

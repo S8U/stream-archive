@@ -6,11 +6,14 @@ import com.github.s8u.streamarchive.dto.AdminVideoUpdateRequest
 import com.github.s8u.streamarchive.dto.PublicVideoResponse
 import com.github.s8u.streamarchive.dto.PublicVideoSearchRequest
 import com.github.s8u.streamarchive.entity.Video
+import com.github.s8u.streamarchive.entity.VideoArchiveLog
 import com.github.s8u.streamarchive.exception.BusinessException
 import com.github.s8u.streamarchive.properties.StorageProperties
 import com.github.s8u.streamarchive.repository.ChannelRepository
+import com.github.s8u.streamarchive.repository.VideoArchiveLogRepository
 import com.github.s8u.streamarchive.repository.VideoMetadataViewerHistoryRepository
 import com.github.s8u.streamarchive.repository.VideoRepository
+import com.github.s8u.streamarchive.util.RequestUtils
 import com.github.s8u.streamarchive.util.UrlBuilder
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.FileSystemResource
@@ -29,7 +32,9 @@ class VideoService(
     private val videoRepository: VideoRepository,
     private val channelRepository: ChannelRepository,
     private val viewerHistoryRepository: VideoMetadataViewerHistoryRepository,
+    private val videoArchiveLogRepository: VideoArchiveLogRepository,
     private val contentPrivacyService: ContentPrivacyService,
+    private val authenticationService: AuthenticationService,
     private val storageProperties: StorageProperties,
     private val urlBuilder: UrlBuilder
 ) {
@@ -74,6 +79,45 @@ class VideoService(
         request.description?.let { video.description = it }
         request.contentPrivacy?.let { video.contentPrivacy = it }
         request.chatSyncOffsetMillis?.let { video.chatSyncOffsetMillis = it }
+
+        val channelProfileUrl = urlBuilder.channelProfileUrl(video.channel?.uuid!!)
+        return AdminVideoResponse.from(
+            video = video,
+            channelProfileUrl = channelProfileUrl,
+            thumbnailUrl = urlBuilder.videoThumbnailUrl(video.uuid),
+            playlistUrl = urlBuilder.videoPlaylistUrl(video.uuid)
+        )
+    }
+
+    @Transactional
+    fun setArchivedForAdmin(id: Long, isArchived: Boolean): AdminVideoResponse {
+        val video = videoRepository.findById(id).orElseThrow {
+            BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        }
+
+        val userId = authenticationService.getCurrentUserId()
+        val clientIp = RequestUtils.getClientIp()
+
+        if (isArchived) {
+            video.isArchived = true
+            video.archivedAt = LocalDateTime.now()
+            video.archivedBy = userId
+            video.archivedIp = clientIp
+        } else {
+            video.isArchived = false
+            video.archivedAt = null
+            video.archivedBy = null
+            video.archivedIp = null
+        }
+
+        videoArchiveLogRepository.save(
+            VideoArchiveLog(
+                videoId = video.id!!,
+                isArchived = isArchived,
+                actionBy = userId,
+                actionIp = clientIp
+            )
+        )
 
         val channelProfileUrl = urlBuilder.channelProfileUrl(video.channel?.uuid!!)
         return AdminVideoResponse.from(

@@ -49,6 +49,7 @@ export * from "./adminUserSearchRequest";
 export * from "./adminUserSearchRequestRole";
 export * from "./adminUserUpdateRequest";
 export * from "./adminUserUpdateRequestRole";
+export * from "./adminVideoArchiveRequest";
 export * from "./adminVideoResponse";
 export * from "./adminVideoResponseContentPrivacy";
 export * from "./adminVideoSearchRequest";

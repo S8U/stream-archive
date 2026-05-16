@@ -14,6 +14,7 @@ export interface AdminVideoSearchRequest {
   description?: string;
   channelName?: string;
   contentPrivacy?: AdminVideoSearchRequestContentPrivacy;
+  isArchived?: boolean;
   createdAtFrom?: string;
   createdAtTo?: string;
 }

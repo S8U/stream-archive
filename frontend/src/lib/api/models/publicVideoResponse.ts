@@ -18,6 +18,7 @@ export interface PublicVideoResponse {
   thumbnailUrl: string;
   playlistUrl: string;
   chatSyncOffsetMillis: number;
+  isArchived: boolean;
   peakViewerCount?: number;
   createdAt: string;
   record?: RecordInfo;

@@ -3,15 +3,17 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Loader2, Trash2 } from "lucide-react";
+import { Bookmark, Edit, Loader2, Trash2 } from "lucide-react";
 import { AdminBadge, getPrivacyBadgeTone, getPrivacyLabel } from "@/components/common/admin-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
-import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
+import { useQueryState, parseAsBoolean, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
-import { useSearchAdminVideos, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/admin-video/admin-video";
+import { useSearchAdminVideos, useSetArchivedAdminVideo, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/admin-video/admin-video";
 import type { AdminVideoResponse, AdminVideoSearchRequestContentPrivacy, AdminVideoUpdateRequestContentPrivacy } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -31,10 +33,12 @@ export default function VideosPage() {
     const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("title"));
     const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
     const [searchContentPrivacy, setSearchContentPrivacy] = useQueryState("privacy", parseAsStringLiteral(privacyOptions).withDefault("__none__"));
+    const [searchArchived, setSearchArchived] = useQueryState("archived", parseAsBoolean.withDefault(false));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
     const [draftSearchField, setDraftSearchField] = useState(searchField);
     const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
     const [draftSearchContentPrivacy, setDraftSearchContentPrivacy] = useState(searchContentPrivacy);
+    const [draftSearchArchived, setDraftSearchArchived] = useState(searchArchived);
 
     const size = 10;
 
@@ -42,7 +46,8 @@ export default function VideosPage() {
         setDraftSearchField(searchField);
         setDraftSearchQuery(searchQuery);
         setDraftSearchContentPrivacy(searchContentPrivacy);
-    }, [searchField, searchQuery, searchContentPrivacy]);
+        setDraftSearchArchived(searchArchived);
+    }, [searchField, searchQuery, searchContentPrivacy, searchArchived]);
 
     // Build search params
     const searchParams = {
@@ -53,6 +58,7 @@ export default function VideosPage() {
             title: searchField === "title" ? searchQuery : undefined,
             description: searchField === "description" ? searchQuery : undefined,
             contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminVideoSearchRequestContentPrivacy) : undefined,
+            isArchived: searchArchived ? true : undefined,
         },
         pageable: {
             page: page - 1,
@@ -64,12 +70,14 @@ export default function VideosPage() {
     const { data: videosData, isLoading, error } = useSearchAdminVideos(searchParams);
     const updateMutation = useUpdateAdminVideo();
     const deleteMutation = useDeleteAdminVideo();
+    const archiveMutation = useSetArchivedAdminVideo();
 
     // Handlers
     const handleSearch = () => {
         setSearchField(draftSearchField);
         setSearchQuery(draftSearchQuery);
         setSearchContentPrivacy(draftSearchContentPrivacy);
+        setSearchArchived(draftSearchArchived);
         setPage(1);
     };
 
@@ -77,9 +85,11 @@ export default function VideosPage() {
         setDraftSearchField("title");
         setDraftSearchQuery("");
         setDraftSearchContentPrivacy("__none__");
+        setDraftSearchArchived(false);
         setSearchField("title");
         setSearchQuery("");
         setSearchContentPrivacy("__none__");
+        setSearchArchived(false);
         setPage(1);
     };
 
@@ -108,6 +118,16 @@ export default function VideosPage() {
             handleDialogClose();
         } catch (error) {
             toast.error("동영상 수정에 실패했습니다.");
+        }
+    };
+
+    const handleToggleArchive = async (video: AdminVideoResponse, checked: boolean) => {
+        try {
+            await archiveMutation.mutateAsync({ id: video.id, data: { isArchived: checked } });
+            toast.success(`"${video.title}" 동영상이 ${checked ? "소장" : "소장 해제"}되었습니다.`);
+            queryClient.invalidateQueries({ queryKey: ["/admin/videos"] });
+        } catch {
+            toast.error("처리에 실패했습니다.");
         }
     };
 
@@ -193,6 +213,13 @@ export default function VideosPage() {
                         onChange={(e) => setDraftSearchQuery(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     />
+                    <label className="flex items-center gap-2 px-2">
+                        <Checkbox
+                            checked={draftSearchArchived}
+                            onCheckedChange={(v) => setDraftSearchArchived(v === true)}
+                        />
+                        <span className="text-sm whitespace-nowrap">소장만 보기</span>
+                    </label>
                     <Button variant="default" onClick={handleSearch}>검색</Button>
                     <Button variant="outline" onClick={handleReset}>초기화</Button>
                 </div>
@@ -210,6 +237,7 @@ export default function VideosPage() {
                             <TableHead className="border-r font-semibold w-[100px] text-center">길이</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">용량</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">공개 범위</TableHead>
+                            <TableHead className="border-r font-semibold w-[80px] text-center">소장</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
@@ -217,19 +245,19 @@ export default function VideosPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8">
+                                <TableCell colSpan={10} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={10} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !videosData?.content || videosData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                                     등록된 동영상이 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -264,9 +292,12 @@ export default function VideosPage() {
                                                 href={`/videos/${video.uuid}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="hover:underline truncate max-w-[300px]"
+                                                className="hover:underline truncate max-w-[300px] inline-flex items-center gap-1"
                                             >
-                                                {video.title}
+                                                <span className="truncate">{video.title}</span>
+                                                {video.isArchived && (
+                                                    <Bookmark size={13} className="flex-shrink-0 text-muted-foreground opacity-50" fill="currentColor" />
+                                                )}
                                             </Link>
                                         </div>
                                     </TableCell>
@@ -285,6 +316,15 @@ export default function VideosPage() {
                                         <AdminBadge tone={getPrivacyBadgeTone(video.contentPrivacy)}>
                                             {getPrivacyLabel(video.contentPrivacy)}
                                         </AdminBadge>
+                                    </TableCell>
+
+                                    {/* 소장 */}
+                                    <TableCell className="border-r text-center">
+                                        <Switch
+                                            checked={video.isArchived}
+                                            onCheckedChange={(checked) => handleToggleArchive(video, checked)}
+                                            disabled={archiveMutation.isPending}
+                                        />
                                     </TableCell>
 
                                     {/* 생성일 */}

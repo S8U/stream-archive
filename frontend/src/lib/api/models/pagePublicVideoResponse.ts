@@ -10,11 +10,11 @@ import type { PublicVideoResponse } from "./publicVideoResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PagePublicVideoResponse {
-  totalPages?: number;
   totalElements?: number;
+  totalPages?: number;
+  numberOfElements?: number;
   first?: boolean;
   last?: boolean;
-  numberOfElements?: number;
   pageable?: PageableObject;
   size?: number;
   content?: PublicVideoResponse[];

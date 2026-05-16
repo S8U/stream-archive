@@ -13,12 +13,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {ChevronDown, Edit, Loader2, MoreHorizontal, Trash2} from 'lucide-react';
+import {Bookmark, BookmarkX, ChevronDown, Edit, Loader2, MoreHorizontal, Trash2} from 'lucide-react';
 import {useMemo, useState} from 'react';
 import {toast} from 'sonner';
 import {
     useDeleteAdminVideo,
     useSearchAdminVideos,
+    useSetArchivedAdminVideo,
     useUpdateAdminVideo,
 } from '@/lib/api/endpoints/admin-video/admin-video';
 import {useGetChannelPlatforms} from '@/lib/api/endpoints/channel/channel';
@@ -62,6 +63,7 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
     const adminVideo = adminVideosData?.content?.[0] ?? null;
     const updateMutation = useUpdateAdminVideo();
     const deleteMutation = useDeleteAdminVideo();
+    const archiveMutation = useSetArchivedAdminVideo();
 
     const formatDateTime = (dateString: string) => {
         return new Date(dateString).toLocaleString('ko-KR', {
@@ -105,6 +107,20 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
         }
     };
 
+    const handleToggleArchive = async () => {
+        if (!adminVideo) return;
+        const next = !adminVideo.isArchived;
+        try {
+            await archiveMutation.mutateAsync({id: adminVideo.id, data: {isArchived: next}});
+            toast.success(next ? '동영상이 소장되었습니다.' : '소장이 해제되었습니다.');
+            await queryClient.invalidateQueries({queryKey: ['/admin/videos']});
+            router.refresh();
+        } catch (error) {
+            console.error(error);
+            toast.error('처리에 실패했습니다.');
+        }
+    };
+
     const handleDelete = async () => {
         if (!adminVideo) return;
         if (!confirm(`"${adminVideo.title}" 동영상을 삭제하시겠습니까?`)) {
@@ -142,6 +158,22 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuItem
+                    disabled={!adminVideo || archiveMutation.isPending}
+                    onClick={handleToggleArchive}
+                >
+                    {adminVideo?.isArchived ? (
+                        <>
+                            <BookmarkX className="h-4 w-4" />
+                            소장 해제
+                        </>
+                    ) : (
+                        <>
+                            <Bookmark className="h-4 w-4" />
+                            소장
+                        </>
+                    )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                     disabled={!adminVideo || updateMutation.isPending}
                     onClick={() => setIsDialogOpen(true)}
                 >
@@ -170,7 +202,12 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
                     onClick={() => setIsExpanded((prev) => !prev)}
                     aria-expanded={isExpanded}
                 >
-                    <h1 className="min-w-0 flex-1 text-xl font-bold">{video.title}</h1>
+                    <h1 className="min-w-0 flex-1 text-xl font-bold flex items-center gap-1.5">
+                        <span className="min-w-0 truncate">{video.title}</span>
+                        {video.isArchived && (
+                            <Bookmark size={17} className="flex-shrink-0 text-muted-foreground opacity-50" fill="currentColor" />
+                        )}
+                    </h1>
                     <ChevronDown
                         className={`mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground transition-transform lg:hidden ${isExpanded ? 'rotate-180' : ''}`}
                         aria-hidden="true"
