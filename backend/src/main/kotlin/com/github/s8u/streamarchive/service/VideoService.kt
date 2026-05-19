@@ -134,6 +134,10 @@ class VideoService(
             BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
+        if (video.isArchived) {
+            throw BusinessException("소장된 동영상은 삭제할 수 없습니다. 소장 해제 후 삭제해주세요.", HttpStatus.CONFLICT)
+        }
+
         deleteVideoFiles(video)
 
         video.isActive = false
@@ -142,6 +146,10 @@ class VideoService(
 
     @Transactional
     fun deleteAllByChannelId(channelId: Long) {
+        if (videoRepository.existsByChannelIdAndIsArchivedTrue(channelId)) {
+            throw BusinessException("소장된 동영상이 있는 채널은 삭제할 수 없습니다. 소장 해제 후 삭제해주세요.", HttpStatus.CONFLICT)
+        }
+
         val videos = videoRepository.findByChannelId(channelId)
 
         videos.forEach { video ->

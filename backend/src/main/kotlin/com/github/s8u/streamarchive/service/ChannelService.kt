@@ -122,6 +122,10 @@ class ChannelService(
             BusinessException("채널을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         }
 
+        if (videoRepository.existsByChannelIdAndIsArchivedTrue(id)) {
+            throw BusinessException("소장된 동영상이 있는 채널은 삭제할 수 없습니다. 소장 해제 후 삭제해주세요.", HttpStatus.CONFLICT)
+        }
+
         // 모든 녹화 스케줄 삭제
         recordScheduleService.deleteAllByChannelId(id)
 
