@@ -1,6 +1,30 @@
-# Stream Archive
+<h2 align="center">StreamArchive</h2>
 
-여러 플랫폼의 스트리밍을 자동으로 감지하고 녹화하여 다시보기를 제공하는 개인 아카이브 시스템.
+<p align="center">
+  <b>그날의 라이브를, 그날 그대로.</b>
+</p>
+
+<p align="center">
+  보고 싶었던 방송을 놓쳤거나, 다시보기가 사라져 아쉬웠던 적 있으신가요?<br/>
+  StreamArchive는 라이브 방송을 자동으로 녹화하고 채팅까지 함께 보관해,<br/>
+  좋아하는 순간을 내 서버에 소장할 수 있는 개인 스트리밍 아카이브입니다.
+</p>
+
+---
+
+## 스크린샷
+
+| 메인 | 다시보기 |
+|:--:|:--:|
+| [![메인 페이지](docs/images/home.webp)](docs/images/home.webp) | [![동영상 상세 페이지](docs/images/video-player.webp)](docs/images/video-player.webp) |
+
+| 대시보드 | 채널 관리 |
+|:--:|:--:|
+| [![관리자 대시보드](docs/images/admin-dashboard.webp)](docs/images/admin-dashboard.webp) | [![관리자 채널 관리](docs/images/admin-channels.webp)](docs/images/admin-channels.webp) |
+
+| 녹화 스케줄 관리 | 녹화 관리 |
+|:--:|:--:|
+| [![관리자 녹화 스케줄 관리](docs/images/admin-schedules.webp)](docs/images/admin-schedules.webp) | [![관리자 녹화 관리](docs/images/admin-records.webp)](docs/images/admin-records.webp) |
 
 ## 지원 플랫폼
 
