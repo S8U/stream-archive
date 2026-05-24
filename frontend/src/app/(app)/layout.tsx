@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { searchChannels } from "@/lib/api/endpoints/channel/channel";
 import { ModeToggle } from "@/components/common/mode-toggle";
 import { SearchBar } from "./search-bar";
 import { UserMenu } from "./user-menu";
 import { SidebarContent } from "./sidebar-content";
+import { MobileSidebar } from "./mobile-sidebar";
 import { getServerRequestOptions } from "@/lib/api/server-request-options";
 
 export const dynamic = "force-dynamic";
@@ -45,16 +45,7 @@ export default async function AppLayout({
                         </Button>
 
                         {/* 모바일 사이드바 */}
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="md:hidden">
-                                    <Menu />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="w-64">
-                                <SidebarContent channels={channels} isSheet />
-                            </SheetContent>
-                        </Sheet>
+                        <MobileSidebar channels={channels} />
 
                         <Link href="/" className="text-xl font-bold text-primary">
                             <span className="md:hidden">S</span>
