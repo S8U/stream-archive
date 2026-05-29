@@ -162,10 +162,11 @@ interface ControlButtonProps {
     align?: 'left' | 'center' | 'right';
     onHoverEnter?: () => void;
     onHoverLeave?: () => void;
+    className?: string;
     children: React.ReactNode;
 }
 
-function ControlButton({ onClick, label, shortcut, align = 'center', onHoverEnter, onHoverLeave, children }: ControlButtonProps) {
+function ControlButton({ onClick, label, shortcut, align = 'center', onHoverEnter, onHoverLeave, className, children }: ControlButtonProps) {
     const tooltipAlign =
         align === 'left'
             ? 'left-0'
@@ -174,7 +175,7 @@ function ControlButton({ onClick, label, shortcut, align = 'center', onHoverEnte
                 : 'left-1/2 -translate-x-1/2';
     return (
         <div
-            className="relative group/btn"
+            className={`relative group/btn ${className ?? ''}`}
             onMouseEnter={onHoverEnter}
             onMouseLeave={onHoverLeave}
         >
@@ -1606,11 +1607,12 @@ export function VideoPlayer({
                         </ControlButton>
                     )}
 
-                    {/* 와이드스크린 */}
+                    {/* 와이드스크린 (모바일에서는 숨김) */}
                     <ControlButton
                         onClick={toggleWide}
                         label={isWide ? '좁은 화면' : '넓은 화면'}
                         shortcut="T"
+                        className="hidden lg:block"
                         onHoverEnter={handleControlsEnter}
                         onHoverLeave={handleControlsLeave}
                     >
