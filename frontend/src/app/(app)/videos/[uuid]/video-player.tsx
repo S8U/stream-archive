@@ -1433,10 +1433,12 @@ export function VideoPlayer({
                         onMouseMove={handleTimelineMouseMove}
                         onMouseLeave={handleTimelineMouseLeave}
                     >
-                        {/* 시청자 수 그래프 (hover 시 표시) */}
+                        {/* 시청자 수 그래프 (hover 또는 드래그 시 표시) */}
                         {viewerGraphPath && (
                             <svg
-                                className="absolute -top-10 left-0 w-full h-10 pointer-events-none overflow-visible opacity-0 group-hover/timeline:opacity-100 transition-opacity duration-200"
+                                className={`absolute -top-10 left-0 w-full h-10 pointer-events-none overflow-visible transition-opacity duration-200 group-hover/timeline:opacity-100 ${
+                                    isDraggingTimeline ? 'opacity-100' : 'opacity-0'
+                                }`}
                                 viewBox="0 0 100 100"
                                 preserveAspectRatio="none"
                                 aria-hidden="true"
