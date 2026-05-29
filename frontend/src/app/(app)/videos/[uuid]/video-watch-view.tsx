@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { VideoPlayer } from '@/app/(app)/videos/[uuid]/video-player';
 import { VideoInfo } from '@/components/video-info';
 import { ChatHistory } from '@/app/(app)/videos/[uuid]/chat-history';
@@ -12,9 +13,31 @@ interface VideoWatchViewProps {
     video: PublicVideoResponse;
 }
 
+function parseTimeParam(value: string | null): number | null {
+    if (!value) return null;
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return null;
+
+    if (/^\d+$/.test(normalized)) {
+        return Number(normalized);
+    }
+
+    const match = normalized.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/);
+    if (!match || !match[0]) return null;
+
+    const hours = Number(match[1] ?? 0);
+    const minutes = Number(match[2] ?? 0);
+    const seconds = Number(match[3] ?? 0);
+    const total = hours * 3600 + minutes * 60 + seconds;
+
+    return total > 0 ? total : null;
+}
+
 export function VideoWatchView({ video }: VideoWatchViewProps) {
+    const searchParams = useSearchParams();
+    const urlInitialPosition = useMemo(() => parseTimeParam(searchParams.get('t')), [searchParams]);
     const [currentTimeMs, setCurrentTimeMs] = useState(0);
-    const [initialPosition, setInitialPosition] = useState<number | null>(null);
+    const [initialPosition, setInitialPosition] = useState<number | null>(() => urlInitialPosition);
     const [seekRequest, setSeekRequest] = useState<{ seconds: number; nonce: number } | null>(null);
     const lastSavedPositionRef = useRef(0);
     const currentPositionRef = useRef(0);
@@ -42,10 +65,15 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
     // 시청 기록이 있으면 초기 위치 설정 (라이브는 이어보기 의미 없음)
     useEffect(() => {
+        if (urlInitialPosition !== null) {
+            setInitialPosition(urlInitialPosition);
+            return;
+        }
+
         if (!isLive && watchHistory?.lastPosition && watchHistory.lastPosition > 0) {
             setInitialPosition(watchHistory.lastPosition);
         }
-    }, [watchHistory, isLive]);
+    }, [watchHistory, isLive, urlInitialPosition]);
 
     // 현재 재생 위치 ref 업데이트
     useEffect(() => {

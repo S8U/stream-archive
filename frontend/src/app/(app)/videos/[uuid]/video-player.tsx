@@ -14,7 +14,10 @@ import {
     ChevronLeft,
     ChevronRight,
     PictureInPicture2,
+    Link2,
+    Timer,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ViewerPoint {
     offsetMillis: number;
@@ -63,6 +66,11 @@ interface TimelineTouchDrag {
     startTime: number;
 }
 
+interface ContextMenuPosition {
+    x: number;
+    y: number;
+}
+
 const HIDE_DELAY_MS = 3000;
 const SEEK_STEP_SEC = 5;
 const SEEK_STEP_LONG_SEC = 10;
@@ -74,6 +82,9 @@ const PLAY_PAUSE_INDICATOR_MS = 1000;
 const SEEK_INDICATOR_MS = 1000;
 const VOLUME_STORAGE_KEY = 'video-player:volume';
 const MUTED_STORAGE_KEY = 'video-player:muted';
+const CONTEXT_MENU_WIDTH_PX = 240;
+const CONTEXT_MENU_HEIGHT_PX = 96;
+const CONTEXT_MENU_VIEWPORT_MARGIN_PX = 8;
 
 function formatTime(seconds: number): string {
     if (!isFinite(seconds) || seconds < 0) return '00:00';
@@ -97,6 +108,25 @@ function isTouchOnlyPointer(): boolean {
 
 function hasBrowserShortcutModifier(e: KeyboardEvent): boolean {
     return e.metaKey || e.ctrlKey || e.altKey;
+}
+
+function getShareUrl(seconds?: number): string {
+    const url = new URL(window.location.href);
+    if (seconds === undefined) {
+        url.searchParams.delete('t');
+    } else {
+        url.searchParams.set('t', String(Math.max(0, Math.floor(seconds))));
+    }
+    url.hash = '';
+    return url.toString();
+}
+
+async function copyText(text: string): Promise<void> {
+    if (!navigator.clipboard || !window.isSecureContext) {
+        throw new Error('Clipboard API is unavailable in this context');
+    }
+
+    await navigator.clipboard.writeText(text);
 }
 
 interface ControlButtonProps {
@@ -191,6 +221,7 @@ export function VideoPlayer({
 
     const [seekIndicator, setSeekIndicator] = useState<{ direction: SeekDirection; seconds: number } | null>(null);
     const seekIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [contextMenuPosition, setContextMenuPosition] = useState<ContextMenuPosition | null>(null);
 
     useEffect(() => {
         setIsPipSupported(!!document.pictureInPictureEnabled);
@@ -799,8 +830,9 @@ export function VideoPlayer({
     // 컨테이너 마우스 인터랙션
     const handleContainerMouseMove = useCallback(() => {
         if (isTouchOnlyPointer()) return;
+        if (contextMenuPosition) return;
         showControls();
-    }, [showControls]);
+    }, [contextMenuPosition, showControls]);
 
     const handleContainerMouseLeave = useCallback(() => {
         if (isTouchOnlyPointer()) return;
@@ -924,20 +956,32 @@ export function VideoPlayer({
         }, MOBILE_DOUBLE_TAP_DELAY_MS);
     }, [scheduleMobileSingleTapControls, seekTo, showControls, showSeekIndicator]);
 
+    const closeContextMenu = useCallback(() => {
+        setContextMenuPosition(null);
+    }, []);
+
     // 컨테이너 클릭 (재생/일시정지) — 더블클릭과 구분하기 위해 딜레이 후 실행
     const handleContainerClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
         if (isTouchOnlyPointer()) return;
+        if (contextMenuPosition) {
+            closeContextMenu();
+            return;
+        }
         const controls = controlsRef.current;
         if (controls && controls.contains(e.target as Node)) return;
         if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
         clickTimerRef.current = setTimeout(() => {
             togglePlay();
         }, 200);
-    }, [togglePlay]);
+    }, [closeContextMenu, contextMenuPosition, togglePlay]);
 
     // 더블클릭 (풀스크린) — 싱글클릭 타이머를 취소하고 풀스크린 실행
     const handleContainerDoubleClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
         if (isTouchOnlyPointer()) return;
+        if (contextMenuPosition) {
+            closeContextMenu();
+            return;
+        }
         const controls = controlsRef.current;
         if (controls && controls.contains(e.target as Node)) return;
         if (clickTimerRef.current) {
@@ -945,7 +989,74 @@ export function VideoPlayer({
             clickTimerRef.current = null;
         }
         toggleFullscreen();
-    }, [toggleFullscreen]);
+    }, [closeContextMenu, contextMenuPosition, toggleFullscreen]);
+
+    const handleContainerContextMenu = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+        if (isTouchOnlyPointer()) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (clickTimerRef.current) {
+            clearTimeout(clickTimerRef.current);
+            clickTimerRef.current = null;
+        }
+
+        const x = Math.min(e.clientX, window.innerWidth - CONTEXT_MENU_WIDTH_PX - CONTEXT_MENU_VIEWPORT_MARGIN_PX);
+        const y = Math.min(e.clientY, window.innerHeight - CONTEXT_MENU_HEIGHT_PX - CONTEXT_MENU_VIEWPORT_MARGIN_PX);
+        setContextMenuPosition({
+            x: Math.max(CONTEXT_MENU_VIEWPORT_MARGIN_PX, x),
+            y: Math.max(CONTEXT_MENU_VIEWPORT_MARGIN_PX, y),
+        });
+        showControls();
+    }, [showControls]);
+
+    useEffect(() => {
+        if (!contextMenuPosition) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                closeContextMenu();
+            }
+        };
+
+        window.addEventListener('click', closeContextMenu);
+        window.addEventListener('resize', closeContextMenu);
+        window.addEventListener('scroll', closeContextMenu, true);
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('click', closeContextMenu);
+            window.removeEventListener('resize', closeContextMenu);
+            window.removeEventListener('scroll', closeContextMenu, true);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [closeContextMenu, contextMenuPosition]);
+
+    const handleCopyVideoUrl = useCallback(async () => {
+        try {
+            await copyText(getShareUrl());
+            toast.success('동영상 URL이 복사되었습니다.');
+        } catch (error) {
+            console.error(error);
+            toast.error('URL 복사에 실패했습니다.');
+        } finally {
+            closeContextMenu();
+        }
+    }, [closeContextMenu]);
+
+    const handleCopyCurrentTimeVideoUrl = useCallback(async () => {
+        const video = videoRef.current;
+        const seconds = video ? video.currentTime : currentTime;
+
+        try {
+            await copyText(getShareUrl(seconds));
+            toast.success(`현재 시간 URL이 복사되었습니다. (${formatTime(seconds)})`);
+        } catch (error) {
+            console.error(error);
+            toast.error('URL 복사에 실패했습니다.');
+        } finally {
+            closeContextMenu();
+        }
+    }, [closeContextMenu, currentTime]);
 
     // 컨트롤 hover 상태 추적
     const handleControlsEnter = useCallback(() => {
@@ -1028,6 +1139,7 @@ export function VideoPlayer({
             onTouchStart={handleContainerTouchStart}
             onClick={handleContainerClick}
             onDoubleClick={handleContainerDoubleClick}
+            onContextMenu={handleContainerContextMenu}
             style={{ cursor: isControlsVisible ? 'default' : 'none' }}
         >
             <video
@@ -1096,6 +1208,36 @@ export function VideoPlayer({
                             </>
                         )}
                     </div>
+                </div>
+            )}
+
+            {/* 우클릭 메뉴 */}
+            {contextMenuPosition !== null && (
+                <div
+                    className="fixed z-50 w-60 overflow-hidden rounded-md bg-neutral-950/70 py-2 text-sm text-white shadow-xl backdrop-blur-xl"
+                    style={{
+                        left: contextMenuPosition.x,
+                        top: contextMenuPosition.y,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onContextMenu={(e) => e.preventDefault()}
+                >
+                    <button
+                        type="button"
+                        className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-white/10 focus:bg-white/10 focus:outline-none"
+                        onClick={handleCopyVideoUrl}
+                    >
+                        <Link2 className="h-4 w-4 text-white/70" />
+                        <span>동영상 URL 복사</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-white/10 focus:bg-white/10 focus:outline-none"
+                        onClick={handleCopyCurrentTimeVideoUrl}
+                    >
+                        <Timer className="h-4 w-4 text-white/70" />
+                        <span>현재 시간 동영상 URL 복사</span>
+                    </button>
                 </div>
             )}
 
