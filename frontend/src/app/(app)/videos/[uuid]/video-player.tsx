@@ -83,6 +83,7 @@ interface ContextMenuPosition {
 }
 
 const HIDE_DELAY_MS = 3000;
+const LIVE_EDGE_THRESHOLD_SEC = 15; // 이 거리 이내면 "최신 지점"으로 보고 LIVE 표시
 const SEEK_STEP_SEC = 5;
 const SEEK_STEP_LONG_SEC = 10;
 const MOBILE_DOUBLE_TAP_DELAY_MS = 300;
@@ -107,6 +108,20 @@ function formatTime(seconds: number): string {
         return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+// 녹화 시작 시각 + 재생 오프셋(초) → 그 당시 실제 시각 (예: "오후 2:32")
+function formatWallClock(startedAt: string | undefined, offsetSeconds: number): string | null {
+    if (!startedAt || !isFinite(offsetSeconds) || offsetSeconds < 0) return null;
+    const startMs = new Date(startedAt).getTime();
+    if (!Number.isFinite(startMs)) return null;
+    const wall = new Date(startMs + offsetSeconds * 1000);
+    let hours = wall.getHours();
+    const minutes = wall.getMinutes();
+    const period = hours < 12 ? '오전' : '오후';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${period} ${hours}:${minutes.toString().padStart(2, '0')}`;
 }
 
 function getFiniteDuration(video: HTMLMediaElement): number {
@@ -1121,6 +1136,26 @@ export function VideoPlayer({
         return closest.viewerCount;
     }, [hoverTime, viewerHistory]);
 
+    // 녹화 시작 시각 (그 당시 실제 시각 계산용)
+    const recordStartedAt = headerInfo?.streamStartedAt;
+
+    // 라이브 중 최신 지점(live edge) 근처인지 여부.
+    // 최신이면 LIVE, 뒤로 돌려보는 중이면 시간을 표시한다.
+    const isAtLiveEdge = isLive && (duration <= 0 || duration - currentTime <= LIVE_EDGE_THRESHOLD_SEC);
+
+    // 현재 재생 시점의 실제 시각.
+    // VOD는 항상, 라이브는 뒤로 돌려본(live edge가 아닌) 경우에만 표시.
+    const currentWallClock = useMemo(
+        () => (isAtLiveEdge ? null : formatWallClock(recordStartedAt, currentTime)),
+        [isAtLiveEdge, recordStartedAt, currentTime],
+    );
+
+    // hover 시점의 실제 시각
+    const hoverWallClock = useMemo(
+        () => (hoverTime === null ? null : formatWallClock(recordStartedAt, hoverTime)),
+        [hoverTime, recordStartedAt],
+    );
+
     // 타임라인 hover 툴팁 X 좌표 clamp
     const tooltipX = useMemo(() => {
         const timeline = timelineRef.current;
@@ -1439,15 +1474,18 @@ export function VideoPlayer({
                         {/* hover 시간/시청자 툴팁 */}
                         {hoverTime !== null && (
                             <div
-                                className="absolute bottom-full mb-6 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full pointer-events-none whitespace-nowrap text-center"
+                                className="absolute bottom-full mb-6 px-4 py-2 bg-black/50 text-white rounded-full pointer-events-none whitespace-nowrap text-center leading-tight"
                                 style={{
                                     left: `${tooltipX}px`,
                                     transform: 'translateX(-50%)',
                                 }}
                             >
-                                <div className="font-bold">{formatTime(hoverTime)}</div>
+                                <div className="text-sm font-bold tabular-nums">{formatTime(hoverTime)}</div>
+                                {hoverWallClock !== null && (
+                                    <div className="text-xs text-white/60 tabular-nums">{hoverWallClock}</div>
+                                )}
                                 {hoverViewerCount !== null && (
-                                    <div className="text-white/70">
+                                    <div className="text-xs text-white/70">
                                         시청자 {hoverViewerCount.toLocaleString()}
                                     </div>
                                 )}
@@ -1514,15 +1552,33 @@ export function VideoPlayer({
                         onMouseLeave={handleControlsLeave}
                     >
                         {isLive ? (
-                            <>
+                            isAtLiveEdge ? (
                                 <span className="flex items-center gap-1.5">
                                     <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                     <span className="font-semibold">LIVE</span>
                                 </span>
-                            </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => seekTo(Math.max(0, duration - 1))}
+                                    className="flex items-center gap-2 hover:text-white/90 transition-colors"
+                                    title="실시간으로 이동"
+                                >
+                                    <span className="flex items-center gap-1.5 text-white/60">
+                                        <span className="inline-block w-2 h-2 bg-white/40 rounded-full" />
+                                        <span className="font-semibold">LIVE</span>
+                                    </span>
+                                    {currentWallClock !== null && (
+                                        <span className="text-white/50">{currentWallClock}</span>
+                                    )}
+                                </button>
+                            )
                         ) : (
                             <span>
                                 {formatTime(currentTime)} / {formatTime(duration)}
+                                {currentWallClock !== null && (
+                                    <span className="ml-2 text-white/50">{currentWallClock}</span>
+                                )}
                             </span>
                         )}
                     </div>
