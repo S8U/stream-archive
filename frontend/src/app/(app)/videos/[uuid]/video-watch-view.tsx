@@ -158,8 +158,8 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                 )}
             </div>
 
-            {/* 우측: 채팅창 (와이드 모드에서도 유지) */}
-            <div className="flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-3 lg:mt-0 min-h-0">
+            {/* 우측: 채팅창 (와이드 모드에서는 항상 다크모드로 표시) */}
+            <div className={`flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-3 lg:mt-0 min-h-0 ${isWide ? 'dark bg-background text-foreground' : ''}`}>
                 <ChatHistory videoUuid={video.uuid} currentTimeMs={currentTimeMs} chatSyncOffsetMillis={video.chatSyncOffsetMillis} />
             </div>
         </div>
