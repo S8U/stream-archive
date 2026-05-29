@@ -1104,7 +1104,10 @@ export function VideoPlayer({
     }, [closeContextMenu, currentTime]);
 
     // 컨트롤 hover 상태 추적
+    // 터치 기기는 mouseenter는 에뮬레이트하지만 mouseleave는 안정적으로 발동되지 않아
+    // hover 상태가 영구히 true로 남으면 자동 숨김 타이머가 막힌다. 터치에서는 무시한다.
     const handleControlsEnter = useCallback(() => {
+        if (isTouchOnlyPointer()) return;
         isHoveringControlsRef.current = true;
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
         isControlsVisibleRef.current = true;
@@ -1112,6 +1115,7 @@ export function VideoPlayer({
     }, []);
 
     const handleControlsLeave = useCallback(() => {
+        if (isTouchOnlyPointer()) return;
         isHoveringControlsRef.current = false;
         showControls();
     }, [showControls]);
