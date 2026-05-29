@@ -245,7 +245,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                         </>
                                     )}
                                     <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>
-                                    <span className="font-medium">{chat.message}</span>
+                                    <span className="font-normal">{chat.message}</span>
                                 </div>
                             );
                         })}
