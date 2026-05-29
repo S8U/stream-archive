@@ -566,6 +566,14 @@ export function VideoPlayer({
         if (onWideToggle) onWideToggle(next);
     }, [isWide, isWideProp, onWideToggle]);
 
+    const exitWide = useCallback(() => {
+        if (!isWide) return;
+        if (isWideProp === undefined) {
+            setIsWideInternal(false);
+        }
+        if (onWideToggle) onWideToggle(false);
+    }, [isWide, isWideProp, onWideToggle]);
+
     // 비디오 이벤트
     useEffect(() => {
         const video = videoRef.current;
@@ -646,6 +654,16 @@ export function VideoPlayer({
                 target.isContentEditable
             ) {
                 return;
+            }
+
+            switch (e.code) {
+                case 'Escape':
+                    if (isWide && !contextMenuPosition) {
+                        e.preventDefault();
+                        exitWide();
+                        showControls();
+                    }
+                    break;
             }
 
             const video = videoRef.current;
@@ -729,7 +747,7 @@ export function VideoPlayer({
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [togglePlay, seekTo, changeVolume, toggleMute, toggleFullscreen, toggleWide, showControls, showSeekIndicator]);
+    }, [togglePlay, seekTo, changeVolume, toggleMute, toggleFullscreen, toggleWide, exitWide, isWide, contextMenuPosition, showControls, showSeekIndicator]);
 
     // 타임라인 좌표 -> 시간 변환
     const timelineXToTime = useCallback((clientX: number): number => {
