@@ -88,6 +88,19 @@ class RecordProcessManager(
             val recordProcesses = ProcessBuilder.startPipeline(processBuilders)
             processes[recordId] = recordProcesses
 
+            // 각 프로세스의 stderr를 읽어 로그로 남김 (실패 원인 파악용)
+            val processNames = listOf("streamlink", "ffmpeg")
+            recordProcesses.forEachIndexed { index, process ->
+                val name = processNames.getOrElse(index) { "process$index" }
+                Thread {
+                    process.errorStream.bufferedReader().useLines { lines ->
+                        lines.forEach { line ->
+                            logger.warn("[{}] recordId={}: {}", name, recordId, line)
+                        }
+                    }
+                }.apply { isDaemon = true }.start()
+            }
+
             logger.info(
                 "Recording process started: recordId={}, videoId={}, quality={}, streamUrl={}",
                 recordId, videoId, quality, streamUrl
@@ -99,7 +112,11 @@ class RecordProcessManager(
                     // 모든 프로세스가 종료될 때까지 대기
                     recordProcesses.forEach { it.waitFor() }
 
-                    logger.info("Recording process ended: recordId={}", recordId)
+                    val exitCodes = recordProcesses.mapIndexed { index, process ->
+                        val name = processNames.getOrElse(index) { "process$index" }
+                        "$name=${process.exitValue()}"
+                    }.joinToString(", ")
+                    logger.info("Recording process ended: recordId={}, exitCodes=[{}]", recordId, exitCodes)
 
                     // 프로세스 종료 시 자동으로 녹화 종료 처리
                     recordService.endRecording(recordId, isCancel = false)

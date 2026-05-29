@@ -64,6 +64,10 @@ class Record(
     @Comment("취소 여부")
     var isCancelled: Boolean = false,
 
+    @Column(nullable = false)
+    @Comment("녹화 시작 실패 여부")
+    var isFailed: Boolean = false,
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     @Comment("녹화 시작 일시")

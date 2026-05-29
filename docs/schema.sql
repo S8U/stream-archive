@@ -168,6 +168,7 @@ CREATE TABLE records
     record_quality     VARCHAR(50)                                 NOT NULL COMMENT '녹화 화질',
     is_ended           BOOLEAN                                     NOT NULL DEFAULT FALSE COMMENT '종료 여부',
     is_cancelled       BOOLEAN                                     NOT NULL DEFAULT FALSE COMMENT '취소 여부',
+    is_failed          BOOLEAN                                     NOT NULL DEFAULT FALSE COMMENT '녹화 시작 실패 여부 (프로세스가 즉시 종료된 경우)',
     created_at         DATETIME                                    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '녹화 시작 일시',
     ended_at           DATETIME                                    NULL COMMENT '녹화 종료 일시',
 

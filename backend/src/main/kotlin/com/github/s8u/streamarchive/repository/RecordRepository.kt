@@ -18,6 +18,12 @@ interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom
         isCancelled: Boolean
     ): Boolean
 
+    fun countByPlatformTypeAndPlatformStreamIdAndIsFailed(
+        platformType: PlatformType,
+        platformStreamId: String,
+        isFailed: Boolean
+    ): Long
+
     fun findByPlatformTypeAndPlatformStreamIdAndIsEndedAndIsCancelled(
         platformType: PlatformType,
         platformStreamId: String,

@@ -52,6 +52,14 @@ class RecordService(
     private val logger = LoggerFactory.getLogger(RecordService::class.java)
     private val endingRecords = ConcurrentHashMap.newKeySet<Long>() // 종료 처리 중인 recordId
 
+    companion object {
+        // 같은 스트림이 이 횟수만큼 연속 시작 실패하면 재녹화를 중단 (폭주 방지)
+        private const val MAX_FAILED_ATTEMPTS = 3L
+
+        // 이 시간(초) 미만으로 끝난 녹화는 시작 실패로 간주
+        private const val MIN_RECORDING_DURATION_SECONDS = 10L
+    }
+
     fun isEndingRecord(recordId: Long): Boolean {
         return endingRecords.contains(recordId)
     }
@@ -104,6 +112,21 @@ class RecordService(
 
         if (isAlreadyRecording) {
             logger.debug("Already recording stream: platformType={}, streamId={}", stream.platformType, stream.id)
+            return null
+        }
+
+        // 연속 시작 실패 폭주 방지: 같은 스트림이 일정 횟수 이상 실패하면 재녹화 중단
+        val failedCount = recordRepository.countByPlatformTypeAndPlatformStreamIdAndIsFailed(
+            platformType = stream.platformType,
+            platformStreamId = stream.id,
+            isFailed = true
+        )
+
+        if (failedCount >= MAX_FAILED_ATTEMPTS) {
+            logger.warn(
+                "Stream exceeded max failed attempts, skipping: platformType={}, streamId={}, failedCount={}",
+                stream.platformType, stream.id, failedCount
+            )
             return null
         }
 
@@ -178,9 +201,9 @@ class RecordService(
                 recordQuality
             )
         } catch (e: Exception) {
-            // 프로세스 시작 실패 시 Record를 취소 상태로 변경
+            // 프로세스 시작 실패 시 Record를 실패 상태로 변경 (수동 취소와 구분, 폭주 방지 카운트에 포함)
             savedRecord.isEnded = true
-            savedRecord.isCancelled = true
+            savedRecord.isFailed = true
             savedRecord.endedAt = LocalDateTime.now()
             recordRepository.save(savedRecord)
 
@@ -241,18 +264,25 @@ class RecordService(
             // 녹화 시간 계산 및 10초 미만 녹화 삭제 처리
             val recordingDurationSeconds = Duration.between(record.createdAt, record.endedAt).seconds
 
-            if (recordingDurationSeconds < 10) {
+            // 10초 미만으로 끝난 녹화는 쓸모없으므로 영상 삭제 (수동 취소/실패 공통)
+            if (recordingDurationSeconds < MIN_RECORDING_DURATION_SECONDS) {
                 try {
+                    // 수동 취소가 아닌 경우에만 '시작 실패'로 마킹 (수동 취소를 폭주 방지 카운트에 섞지 않음)
+                    val markFailed = !isCancel
                     logger.warn(
-                        "Recording duration too short, deleting video: recordId={}, videoId={}, duration={}s",
+                        "Recording duration too short, deleting video: recordId={}, videoId={}, duration={}s, markFailed={}",
                         recordId,
                         record.videoId,
-                        recordingDurationSeconds
+                        recordingDurationSeconds,
+                        markFailed
                     )
 
                     videoService.delete(record.videoId)
-                    record.isCancelled = true
-                    recordRepository.save(record)
+                    if (markFailed) {
+                        // 수동 취소(isCancelled)와 구분되는 시작 실패로 마킹 → 재녹화는 허용하되 폭주는 막음
+                        record.isFailed = true
+                        recordRepository.save(record)
+                    }
                 } catch (e: Exception) {
                     logger.error("Failed to delete short recording video: recordId={}, videoId={}", recordId, record.videoId, e)
                 }
