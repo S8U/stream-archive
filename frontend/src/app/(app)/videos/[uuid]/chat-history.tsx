@@ -236,16 +236,16 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                             return (
                                 <div
                                     key={`${chat.offsetMillis}-${index}`}
-                                    className="leading-relaxed"
+                                    className="flex w-full flex-wrap items-baseline gap-x-2 leading-relaxed"
                                     ref={isLast ? lastChatRef : null}
                                 >
                                     {showTimeline && (
                                         <>
-                                            <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]</span>{' '}
+                                            <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]</span>
                                         </>
                                     )}
-                                    <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>:{' '}
-                                    <span>{chat.message}</span>
+                                    <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>
+                                    <span className="font-medium">{chat.message}</span>
                                 </div>
                             );
                         })}
