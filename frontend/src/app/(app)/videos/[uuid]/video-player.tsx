@@ -47,9 +47,27 @@ type WebkitVideoElement = HTMLVideoElement & {
     webkitExitFullscreen?: () => void;
 };
 
+type SeekDirection = 'backward' | 'forward';
+
+interface MobileTap {
+    time: number;
+    x: number;
+    y: number;
+    direction: SeekDirection;
+    wasControlsVisible: boolean;
+}
+
+interface TimelineTouchDrag {
+    startX: number;
+    startTime: number;
+}
+
 const HIDE_DELAY_MS = 3000;
 const SEEK_STEP_SEC = 5;
 const SEEK_STEP_LONG_SEC = 10;
+const MOBILE_DOUBLE_TAP_DELAY_MS = 300;
+const MOBILE_SINGLE_TAP_DELAY_MS = 120;
+const MOBILE_DOUBLE_TAP_MAX_DISTANCE_PX = 72;
 const VOLUME_STEP = 0.05;
 const PLAY_PAUSE_INDICATOR_MS = 1000;
 const SEEK_INDICATOR_MS = 1000;
@@ -132,7 +150,10 @@ export function VideoPlayer({
     const hasRestoredPositionRef = useRef(false);
     const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isHoveringControlsRef = useRef(false);
+    const isDraggingTimelineRef = useRef(false);
+    const isControlsVisibleRef = useRef(true);
     const previousVolumeRef = useRef(1);
+    const timelineTouchDragRef = useRef<TimelineTouchDrag | null>(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -155,15 +176,33 @@ export function VideoPlayer({
     const [isPip, setIsPip] = useState(false);
     const isUserActionRef = useRef(false); // 사용자가 직접 재생/일시정지한 경우에만 true
     const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastMobileTapRef = useRef<MobileTap | null>(null);
+    const mobileSingleTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const mobileTapResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [playPauseIndicator, setPlayPauseIndicator] = useState<{ kind: 'play' | 'pause'; nonce: number } | null>(null);
     const playPauseIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const [seekIndicator, setSeekIndicator] = useState<{ direction: 'backward' | 'forward'; seconds: number } | null>(null);
+    const [seekIndicator, setSeekIndicator] = useState<{ direction: SeekDirection; seconds: number } | null>(null);
     const seekIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         setIsPipSupported(!!document.pictureInPictureEnabled);
+    }, []);
+
+    useEffect(() => {
+        isControlsVisibleRef.current = isControlsVisible;
+    }, [isControlsVisible]);
+
+    useEffect(() => {
+        return () => {
+            if (mobileSingleTapTimerRef.current) {
+                clearTimeout(mobileSingleTapTimerRef.current);
+            }
+            if (mobileTapResetTimerRef.current) {
+                clearTimeout(mobileTapResetTimerRef.current);
+            }
+        };
     }, []);
 
     // HLS 로드
@@ -269,6 +308,7 @@ export function VideoPlayer({
 
     // 자동 숨김 처리
     const showControls = useCallback(() => {
+        isControlsVisibleRef.current = true;
         setIsControlsVisible(true);
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
 
@@ -276,27 +316,29 @@ export function VideoPlayer({
         if (!video) return;
 
         // 일시정지/드래깅/컨트롤 hover 중에는 숨기지 않음
-        if (video.paused || isDraggingTimeline || isHoveringControlsRef.current) {
+        if (video.paused || isDraggingTimelineRef.current || isHoveringControlsRef.current) {
             return;
         }
 
         hideTimerRef.current = setTimeout(() => {
-            if (!isHoveringControlsRef.current && !isDraggingTimeline) {
+            if (!isHoveringControlsRef.current && !isDraggingTimelineRef.current) {
                 const v = videoRef.current;
                 if (v && !v.paused) {
+                    isControlsVisibleRef.current = false;
                     setIsControlsVisible(false);
                 }
             }
         }, HIDE_DELAY_MS);
-    }, [isDraggingTimeline]);
+    }, []);
 
     const hideControlsImmediately = useCallback(() => {
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
         const video = videoRef.current;
-        if (video && !video.paused && !isHoveringControlsRef.current && !isDraggingTimeline) {
+        if (video && !video.paused && !isHoveringControlsRef.current && !isDraggingTimelineRef.current) {
+            isControlsVisibleRef.current = false;
             setIsControlsVisible(false);
         }
-    }, [isDraggingTimeline]);
+    }, []);
 
     // 재생/일시정지 토글
     const togglePlay = useCallback(() => {
@@ -320,7 +362,7 @@ export function VideoPlayer({
     }, []);
 
     // 시킹 ±N초 인디케이터 (같은 방향 연속 누름 시 합산)
-    const showSeekIndicator = useCallback((direction: 'backward' | 'forward', step: number) => {
+    const showSeekIndicator = useCallback((direction: SeekDirection, step: number) => {
         setSeekIndicator((prev) => {
             const sameDirection = prev && prev.direction === direction;
             const nextSeconds = (sameDirection ? prev!.seconds : 0) + step;
@@ -478,14 +520,18 @@ export function VideoPlayer({
             setIsPlaying(true);
             showControls();
             if (isUserActionRef.current) {
-                showPlayPauseIndicator('play');
+                if (!isTouchOnlyPointer()) {
+                    showPlayPauseIndicator('play');
+                }
                 isUserActionRef.current = false;
             }
         };
         const handlePause = () => {
             setIsPlaying(false);
             if (isUserActionRef.current) {
-                showPlayPauseIndicator('pause');
+                if (!isTouchOnlyPointer()) {
+                    showPlayPauseIndicator('pause');
+                }
                 isUserActionRef.current = false;
             }
         };
@@ -635,42 +681,100 @@ export function VideoPlayer({
         return ratio * duration;
     }, [duration]);
 
+    const updateTimelineHover = useCallback((clientX: number) => {
+        const timeline = timelineRef.current;
+        if (!timeline || !duration) return;
+        const rect = timeline.getBoundingClientRect();
+        const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        setHoverX(x);
+        setHoverTime(timelineXToTime(clientX));
+    }, [duration, timelineXToTime]);
+
+    const updateTimelinePreviewTime = useCallback((time: number) => {
+        const timeline = timelineRef.current;
+        if (!timeline || !duration) return;
+        const rect = timeline.getBoundingClientRect();
+        const clamped = Math.max(0, Math.min(duration, time));
+        setHoverTime(clamped);
+        setHoverX((clamped / duration) * rect.width);
+    }, [duration]);
+
     // 타임라인 마우스 다운 (드래그 시작)
     const handleTimelineMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         if (!duration) return;
+        isDraggingTimelineRef.current = true;
         setIsDraggingTimeline(true);
+        updateTimelineHover(e.clientX);
         seekTo(timelineXToTime(e.clientX));
-    }, [duration, seekTo, timelineXToTime]);
+    }, [duration, seekTo, timelineXToTime, updateTimelineHover]);
 
-    // 드래그 중 마우스 이동/업
+    // 타임라인 터치 시작 (모바일 드래그)
+    const handleTimelineTouchStart = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        if (!duration || e.touches.length === 0) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const video = videoRef.current;
+        if (!video) return;
+        isDraggingTimelineRef.current = true;
+        timelineTouchDragRef.current = {
+            startX: touch.clientX,
+            startTime: video.currentTime,
+        };
+        setIsDraggingTimeline(true);
+        updateTimelinePreviewTime(video.currentTime);
+        isControlsVisibleRef.current = true;
+        setIsControlsVisible(true);
+    }, [duration, updateTimelinePreviewTime]);
+
+    // 드래그 중 포인터 이동/종료
     useEffect(() => {
         if (!isDraggingTimeline) return;
 
         const handleMove = (e: MouseEvent) => {
+            updateTimelineHover(e.clientX);
             seekTo(timelineXToTime(e.clientX));
         };
+        const handleTouchMove = (e: TouchEvent) => {
+            if (e.touches.length === 0) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            const timeline = timelineRef.current;
+            const touchDrag = timelineTouchDragRef.current;
+            if (!timeline || !touchDrag || !duration) return;
+            const rect = timeline.getBoundingClientRect();
+            const movedSeconds = ((touch.clientX - touchDrag.startX) / rect.width) * duration;
+            const nextTime = touchDrag.startTime + movedSeconds;
+            updateTimelinePreviewTime(nextTime);
+            seekTo(nextTime);
+        };
         const handleUp = () => {
+            isDraggingTimelineRef.current = false;
+            timelineTouchDragRef.current = null;
             setIsDraggingTimeline(false);
+            setHoverTime(null);
+            showControls();
         };
 
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleUp);
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleUp);
+        window.addEventListener('touchcancel', handleUp);
         return () => {
             window.removeEventListener('mousemove', handleMove);
             window.removeEventListener('mouseup', handleUp);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleUp);
+            window.removeEventListener('touchcancel', handleUp);
         };
-    }, [isDraggingTimeline, seekTo, timelineXToTime]);
+    }, [duration, isDraggingTimeline, seekTo, showControls, timelineXToTime, updateTimelineHover, updateTimelinePreviewTime]);
 
     // 타임라인 hover
     const handleTimelineMouseMove = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
-        const timeline = timelineRef.current;
-        if (!timeline || !duration) return;
-        const rect = timeline.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        setHoverX(x);
-        setHoverTime(timelineXToTime(e.clientX));
-    }, [duration, timelineXToTime]);
+        updateTimelineHover(e.clientX);
+    }, [updateTimelineHover]);
 
     const handleTimelineMouseLeave = useCallback(() => {
         setHoverTime(null);
@@ -687,21 +791,122 @@ export function VideoPlayer({
         hideControlsImmediately();
     }, [hideControlsImmediately]);
 
-    // 모바일 터치는 재생/전체화면 대신 컨트롤 표시만 토글
+    const scheduleMobileSingleTapControls = useCallback(() => {
+        if (mobileSingleTapTimerRef.current) {
+            clearTimeout(mobileSingleTapTimerRef.current);
+            mobileSingleTapTimerRef.current = null;
+        }
+
+        mobileSingleTapTimerRef.current = setTimeout(() => {
+            mobileSingleTapTimerRef.current = null;
+
+            const video = videoRef.current;
+            if (isControlsVisibleRef.current && video && !video.paused) {
+                isControlsVisibleRef.current = false;
+                setIsControlsVisible(false);
+                return;
+            }
+
+            showControls();
+        }, MOBILE_SINGLE_TAP_DELAY_MS);
+    }, [showControls]);
+
+    // 모바일 탭은 컨트롤 토글, 좌/우 더블탭은 시킹으로 처리
     const handleContainerTouchStart = useCallback((e: ReactTouchEvent<HTMLDivElement>) => {
         if (!isTouchOnlyPointer()) return;
         const controls = controlsRef.current;
-        if (controls && controls.contains(e.target as Node)) return;
-        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-
-        const video = videoRef.current;
-        if (isControlsVisible && video && !video.paused) {
-            setIsControlsVisible(false);
+        if (controls && controls.contains(e.target as Node)) {
+            lastMobileTapRef.current = null;
+            if (mobileSingleTapTimerRef.current) {
+                clearTimeout(mobileSingleTapTimerRef.current);
+                mobileSingleTapTimerRef.current = null;
+            }
+            if (mobileTapResetTimerRef.current) {
+                clearTimeout(mobileTapResetTimerRef.current);
+                mobileTapResetTimerRef.current = null;
+            }
+            return;
+        }
+        if (e.touches.length !== 1) {
+            lastMobileTapRef.current = null;
+            if (mobileSingleTapTimerRef.current) {
+                clearTimeout(mobileSingleTapTimerRef.current);
+                mobileSingleTapTimerRef.current = null;
+            }
+            if (mobileTapResetTimerRef.current) {
+                clearTimeout(mobileTapResetTimerRef.current);
+                mobileTapResetTimerRef.current = null;
+            }
             return;
         }
 
-        showControls();
-    }, [isControlsVisible, showControls]);
+        const touch = e.touches[0];
+        const container = containerRef.current;
+        const rect = container?.getBoundingClientRect();
+        const direction: SeekDirection = rect && touch.clientX < rect.left + rect.width / 2 ? 'backward' : 'forward';
+        const now = Date.now();
+        const lastTap = lastMobileTapRef.current;
+        const tapDistance = lastTap ? Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) : Infinity;
+        const isDoubleTap =
+            !!lastTap &&
+            lastTap.direction === direction &&
+            now - lastTap.time <= MOBILE_DOUBLE_TAP_DELAY_MS &&
+            tapDistance <= MOBILE_DOUBLE_TAP_MAX_DISTANCE_PX;
+        const isSingleTapPending = mobileSingleTapTimerRef.current !== null;
+
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+
+        if (isDoubleTap) {
+            e.preventDefault();
+            lastMobileTapRef.current = null;
+            if (mobileSingleTapTimerRef.current) {
+                clearTimeout(mobileSingleTapTimerRef.current);
+                mobileSingleTapTimerRef.current = null;
+            }
+            if (mobileTapResetTimerRef.current) {
+                clearTimeout(mobileTapResetTimerRef.current);
+                mobileTapResetTimerRef.current = null;
+            }
+            const video = videoRef.current;
+            if (video) {
+                const step = direction === 'backward' ? -SEEK_STEP_LONG_SEC : SEEK_STEP_LONG_SEC;
+                seekTo(video.currentTime + step);
+                showSeekIndicator(direction, SEEK_STEP_LONG_SEC);
+            }
+
+            const currentVideo = videoRef.current;
+            const isControlsCurrentlyVisible = isControlsVisibleRef.current;
+            if (isControlsCurrentlyVisible && currentVideo && !currentVideo.paused) {
+                scheduleMobileSingleTapControls();
+            } else if (!isControlsCurrentlyVisible && !isSingleTapPending && !lastTap.wasControlsVisible) {
+                showControls();
+            }
+            return;
+        }
+
+        if (mobileSingleTapTimerRef.current) {
+            clearTimeout(mobileSingleTapTimerRef.current);
+            mobileSingleTapTimerRef.current = null;
+        }
+        if (mobileTapResetTimerRef.current) {
+            clearTimeout(mobileTapResetTimerRef.current);
+            mobileTapResetTimerRef.current = null;
+        }
+        lastMobileTapRef.current = {
+            time: now,
+            x: touch.clientX,
+            y: touch.clientY,
+            direction,
+            wasControlsVisible: isControlsVisibleRef.current,
+        };
+
+        scheduleMobileSingleTapControls();
+
+        mobileTapResetTimerRef.current = setTimeout(() => {
+            lastMobileTapRef.current = null;
+            mobileTapResetTimerRef.current = null;
+        }, MOBILE_DOUBLE_TAP_DELAY_MS);
+    }, [scheduleMobileSingleTapControls, seekTo, showControls, showSeekIndicator]);
 
     // 컨테이너 클릭 (재생/일시정지) — 더블클릭과 구분하기 위해 딜레이 후 실행
     const handleContainerClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
@@ -730,6 +935,7 @@ export function VideoPlayer({
     const handleControlsEnter = useCallback(() => {
         isHoveringControlsRef.current = true;
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        isControlsVisibleRef.current = true;
         setIsControlsVisible(true);
     }, []);
 
@@ -800,7 +1006,7 @@ export function VideoPlayer({
                     : isWide
                         ? 'w-full h-screen overflow-hidden'
                         : 'w-full aspect-video'
-            }`}
+            } touch-manipulation`}
             onMouseMove={handleContainerMouseMove}
             onMouseLeave={handleContainerMouseLeave}
             onTouchStart={handleContainerTouchStart}
@@ -877,6 +1083,29 @@ export function VideoPlayer({
                 </div>
             )}
 
+            {/* 모바일 중앙 재생/일시정지 버튼 */}
+            <div
+                className={`absolute inset-0 z-10 hidden items-center justify-center pointer-events-none transition-opacity duration-200 max-md:flex ${
+                    isControlsVisible ? 'opacity-100' : 'opacity-0'
+                }`}
+            >
+                <button
+                    type="button"
+                    className={`flex h-16 w-16 items-center justify-center rounded-full bg-black/50 text-white shadow-lg backdrop-blur-sm active:scale-95 transition-transform ${
+                        isControlsVisible ? 'pointer-events-auto' : 'pointer-events-none'
+                    }`}
+                    aria-label={isPlaying ? '일시정지' : '재생'}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        togglePlay();
+                        showControls();
+                    }}
+                >
+                    {isPlaying ? <Pause size={34} fill="currentColor" /> : <Play size={34} fill="currentColor" />}
+                </button>
+            </div>
+
             {/* 컨트롤 오버레이 */}
             <div
                 ref={controlsRef}
@@ -891,13 +1120,14 @@ export function VideoPlayer({
 
                 {/* 타임라인 */}
                 <div
-                    className="relative px-4 pt-2"
+                    className="relative px-4 pt-2 touch-none"
                     onMouseEnter={handleControlsEnter}
                     onMouseLeave={handleControlsLeave}
+                    onTouchStart={handleTimelineTouchStart}
                 >
                     <div
                         ref={timelineRef}
-                        className="relative h-1.5 bg-white/20 rounded-full cursor-pointer group/timeline hover:bg-white/40 transition-colors"
+                        className="relative h-1.5 bg-white/20 rounded-full cursor-pointer group/timeline hover:bg-white/40 transition-colors touch-none"
                         onMouseDown={handleTimelineMouseDown}
                         onMouseMove={handleTimelineMouseMove}
                         onMouseLeave={handleTimelineMouseLeave}
@@ -934,7 +1164,9 @@ export function VideoPlayer({
 
                         {/* 썸 (재생 핸들) */}
                         <div
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-white rounded-full opacity-0 group-hover/timeline:opacity-100 transition-opacity pointer-events-none"
+                            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3.5 h-3.5 bg-white rounded-full transition-opacity pointer-events-none ${
+                                isControlsVisible || isDraggingTimeline ? 'opacity-100' : 'opacity-0 group-hover/timeline:opacity-100'
+                            }`}
                             style={{ left: `${progressPercent}%` }}
                         />
 
