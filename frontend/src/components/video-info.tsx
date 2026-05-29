@@ -230,7 +230,7 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
                     </Link>
                 </div>
 
-                <div className={`${isExpanded ? 'block' : 'hidden'} relative mt-2 mb-4 rounded-md bg-muted px-3 py-3 lg:block`}>
+                <div className={`${isExpanded ? 'block' : 'hidden'} relative mt-3 mb-4 rounded-md bg-muted px-3 py-3 lg:block`}>
                     {adminMenu && <div className="absolute top-1 right-3">{adminMenu}</div>}
                     {video.description && (
                         <p className="mb-3 pr-10 whitespace-pre-wrap text-sm leading-6">{video.description}</p>
