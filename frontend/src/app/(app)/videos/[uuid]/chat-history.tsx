@@ -1,6 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Eye, EyeOff, MoreVertical } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from "@/components/ui/separator";
 import { useGetVideoChatHistory } from '@/lib/api/endpoints/video/video';
@@ -57,6 +65,7 @@ const CHAT_LOAD_MILLIS = 3000;
 const LOAD_BEFORE_CHAT_MILLIS = 60000;
 // 채팅 최대 개수
 const MAX_NUMBER_OF_CHAT = 300;
+const SHOW_TIMELINE_STORAGE_KEY = 'chat-history:show-timeline';
 
 export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSyncOffsetMillis }: ChatHistoryProps) {
     // 싱크 오프셋 적용 (음수로 적용하여 채팅이 영상보다 앞서 표시되도록)
@@ -70,6 +79,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     // 이전 시간
     const beforeTimeMillisRef = useRef(0);
     const lastChatRef = useRef<HTMLDivElement>(null);
+    const [showTimeline, setShowTimeline] = useState(false);
 
     // API 요청 파라미터
     const [fetchParams, setFetchParams] = useState<{ offsetStart: number; offsetEnd: number } | null>(null);
@@ -95,6 +105,19 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
             setFetchParams(null); // 요청 완료
         }
     }, [data, fetchParams]);
+
+    // 브라우저에 저장된 타임라인 표시 설정 불러오기
+    useEffect(() => {
+        setShowTimeline(localStorage.getItem(SHOW_TIMELINE_STORAGE_KEY) === 'true');
+    }, []);
+
+    const handleShowTimelineToggle = useCallback(() => {
+        setShowTimeline((prev) => {
+            const next = !prev;
+            localStorage.setItem(SHOW_TIMELINE_STORAGE_KEY, String(next));
+            return next;
+        });
+    }, []);
 
     // 현재 시간까지의 채팅 표시
     const addChatBeforeTimeMillis = useCallback((timeMillis: number) => {
@@ -168,8 +191,38 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
 
     return (
         <div className="h-full flex flex-col">
-            <div className="hidden lg:flex px-4 py-3 mx-auto">
-                <h2 className="font-semibold">채팅 기록</h2>
+            <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
+                <h2 className="col-start-2 font-semibold">채팅 기록</h2>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="col-start-3 justify-self-end -mr-2 h-7 w-7"
+                            aria-label="채팅 기록 설정"
+                        >
+                            <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                            onClick={handleShowTimelineToggle}
+                        >
+                            {showTimeline ? (
+                                <>
+                                    <EyeOff className="h-4 w-4" />
+                                    타임라인 가리기
+                                </>
+                            ) : (
+                                <>
+                                    <Eye className="h-4 w-4" />
+                                    타임라인 보기
+                                </>
+                            )}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             <Separator />
@@ -186,7 +239,11 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                     className="leading-relaxed"
                                     ref={isLast ? lastChatRef : null}
                                 >
-                                    <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]</span>{' '}
+                                    {showTimeline && (
+                                        <>
+                                            <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]</span>{' '}
+                                        </>
+                                    )}
                                     <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>:{' '}
                                     <span>{chat.message}</span>
                                 </div>
