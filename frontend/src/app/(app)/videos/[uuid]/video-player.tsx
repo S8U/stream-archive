@@ -94,6 +94,10 @@ function isTouchOnlyPointer(): boolean {
     return typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
 }
 
+function hasBrowserShortcutModifier(e: KeyboardEvent): boolean {
+    return e.metaKey || e.ctrlKey || e.altKey;
+}
+
 interface ControlButtonProps {
     onClick: () => void;
     label: string;
@@ -579,6 +583,10 @@ export function VideoPlayer({
     // 키보드 단축키 (e.code 기반 → 한글 IME 상태에서도 동작)
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (hasBrowserShortcutModifier(e)) {
+                return;
+            }
+
             const target = e.target as HTMLElement;
             // input, textarea, contentEditable에서는 동작 안 함
             if (
