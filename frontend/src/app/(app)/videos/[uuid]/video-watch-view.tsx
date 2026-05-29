@@ -129,6 +129,24 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         setSeekRequest({ seconds, nonce: Date.now() });
     }, []);
 
+    // 현재 시청자 수: 시청자 이력의 마지막 값
+    const currentViewerCount = useMemo(() => {
+        if (!viewerHistory || viewerHistory.length === 0) return 0;
+        return viewerHistory[viewerHistory.length - 1].viewerCount;
+    }, [viewerHistory]);
+
+    // 플레이어 상단 헤더 정보
+    const playerHeaderInfo = useMemo(
+        () => ({
+            title: video.title,
+            channelName: video.channel.name,
+            channelProfileUrl: video.channel.profileUrl,
+            viewerCount: currentViewerCount,
+            streamStartedAt: video.record?.startedAt,
+        }),
+        [video.title, video.channel.name, video.channel.profileUrl, currentViewerCount, video.record?.startedAt],
+    );
+
     return (
         <div
             className={
@@ -148,12 +166,15 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                     viewerHistory={viewerHistory}
                     isWide={isWide}
                     onWideToggle={setIsWide}
+                    headerInfo={playerHeaderInfo}
                 />
                 {!isWide && (
                     <VideoInfo
                         video={video}
                         isAdmin={user?.role === 'ADMIN'}
                         onTimestampClick={handleDescriptionTimestampClick}
+                        isLive={isLive}
+                        viewerCount={currentViewerCount}
                     />
                 )}
             </div>

@@ -16,12 +16,22 @@ import {
     PictureInPicture2,
     Link2,
     Timer,
+    Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatElapsed } from '@/lib/utils';
 
 interface ViewerPoint {
     offsetMillis: number;
     viewerCount: number;
+}
+
+interface VideoPlayerHeaderInfo {
+    title: string;
+    channelName: string;
+    channelProfileUrl?: string;
+    viewerCount?: number;
+    streamStartedAt?: string;
 }
 
 interface VideoPlayerProps {
@@ -33,6 +43,7 @@ interface VideoPlayerProps {
     isWide?: boolean;
     onWideToggle?: (isWide: boolean) => void;
     viewerHistory?: ViewerPoint[];
+    headerInfo?: VideoPlayerHeaderInfo;
 }
 
 type FullscreenDocument = Document & {
@@ -177,6 +188,7 @@ export function VideoPlayer({
     isWide: isWideProp,
     onWideToggle,
     viewerHistory,
+    headerInfo,
 }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1101,6 +1113,28 @@ export function VideoPlayer({
         return Math.max(half, Math.min(width - half, hoverX));
     }, [hoverX]);
 
+    // 헤더 표시 여부: 넓은 화면 또는 전체화면일 때만
+    const showHeader = !!headerInfo && (isWide || isFullscreen);
+
+    // 스트리밍 경과 시간 (헤더가 보이는 라이브 상태에서만 1초마다 갱신)
+    const [streamElapsedSec, setStreamElapsedSec] = useState<number | null>(null);
+    useEffect(() => {
+        const startedAt = headerInfo?.streamStartedAt;
+        if (!showHeader || !isLive || !startedAt) {
+            setStreamElapsedSec(null);
+            return;
+        }
+        const startMs = new Date(startedAt).getTime();
+        if (!Number.isFinite(startMs)) {
+            setStreamElapsedSec(null);
+            return;
+        }
+        const update = () => setStreamElapsedSec(Math.max(0, (Date.now() - startMs) / 1000));
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, [showHeader, isLive, headerInfo?.streamStartedAt]);
+
     // 시청자 그래프 path (viewBox 100 x 100, 위쪽이 높은 시청자)
     const viewerGraphPath = useMemo(() => {
         if (!viewerHistory || viewerHistory.length < 2 || duration <= 0) return null;
@@ -1148,6 +1182,62 @@ export function VideoPlayer({
                 playsInline
                 webkit-playsinline=""
             />
+
+            {/* 상단 정보 헤더 (넓은 화면/전체화면 시) */}
+            {showHeader && headerInfo && (
+                <div
+                    className={`absolute inset-x-0 top-0 z-10 transition-opacity duration-200 ${
+                        isControlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
+                >
+                    {/* 그라디언트 배경 */}
+                    <div className="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-black/75 via-black/40 to-transparent pointer-events-none" />
+
+                    <div className="relative flex items-center gap-4 px-4 pt-4">
+                        {/* 채널 아이콘 */}
+                        {headerInfo.channelProfileUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={headerInfo.channelProfileUrl}
+                                alt=""
+                                className="h-16 w-16 flex-shrink-0 rounded-full object-cover ring-1 ring-white/25"
+                            />
+                        ) : (
+                            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-white/20 text-xl font-semibold text-white ring-1 ring-white/25">
+                                {headerInfo.channelName.charAt(0)}
+                            </div>
+                        )}
+
+                        {/* 제목 / 채널 이름 / 라이브 메타 */}
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-xl font-semibold leading-snug text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                                {headerInfo.title}
+                            </p>
+                            <p className="mt-1 truncate text-sm font-medium text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                {headerInfo.channelName}
+                            </p>
+                            {isLive && (
+                                <div className="mt-1 flex items-center gap-3 text-sm font-medium text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                                    <span className="flex flex-shrink-0 items-center gap-1.5">
+                                        <Users size={16} />
+                                        <span className="tabular-nums">
+                                            {(headerInfo.viewerCount ?? 0).toLocaleString('ko-KR')}명 시청 중
+                                        </span>
+                                    </span>
+                                    {streamElapsedSec !== null && (
+                                        <span className="flex flex-shrink-0 items-center gap-1.5">
+                                            <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
+                                            <span className="tabular-nums">
+                                                {formatElapsed(streamElapsedSec)} 스트리밍 중
+                                            </span>
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 버퍼링/로딩 스피너 */}
             {isBuffering && (

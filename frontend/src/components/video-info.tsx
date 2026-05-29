@@ -13,9 +13,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {Bookmark, BookmarkX, ChevronDown, Edit, Loader2, MoreVertical, Trash2} from 'lucide-react';
-import {useMemo, useState} from 'react';
+import {Bookmark, BookmarkX, ChevronDown, Edit, Loader2, MoreVertical, Trash2, Users} from 'lucide-react';
+import {useEffect, useMemo, useState} from 'react';
 import {toast} from 'sonner';
+import {formatElapsed} from '@/lib/utils';
 import {
     useDeleteAdminVideo,
     useSearchAdminVideos,
@@ -30,6 +31,8 @@ interface VideoInfoProps {
     video: PublicVideoResponse;
     isAdmin?: boolean;
     onTimestampClick?: (seconds: number) => void;
+    isLive?: boolean;
+    viewerCount?: number;
 }
 
 function parseTimestampToSeconds(match: RegExpExecArray): number {
@@ -84,12 +87,31 @@ function renderDescription(description: string, onTimestampClick?: (seconds: num
     return nodes.length > 0 ? nodes : description;
 }
 
-export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInfoProps) {
+export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = false, viewerCount }: VideoInfoProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const recordedAt = video.record?.startedAt ?? video.createdAt;
+
+    // 스트리밍 경과 시간 (라이브 중에만 1초마다 갱신)
+    const streamStartedAt = video.record?.startedAt;
+    const [streamElapsedSec, setStreamElapsedSec] = useState<number | null>(null);
+    useEffect(() => {
+        if (!isLive || !streamStartedAt) {
+            setStreamElapsedSec(null);
+            return;
+        }
+        const startMs = new Date(streamStartedAt).getTime();
+        if (!Number.isFinite(startMs)) {
+            setStreamElapsedSec(null);
+            return;
+        }
+        const update = () => setStreamElapsedSec(Math.max(0, (Date.now() - startMs) / 1000));
+        update();
+        const interval = setInterval(update, 1000);
+        return () => clearInterval(interval);
+    }, [isLive, streamStartedAt]);
     const platformType = video.record?.platformType;
     const adminVideoParams = useMemo(() => ({
         request: {
@@ -252,7 +274,7 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInf
                 {/* 제목 */}
                 <button
                     type="button"
-                    className="mb-3 flex w-full items-start justify-between gap-3 text-left lg:pointer-events-none"
+                    className={`flex w-full items-start justify-between gap-3 text-left lg:pointer-events-none ${isLive ? 'mb-1.5' : 'mb-3'}`}
                     onClick={() => setIsExpanded((prev) => !prev)}
                     aria-expanded={isExpanded}
                 >
@@ -267,6 +289,22 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInf
                         aria-hidden="true"
                     />
                 </button>
+
+                {/* 라이브 정보 (녹화 중일 때만) */}
+                {isLive && (
+                    <div className="mb-4 flex items-center gap-3 text-sm font-medium text-foreground">
+                        <span className="flex flex-shrink-0 items-center gap-1.5">
+                            <Users size={16} />
+                            <span className="tabular-nums">{(viewerCount ?? 0).toLocaleString('ko-KR')}명 시청 중</span>
+                        </span>
+                        {streamElapsedSec !== null && (
+                            <span className="flex flex-shrink-0 items-center gap-1.5">
+                                <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
+                                <span className="tabular-nums">{formatElapsed(streamElapsedSec)} 스트리밍 중</span>
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 {/* 채널 정보 */}
                 <div className="flex items-center justify-between gap-3">
