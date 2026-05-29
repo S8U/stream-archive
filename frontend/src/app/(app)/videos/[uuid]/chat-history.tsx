@@ -213,7 +213,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     return (
         <div className="h-full flex flex-col">
             <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center px-4 py-2">
-                <h2 className="col-start-2 font-semibold">채팅 기록</h2>
+                <h2 className="col-start-2 font-semibold">채팅</h2>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -221,7 +221,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                             variant="ghost"
                             size="icon"
                             className="col-start-3 justify-self-end -mr-2 h-7 w-7"
-                            aria-label="채팅 기록 설정"
+                            aria-label="채팅 설정"
                         >
                             <MoreVertical className="h-4 w-4" />
                         </Button>
