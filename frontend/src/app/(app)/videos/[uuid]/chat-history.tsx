@@ -79,6 +79,9 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     // 이전 시간
     const beforeTimeMillisRef = useRef(0);
     const lastChatRef = useRef<HTMLDivElement>(null);
+    const viewportRef = useRef<HTMLDivElement | null>(null);
+    // 사용자가 맨 아래에 있는지 여부 (위로 올리면 자동 스크롤 중단)
+    const isAtBottomRef = useRef(true);
     const [showTimeline, setShowTimeline] = useState(false);
 
     // API 요청 파라미터
@@ -151,6 +154,8 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     const reloadChat = useCallback(() => {
         setDisplayedChats([]);
         chatBufferRef.current = [];
+        // 건너뛰면 채팅도 현재 시점으로 따라가도록 자동 스크롤 복귀
+        isAtBottomRef.current = true;
 
         const offsetStart = Math.max(0, currentTimeMs - LOAD_BEFORE_CHAT_MILLIS);
         loadChat(offsetStart, CHAT_LOAD_MILLIS + LOAD_BEFORE_CHAT_MILLIS);
@@ -182,9 +187,25 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
         reloadChat();
     }, [videoUuid]);
 
-    // 새 채팅이 추가되면 스크롤 하단으로 이동
+    // 스크롤 위치 추적: 사용자가 맨 아래 근처에 있으면 자동 스크롤 유지, 위로 올리면 중단
     useEffect(() => {
-        if (lastChatRef.current) {
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+
+        const BOTTOM_THRESHOLD_PX = 80;
+        const handleScroll = () => {
+            const distanceFromBottom =
+                viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+            isAtBottomRef.current = distanceFromBottom <= BOTTOM_THRESHOLD_PX;
+        };
+
+        viewport.addEventListener('scroll', handleScroll, { passive: true });
+        return () => viewport.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // 새 채팅이 추가되면 스크롤 하단으로 이동 (사용자가 맨 아래에 있을 때만)
+    useEffect(() => {
+        if (isAtBottomRef.current && lastChatRef.current) {
             lastChatRef.current.scrollIntoView({ block: 'end' });
         }
     }, [displayedChats]);
@@ -229,7 +250,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
 
             {/* 채팅 목록 */}
             <div className="overflow-hidden flex-1">
-                <ScrollArea className="h-full">
+                <ScrollArea viewportRef={viewportRef} className="h-full">
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat, index) => {
                             const isLast = index === displayedChats.length - 1;
