@@ -15,6 +15,7 @@ interface VideoWatchViewProps {
 export function VideoWatchView({ video }: VideoWatchViewProps) {
     const [currentTimeMs, setCurrentTimeMs] = useState(0);
     const [initialPosition, setInitialPosition] = useState<number | null>(null);
+    const [seekRequest, setSeekRequest] = useState<{ seconds: number; nonce: number } | null>(null);
     const lastSavedPositionRef = useRef(0);
     const currentPositionRef = useRef(0);
     const { data: user } = useGetUserMe({
@@ -96,6 +97,10 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     // 와이드 모드: 사이드바를 가리고 좌측 비디오를 viewport 가득, 우측 채팅 유지
     const [isWide, setIsWide] = useState(false);
 
+    const handleDescriptionTimestampClick = useCallback((seconds: number) => {
+        setSeekRequest({ seconds, nonce: Date.now() });
+    }, []);
+
     return (
         <div
             className={
@@ -110,12 +115,19 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                     playlistUrl={video.playlistUrl}
                     onTimeUpdate={setCurrentTimeMs}
                     initialPosition={initialPosition}
+                    seekRequest={seekRequest}
                     isLive={isLive}
                     viewerHistory={viewerHistory}
                     isWide={isWide}
                     onWideToggle={setIsWide}
                 />
-                {!isWide && <VideoInfo video={video} isAdmin={user?.role === 'ADMIN'} />}
+                {!isWide && (
+                    <VideoInfo
+                        video={video}
+                        isAdmin={user?.role === 'ADMIN'}
+                        onTimestampClick={handleDescriptionTimestampClick}
+                    />
+                )}
             </div>
 
             {/* 우측: 채팅창 (와이드 모드에서도 유지) */}

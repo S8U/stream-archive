@@ -24,13 +24,67 @@ import {
 } from '@/lib/api/endpoints/admin-video/admin-video';
 import {useGetChannelPlatforms} from '@/lib/api/endpoints/channel/channel';
 import type {AdminVideoUpdateRequestContentPrivacy, PublicVideoResponse} from '@/lib/api/models';
+import type {ReactNode} from 'react';
 
 interface VideoInfoProps {
     video: PublicVideoResponse;
     isAdmin?: boolean;
+    onTimestampClick?: (seconds: number) => void;
 }
 
-export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
+function parseTimestampToSeconds(match: RegExpExecArray): number {
+    const first = Number(match[2]);
+    const second = Number(match[3]);
+    const third = match[4] == null ? null : Number(match[4]);
+
+    if (third == null) {
+        return first * 60 + second;
+    }
+
+    return first * 3600 + second * 60 + third;
+}
+
+function renderDescription(description: string, onTimestampClick?: (seconds: number) => void): ReactNode {
+    if (!onTimestampClick) {
+        return description;
+    }
+
+    const timestampPattern = /(^|[^\d])(\d{1,3}):([0-5]\d)(?::([0-5]\d))?(?!\d)/g;
+    const nodes: ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = timestampPattern.exec(description)) !== null) {
+        const prefix = match[1];
+        const timestampStart = match.index + prefix.length;
+        const timestampText = description.slice(timestampStart, timestampPattern.lastIndex);
+        const timestampSeconds = parseTimestampToSeconds(match);
+
+        if (timestampStart > lastIndex) {
+            nodes.push(description.slice(lastIndex, timestampStart));
+        }
+
+        nodes.push(
+            <button
+                key={`${timestampStart}-${timestampText}`}
+                type="button"
+                className="inline cursor-pointer rounded-sm font-medium text-sky-500 hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:text-sky-400 dark:hover:text-sky-300"
+                onClick={() => onTimestampClick(timestampSeconds)}
+            >
+                {timestampText}
+            </button>
+        );
+        lastIndex = timestampPattern.lastIndex;
+    }
+
+    if (lastIndex < description.length) {
+        nodes.push(description.slice(lastIndex));
+    }
+
+    return nodes.length > 0 ? nodes : description;
+}
+
+export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInfoProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -233,7 +287,9 @@ export function VideoInfo({ video, isAdmin = false }: VideoInfoProps) {
                 <div className={`${isExpanded ? 'block' : 'hidden'} relative mt-3 mb-4 rounded-md bg-muted px-3 py-3 lg:block`}>
                     {adminMenu && <div className="absolute top-1 right-3">{adminMenu}</div>}
                     {video.description && (
-                        <p className="mb-3 pr-10 whitespace-pre-wrap text-sm leading-6">{video.description}</p>
+                        <p className="mb-3 pr-10 whitespace-pre-wrap text-sm leading-6">
+                            {renderDescription(video.description, onTimestampClick)}
+                        </p>
                     )}
                     <dl className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2 lg:mt-0 xl:grid-cols-4">
                         {stats.map((stat) => (

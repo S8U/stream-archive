@@ -25,6 +25,7 @@ interface VideoPlayerProps {
     playlistUrl: string;
     onTimeUpdate?: (currentTimeMs: number) => void;
     initialPosition?: number | null; // 초 단위
+    seekRequest?: { seconds: number; nonce: number } | null;
     isLive?: boolean;
     isWide?: boolean;
     onWideToggle?: (isWide: boolean) => void;
@@ -141,6 +142,7 @@ export function VideoPlayer({
     playlistUrl,
     onTimeUpdate,
     initialPosition,
+    seekRequest,
     isLive = false,
     isWide: isWideProp,
     onWideToggle,
@@ -440,6 +442,12 @@ export function VideoPlayer({
         video.currentTime = clamped;
         setCurrentTime(clamped);
     }, []);
+
+    useEffect(() => {
+        if (!seekRequest) return;
+        seekTo(seekRequest.seconds);
+        showControls();
+    }, [seekRequest, seekTo, showControls]);
 
     // 풀스크린 토글
     const toggleFullscreen = useCallback(() => {
