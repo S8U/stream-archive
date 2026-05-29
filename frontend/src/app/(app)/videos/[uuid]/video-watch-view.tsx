@@ -5,12 +5,23 @@ import { useSearchParams } from 'next/navigation';
 import { VideoPlayer } from '@/app/(app)/videos/[uuid]/video-player';
 import { VideoInfo } from '@/components/video-info';
 import { ChatHistory } from '@/app/(app)/videos/[uuid]/chat-history';
-import { useSaveVideoWatchHistory, useGetVideoWatchHistory, useGetVideoViewerHistory } from '@/lib/api/endpoints/video/video';
+import {
+    useGetVideoByUuid,
+    useGetVideoViewerHistory,
+    useGetVideoWatchHistory,
+    useSaveVideoWatchHistory,
+} from '@/lib/api/endpoints/video/video';
 import { useGetUserMe } from '@/lib/api/endpoints/user/user';
-import { PublicVideoResponse } from "@/lib/api/models";
+import { PublicVideoResponse } from '@/lib/api/models';
 
 interface VideoWatchViewProps {
     video: PublicVideoResponse;
+}
+
+const LIVE_VIDEO_REFRESH_INTERVAL_MS = 10_000;
+
+function isRecordingVideo(video?: PublicVideoResponse): boolean {
+    return !!video?.record && !video.record.isEnded && !video.record.isCancelled;
 }
 
 function parseTimeParam(value: string | null): number | null {
@@ -48,8 +59,19 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     });
     const isAuthenticated = !!user;
 
+    const { data: currentVideo = video } = useGetVideoByUuid(video.uuid, {
+        query: {
+            initialData: video,
+            refetchInterval: (query) => isRecordingVideo(query.state.data) ? LIVE_VIDEO_REFRESH_INTERVAL_MS : false,
+            staleTime: isRecordingVideo(video) ? 0 : 60_000,
+        },
+    });
+
+    // 라이브 여부: 녹화가 진행 중이면 라이브
+    const isLive = isRecordingVideo(currentVideo);
+
     // 시청 기록 조회
-    const { data: watchHistory } = useGetVideoWatchHistory(video.uuid, {
+    const { data: watchHistory } = useGetVideoWatchHistory(currentVideo.uuid, {
         query: {
             enabled: isAuthenticated,
             retry: false,
@@ -59,9 +81,6 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
     // 시청 위치 저장 mutation
     const saveWatchHistory = useSaveVideoWatchHistory();
-
-    // 라이브 여부: 녹화가 진행 중이면 라이브
-    const isLive = !!video.record && !video.record.isEnded && !video.record.isCancelled;
 
     // 시청 기록이 있으면 초기 위치 설정 (라이브는 이어보기 의미 없음)
     useEffect(() => {
@@ -92,14 +111,14 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         }
 
         saveWatchHistory.mutate(
-            { uuid: video.uuid, data: { position } },
+            { uuid: currentVideo.uuid, data: { position } },
             {
                 onSuccess: () => {
                     lastSavedPositionRef.current = position;
                 }
             }
         );
-    }, [isAuthenticated, video.uuid, saveWatchHistory]);
+    }, [isAuthenticated, currentVideo.uuid, saveWatchHistory]);
 
     // 10초마다 시청 위치 저장 (라이브는 제외)
     useEffect(() => {
@@ -115,9 +134,9 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     }, [savePosition, isLive]);
 
     // 시청자 수 이력 조회 (라이브 중에는 주기적 갱신)
-    const { data: viewerHistory } = useGetVideoViewerHistory(video.uuid, {
+    const { data: viewerHistory } = useGetVideoViewerHistory(currentVideo.uuid, {
         query: {
-            refetchInterval: isLive ? 30_000 : false,
+            refetchInterval: isLive ? LIVE_VIDEO_REFRESH_INTERVAL_MS : false,
             staleTime: isLive ? 0 : 60_000,
         },
     });
@@ -138,13 +157,19 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     // 플레이어 상단 헤더 정보
     const playerHeaderInfo = useMemo(
         () => ({
-            title: video.title,
-            channelName: video.channel.name,
-            channelProfileUrl: video.channel.profileUrl,
+            title: currentVideo.title,
+            channelName: currentVideo.channel.name,
+            channelProfileUrl: currentVideo.channel.profileUrl,
             viewerCount: currentViewerCount,
-            streamStartedAt: video.record?.startedAt,
+            streamStartedAt: currentVideo.record?.startedAt,
         }),
-        [video.title, video.channel.name, video.channel.profileUrl, currentViewerCount, video.record?.startedAt],
+        [
+            currentVideo.title,
+            currentVideo.channel.name,
+            currentVideo.channel.profileUrl,
+            currentViewerCount,
+            currentVideo.record?.startedAt,
+        ],
     );
 
     return (
@@ -158,7 +183,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
             {/* 좌측: 동영상 + 정보 */}
             <div className={`flex-shrink-0 lg:flex-1 flex flex-col ${isWide ? 'overflow-hidden' : 'overflow-y-auto scrollbar-hide'}`}>
                 <VideoPlayer
-                    playlistUrl={video.playlistUrl}
+                    playlistUrl={currentVideo.playlistUrl}
                     onTimeUpdate={setCurrentTimeMs}
                     initialPosition={initialPosition}
                     seekRequest={seekRequest}
@@ -170,7 +195,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                 />
                 {!isWide && (
                     <VideoInfo
-                        video={video}
+                        video={currentVideo}
                         isAdmin={user?.role === 'ADMIN'}
                         onTimestampClick={handleDescriptionTimestampClick}
                         isLive={isLive}
@@ -181,7 +206,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
             {/* 우측: 채팅창 (와이드 모드에서는 항상 다크모드로 표시) */}
             <div className={`flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-3 lg:mt-0 min-h-0 ${isWide ? 'dark bg-background text-foreground' : ''}`}>
-                <ChatHistory videoUuid={video.uuid} currentTimeMs={currentTimeMs} chatSyncOffsetMillis={video.chatSyncOffsetMillis} />
+                <ChatHistory videoUuid={currentVideo.uuid} currentTimeMs={currentTimeMs} chatSyncOffsetMillis={currentVideo.chatSyncOffsetMillis} />
             </div>
         </div>
     );
