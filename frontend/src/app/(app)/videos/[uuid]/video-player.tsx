@@ -1561,16 +1561,19 @@ export function VideoPlayer({
                                 <button
                                     type="button"
                                     onClick={() => seekTo(Math.max(0, duration - 1))}
-                                    className="flex items-center gap-2 hover:text-white/90 transition-colors"
-                                    title="실시간으로 이동"
+                                    className="group/live relative flex items-center gap-2 cursor-pointer hover:text-white/90 transition-colors"
                                 >
-                                    <span className="flex items-center gap-1.5 text-white/60">
-                                        <span className="inline-block w-2 h-2 bg-white/40 rounded-full" />
+                                    <span className="flex items-center gap-1.5 text-white/60 group-hover/live:text-white/90 transition-colors">
+                                        <span className="inline-block w-2 h-2 bg-white/40 rounded-full group-hover/live:bg-red-500 transition-colors" />
                                         <span className="font-semibold">LIVE</span>
                                     </span>
                                     {currentWallClock !== null && (
                                         <span className="text-white/50">{currentWallClock}</span>
                                     )}
+                                    {/* hover 팝업 */}
+                                    <span className="absolute bottom-full left-0 mb-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full whitespace-nowrap pointer-events-none opacity-0 group-hover/live:opacity-100 transition-opacity z-20">
+                                        실시간 방송으로 이동
+                                    </span>
                                 </button>
                             )
                         ) : (
