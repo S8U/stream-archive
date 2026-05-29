@@ -13,7 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {Bookmark, BookmarkX, ChevronDown, Edit, Loader2, MoreHorizontal, Trash2} from 'lucide-react';
+import {Bookmark, BookmarkX, ChevronDown, Edit, Loader2, MoreVertical, Trash2} from 'lucide-react';
 import {useMemo, useState} from 'react';
 import {toast} from 'sonner';
 import {
@@ -206,7 +206,7 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInf
                     {isAdminVideoLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                        <MoreHorizontal className="h-5 w-5" />
+                        <MoreVertical className="h-5 w-5" />
                     )}
                 </Button>
             </DropdownMenuTrigger>
@@ -252,7 +252,7 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInf
                 {/* 제목 */}
                 <button
                     type="button"
-                    className="mb-2 flex w-full items-start justify-between gap-3 text-left lg:pointer-events-none"
+                    className="mb-3 flex w-full items-start justify-between gap-3 text-left lg:pointer-events-none"
                     onClick={() => setIsExpanded((prev) => !prev)}
                     aria-expanded={isExpanded}
                 >
@@ -284,23 +284,23 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick }: VideoInf
                     </Link>
                 </div>
 
-                <div className={`${isExpanded ? 'block' : 'hidden'} relative mt-3 mb-4 rounded-md bg-muted px-3 py-3 lg:block`}>
-                    {adminMenu && <div className="absolute top-1 right-3">{adminMenu}</div>}
+                <div className={`${isExpanded ? 'block' : 'hidden'} relative mt-4 mb-4 rounded-lg bg-muted px-4 py-4 lg:block`}>
+                    {adminMenu && <div className="absolute top-2 right-3">{adminMenu}</div>}
                     {video.description && (
-                        <p className="mb-3 pr-10 whitespace-pre-wrap text-sm leading-6">
+                        <p className="mb-4 pr-10 whitespace-pre-wrap text-sm leading-6">
                             {renderDescription(video.description, onTimestampClick)}
                         </p>
                     )}
-                    <dl className="mt-2 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2 lg:mt-0 xl:grid-cols-4">
+                    <dl className="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
                         {stats.map((stat) => (
                             <div key={stat.label} className="min-w-0">
-                                <dt className="text-muted-foreground">{stat.label}</dt>
-                                <dd className="mt-1 truncate font-medium">{stat.value}</dd>
+                                <dt className="text-xs text-muted-foreground">{stat.label}</dt>
+                                <dd className="mt-0.5 truncate font-medium">{stat.value}</dd>
                             </div>
                         ))}
                         <div className="min-w-0">
-                            <dt className="text-muted-foreground">플랫폼</dt>
-                            <dd className="mt-1">
+                            <dt className="text-xs text-muted-foreground">플랫폼</dt>
+                            <dd className="mt-0.5">
                                 {platformType ? (
                                     platformLink ? (
                                         <a href={platformLink} target="_blank" rel="noopener noreferrer" className="inline-flex">
