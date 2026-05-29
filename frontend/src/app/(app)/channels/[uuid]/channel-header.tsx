@@ -26,28 +26,28 @@ export function ChannelHeader({ channel }: ChannelHeaderProps) {
     const { data: platforms, isLoading: isPlatformsLoading } = useGetChannelPlatforms(channel.uuid);
 
     return (
-        <div className="flex items-center gap-6">
-            <Avatar className="w-32 h-32">
+        <div className="flex items-center gap-4 sm:gap-6">
+            <Avatar className="w-20 h-20 sm:w-32 sm:h-32 shrink-0">
                 <AvatarImage src={channel.profileUrl} />
                 <AvatarFallback className="text-4xl">{channel.name[0]}</AvatarFallback>
             </Avatar>
             <div>
-                <h1 className="text-3xl font-bold mb-2">{channel.name}</h1>
-                <div className="flex flex-wrap items-center gap-3 text-muted-foreground">
-                    {/* 동영상 개수 */}
-                    {isStatsLoading ? (
-                        <Skeleton className="h-5 w-20" />
-                    ) : (
-                        <span>동영상 {stats?.videoCount ?? 0}개</span>
-                    )}
-                    <span>•</span>
-                    {/* 총 용량 */}
-                    {isStatsLoading ? (
-                        <Skeleton className="h-5 w-16" />
-                    ) : (
-                        <span>{formatBytes(stats?.totalFileSize ?? 0)}</span>
-                    )}
-                    <span>•</span>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-1.5">{channel.name}</h1>
+                <div className="flex flex-col gap-y-1.5 text-sm sm:text-base text-muted-foreground">
+                    {/* 동영상 개수 · 총 용량 */}
+                    <div className="flex items-center gap-x-3">
+                        {isStatsLoading ? (
+                            <Skeleton className="h-5 w-20" />
+                        ) : (
+                            <span>동영상 {stats?.videoCount ?? 0}개</span>
+                        )}
+                        <span>•</span>
+                        {isStatsLoading ? (
+                            <Skeleton className="h-5 w-16" />
+                        ) : (
+                            <span>{formatBytes(stats?.totalFileSize ?? 0)}</span>
+                        )}
+                    </div>
                     {/* 플랫폼 링크 */}
                     {isPlatformsLoading ? (
                         <Skeleton className="h-5 w-24" />
