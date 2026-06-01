@@ -210,6 +210,17 @@ function ControlButton({ onClick, label, shortcut, align = 'center', onHoverEnte
     );
 }
 
+function RecordedWallClockTime({ value, className = '' }: { value: string; className?: string }) {
+    return (
+        <span className={`group/record-time relative inline-flex ${className}`}>
+            <span>{value}</span>
+            <span className="absolute bottom-full left-1/2 mb-3 -translate-x-1/2 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full whitespace-nowrap pointer-events-none opacity-0 group-hover/record-time:opacity-100 transition-opacity z-20">
+                녹화 당시 시간
+            </span>
+        </span>
+    );
+}
+
 export function VideoPlayer({
     playlistUrl,
     onTimeUpdate,
@@ -1400,14 +1411,12 @@ export function VideoPlayer({
     const recordStartedAt = headerInfo?.streamStartedAt;
 
     // 라이브 중 최신 지점(live edge) 근처인지 여부.
-    // 최신이면 LIVE, 뒤로 돌려보는 중이면 시간을 표시한다.
     const isAtLiveEdge = isLive && (duration <= 0 || duration - currentTime <= LIVE_EDGE_THRESHOLD_SEC);
 
     // 현재 재생 시점의 실제 시각.
-    // VOD는 항상, 라이브는 뒤로 돌려본(live edge가 아닌) 경우에만 표시.
     const currentWallClock = useMemo(
-        () => (isAtLiveEdge ? null : formatWallClock(recordStartedAt, currentTime)),
-        [isAtLiveEdge, recordStartedAt, currentTime],
+        () => formatWallClock(recordStartedAt, currentTime),
+        [recordStartedAt, currentTime],
     );
 
     // hover 시점의 실제 시각
@@ -1829,34 +1838,39 @@ export function VideoPlayer({
                     >
                         {isLive ? (
                             isAtLiveEdge ? (
-                                <span className="flex items-center gap-1.5">
-                                    <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                                    <span className="font-semibold">LIVE</span>
-                                </span>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => seekTo(Math.max(0, duration - 1))}
-                                    className="group/live relative flex items-center gap-2 cursor-pointer hover:text-white/90 transition-colors"
-                                >
-                                    <span className="flex items-center gap-1.5 text-white/60 group-hover/live:text-white/90 transition-colors">
-                                        <span className="inline-block w-2 h-2 bg-white/40 rounded-full group-hover/live:bg-red-500 transition-colors" />
+                                <span className="flex items-center gap-2">
+                                    <span className="flex items-center gap-1.5">
+                                        <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                                         <span className="font-semibold">LIVE</span>
                                     </span>
                                     {currentWallClock !== null && (
-                                        <span className="text-white/50">{currentWallClock}</span>
+                                        <RecordedWallClockTime value={currentWallClock} className="text-white/50" />
                                     )}
-                                    {/* hover 팝업 */}
-                                    <span className="absolute bottom-full left-0 mb-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full whitespace-nowrap pointer-events-none opacity-0 group-hover/live:opacity-100 transition-opacity z-20">
-                                        실시간 방송으로 이동
-                                    </span>
-                                </button>
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => seekTo(Math.max(0, duration - 1))}
+                                        className="group/live relative flex items-center gap-1.5 cursor-pointer text-white/60 hover:text-white/90 transition-colors"
+                                    >
+                                        <span className="inline-block w-2 h-2 bg-white/40 rounded-full group-hover/live:bg-red-500 transition-colors" />
+                                        <span className="font-semibold">LIVE</span>
+                                        {/* hover 팝업 */}
+                                        <span className="absolute bottom-full left-0 mb-3 px-3 py-1.5 bg-black/50 text-white text-xs rounded-full whitespace-nowrap pointer-events-none opacity-0 group-hover/live:opacity-100 transition-opacity z-20">
+                                            실시간 방송으로 이동
+                                        </span>
+                                    </button>
+                                    {currentWallClock !== null && (
+                                        <RecordedWallClockTime value={currentWallClock} className="text-white/50" />
+                                    )}
+                                </span>
                             )
                         ) : (
                             <span>
                                 {formatTime(currentTime)} / {formatTime(duration)}
                                 {currentWallClock !== null && (
-                                    <span className="ml-2 text-white/50">{currentWallClock}</span>
+                                    <RecordedWallClockTime value={currentWallClock} className="ml-2 text-white/50" />
                                 )}
                             </span>
                         )}
