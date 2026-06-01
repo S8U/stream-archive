@@ -65,6 +65,8 @@ const CHAT_LOAD_MILLIS = 3000;
 const LOAD_BEFORE_CHAT_MILLIS = 60000;
 // 채팅 최대 개수
 const MAX_NUMBER_OF_CHAT = 300;
+// 재생 중 timeupdate 간격 흔들림을 시킹으로 오판하지 않기 위한 기준
+const SEEK_RELOAD_THRESHOLD_MILLIS = 1500;
 const SHOW_TIMELINE_STORAGE_KEY = 'chat-history:show-timeline';
 
 export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSyncOffsetMillis }: ChatHistoryProps) {
@@ -167,7 +169,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
         const beforeTimeMillis = beforeTimeMillisRef.current;
 
         // 건너뛰었을 경우
-        if (Math.abs(beforeTimeMillis - currentTimeMs) > 1000) {
+        if (Math.abs(beforeTimeMillis - currentTimeMs) > SEEK_RELOAD_THRESHOLD_MILLIS) {
             reloadChat();
         } else {
             // 현재 시간까지 채팅 표시

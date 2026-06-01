@@ -90,10 +90,14 @@ const MOBILE_DOUBLE_TAP_DELAY_MS = 300;
 const MOBILE_SINGLE_TAP_DELAY_MS = 120;
 const MOBILE_DOUBLE_TAP_MAX_DISTANCE_PX = 72;
 const VOLUME_STEP = 0.05;
-const PLAY_PAUSE_INDICATOR_MS = 1000;
-const SEEK_INDICATOR_MS = 1000;
+const FEEDBACK_INDICATOR_MS = 1000;
+const PLAYBACK_RATE_HOLD_DELAY_MS = 250;
+const TEMPORARY_PLAYBACK_RATE = 2;
+const PLAYBACK_RATE_STEP = 0.25;
+const PLAYBACK_RATES = Array.from({ length: 16 }, (_, index) => 0.25 + index * PLAYBACK_RATE_STEP);
 const VOLUME_STORAGE_KEY = 'video-player:volume';
 const MUTED_STORAGE_KEY = 'video-player:muted';
+const PLAYBACK_RATE_STORAGE_KEY = 'video-player:playback-rate';
 const CONTEXT_MENU_WIDTH_PX = 240;
 const CONTEXT_MENU_HEIGHT_PX = 96;
 const CONTEXT_MENU_VIEWPORT_MARGIN_PX = 8;
@@ -126,6 +130,17 @@ function formatWallClock(startedAt: string | undefined, offsetSeconds: number): 
 
 function getFiniteDuration(video: HTMLMediaElement): number {
     return Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+}
+
+function formatPlaybackRate(rate: number): string {
+    return `${rate}x`;
+}
+
+function normalizePlaybackRate(value: number): number {
+    if (!Number.isFinite(value)) return 1;
+    return PLAYBACK_RATES.reduce((nearest, rate) =>
+        Math.abs(rate - value) < Math.abs(nearest - value) ? rate : nearest,
+    );
 }
 
 function isTouchOnlyPointer(): boolean {
@@ -218,6 +233,12 @@ export function VideoPlayer({
     const isControlsVisibleRef = useRef(true);
     const previousVolumeRef = useRef(1);
     const timelineTouchDragRef = useRef<TimelineTouchDrag | null>(null);
+    const selectedPlaybackRateRef = useRef(1);
+    const isTemporaryPlaybackRateRef = useRef(false);
+    const temporaryPlaybackWasPausedRef = useRef(false);
+    const spacePlaybackRateHoldRef = useRef<{ active: boolean; timer: ReturnType<typeof setTimeout> | null } | null>(null);
+    const pointerPlaybackRateHoldRef = useRef<{ active: boolean; timer: ReturnType<typeof setTimeout> | null } | null>(null);
+    const suppressNextClickRef = useRef(false);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -235,6 +256,8 @@ export function VideoPlayer({
     const [isBuffering, setIsBuffering] = useState(true);
     const [volumeIndicator, setVolumeIndicator] = useState<{ value: number; nonce: number } | null>(null);
     const volumeIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [playbackRateIndicator, setPlaybackRateIndicator] = useState<{ value: number; temporary: boolean; nonce: number } | null>(null);
+    const playbackRateIndicatorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [isPipSupported, setIsPipSupported] = useState(false);
     const [isPip, setIsPip] = useState(false);
@@ -267,6 +290,24 @@ export function VideoPlayer({
             if (mobileTapResetTimerRef.current) {
                 clearTimeout(mobileTapResetTimerRef.current);
             }
+            if (volumeIndicatorTimerRef.current) {
+                clearTimeout(volumeIndicatorTimerRef.current);
+            }
+            if (playbackRateIndicatorTimerRef.current) {
+                clearTimeout(playbackRateIndicatorTimerRef.current);
+            }
+            if (playPauseIndicatorTimerRef.current) {
+                clearTimeout(playPauseIndicatorTimerRef.current);
+            }
+            if (seekIndicatorTimerRef.current) {
+                clearTimeout(seekIndicatorTimerRef.current);
+            }
+            if (spacePlaybackRateHoldRef.current?.timer) {
+                clearTimeout(spacePlaybackRateHoldRef.current.timer);
+            }
+            if (pointerPlaybackRateHoldRef.current?.timer) {
+                clearTimeout(pointerPlaybackRateHoldRef.current.timer);
+            }
         };
     }, []);
 
@@ -279,10 +320,11 @@ export function VideoPlayer({
             video.autoPictureInPicture = true;
         }
 
-        // 저장된 볼륨/음소거 복원
+        // 저장된 볼륨/음소거/배속 복원
         try {
             const savedVolume = localStorage.getItem(VOLUME_STORAGE_KEY);
             const savedMuted = localStorage.getItem(MUTED_STORAGE_KEY);
+            const savedPlaybackRate = localStorage.getItem(PLAYBACK_RATE_STORAGE_KEY);
             if (savedVolume !== null) {
                 const v = parseFloat(savedVolume);
                 if (!isNaN(v) && v >= 0 && v <= 1) {
@@ -292,6 +334,11 @@ export function VideoPlayer({
             }
             if (savedMuted === 'true') {
                 video.muted = true;
+            }
+            if (savedPlaybackRate !== null) {
+                const rate = normalizePlaybackRate(parseFloat(savedPlaybackRate));
+                selectedPlaybackRateRef.current = rate;
+                video.playbackRate = rate;
             }
         } catch {
             // localStorage 접근 실패 무시
@@ -423,7 +470,7 @@ export function VideoPlayer({
         if (playPauseIndicatorTimerRef.current) clearTimeout(playPauseIndicatorTimerRef.current);
         playPauseIndicatorTimerRef.current = setTimeout(() => {
             setPlayPauseIndicator(null);
-        }, PLAY_PAUSE_INDICATOR_MS);
+        }, FEEDBACK_INDICATOR_MS);
     }, []);
 
     // 시킹 ±N초 인디케이터 (같은 방향 연속 누름 시 합산)
@@ -436,7 +483,7 @@ export function VideoPlayer({
         if (seekIndicatorTimerRef.current) clearTimeout(seekIndicatorTimerRef.current);
         seekIndicatorTimerRef.current = setTimeout(() => {
             setSeekIndicator(null);
-        }, SEEK_INDICATOR_MS);
+        }, FEEDBACK_INDICATOR_MS);
     }, []);
 
     // 볼륨 인디케이터 잠시 표시
@@ -445,8 +492,76 @@ export function VideoPlayer({
         if (volumeIndicatorTimerRef.current) clearTimeout(volumeIndicatorTimerRef.current);
         volumeIndicatorTimerRef.current = setTimeout(() => {
             setVolumeIndicator(null);
-        }, 1000);
+        }, FEEDBACK_INDICATOR_MS);
     }, []);
+
+    // 배속 인디케이터 잠시 표시
+    const showPlaybackRateIndicator = useCallback((value: number, temporary = false) => {
+        setPlaybackRateIndicator({ value, temporary, nonce: Date.now() });
+        if (playbackRateIndicatorTimerRef.current) clearTimeout(playbackRateIndicatorTimerRef.current);
+        if (temporary) {
+            playbackRateIndicatorTimerRef.current = null;
+            return;
+        }
+        playbackRateIndicatorTimerRef.current = setTimeout(() => {
+            setPlaybackRateIndicator(null);
+        }, FEEDBACK_INDICATOR_MS);
+    }, []);
+
+    const setBasePlaybackRate = useCallback((rate: number, showIndicator = true) => {
+        const normalized = normalizePlaybackRate(rate);
+        selectedPlaybackRateRef.current = normalized;
+
+        const video = videoRef.current;
+        if (video && !isTemporaryPlaybackRateRef.current) {
+            video.playbackRate = normalized;
+        }
+
+        try {
+            localStorage.setItem(PLAYBACK_RATE_STORAGE_KEY, String(normalized));
+        } catch {}
+
+        if (showIndicator) {
+            showPlaybackRateIndicator(normalized);
+        }
+    }, [showPlaybackRateIndicator]);
+
+    const changePlaybackRateByStep = useCallback((delta: number) => {
+        const currentIndex = PLAYBACK_RATES.findIndex((rate) => rate === selectedPlaybackRateRef.current);
+        const fallbackIndex = PLAYBACK_RATES.findIndex((rate) => rate === normalizePlaybackRate(selectedPlaybackRateRef.current));
+        const index = currentIndex >= 0 ? currentIndex : fallbackIndex;
+        const nextIndex = Math.max(0, Math.min(PLAYBACK_RATES.length - 1, index + delta));
+        setBasePlaybackRate(PLAYBACK_RATES[nextIndex]);
+    }, [setBasePlaybackRate]);
+
+    const stopTemporaryPlaybackRate = useCallback(() => {
+        if (!isTemporaryPlaybackRateRef.current) return;
+        isTemporaryPlaybackRateRef.current = false;
+        setPlaybackRateIndicator((current) => current?.temporary ? null : current);
+        const video = videoRef.current;
+        if (video) {
+            video.playbackRate = selectedPlaybackRateRef.current;
+            if (temporaryPlaybackWasPausedRef.current) {
+                video.pause();
+            }
+        }
+        temporaryPlaybackWasPausedRef.current = false;
+    }, []);
+
+    const startTemporaryPlaybackRate = useCallback(() => {
+        const video = videoRef.current;
+        if (!video || isTemporaryPlaybackRateRef.current) return;
+        isTemporaryPlaybackRateRef.current = true;
+        temporaryPlaybackWasPausedRef.current = video.paused;
+        video.playbackRate = TEMPORARY_PLAYBACK_RATE;
+        if (video.paused) {
+            video.play().catch((err) => {
+                console.error('Temporary playback failed:', err);
+                stopTemporaryPlaybackRate();
+            });
+        }
+        showPlaybackRateIndicator(TEMPORARY_PLAYBACK_RATE, true);
+    }, [showPlaybackRateIndicator, stopTemporaryPlaybackRate]);
 
     // 음소거 토글
     const toggleMute = useCallback(() => {
@@ -657,18 +772,44 @@ export function VideoPlayer({
 
     // 키보드 단축키 (e.code 기반 → 한글 IME 상태에서도 동작)
     useEffect(() => {
+        const isEditableTarget = (target: EventTarget | null) => {
+            const element = target as HTMLElement | null;
+            return (
+                !!element &&
+                (element.tagName === 'INPUT' ||
+                    element.tagName === 'TEXTAREA' ||
+                    element.isContentEditable)
+            );
+        };
+
+        const clearSpacePlaybackRateHold = (shouldToggle: boolean) => {
+            const hold = spacePlaybackRateHoldRef.current;
+            if (!hold) return;
+
+            if (hold.timer) {
+                clearTimeout(hold.timer);
+            }
+            spacePlaybackRateHoldRef.current = null;
+
+            if (hold.active) {
+                stopTemporaryPlaybackRate();
+                showControls();
+                return;
+            }
+
+            if (shouldToggle) {
+                togglePlay();
+                showControls();
+            }
+        };
+
         const handleKeyDown = (e: KeyboardEvent) => {
             if (hasBrowserShortcutModifier(e)) {
                 return;
             }
 
-            const target = e.target as HTMLElement;
             // input, textarea, contentEditable에서는 동작 안 함
-            if (
-                target.tagName === 'INPUT' ||
-                target.tagName === 'TEXTAREA' ||
-                target.isContentEditable
-            ) {
+            if (isEditableTarget(e.target)) {
                 return;
             }
 
@@ -686,11 +827,45 @@ export function VideoPlayer({
             if (!video) return;
 
             switch (e.code) {
-                case 'Space':
+                case 'Space': {
+                    e.preventDefault();
+                    if (e.repeat || spacePlaybackRateHoldRef.current) {
+                        return;
+                    }
+
+                    const hold = {
+                        active: false,
+                        timer: setTimeout(() => {
+                            const currentHold = spacePlaybackRateHoldRef.current;
+                            if (!currentHold) return;
+                            currentHold.active = true;
+                            currentHold.timer = null;
+                            startTemporaryPlaybackRate();
+                            showControls();
+                        }, PLAYBACK_RATE_HOLD_DELAY_MS),
+                    };
+                    spacePlaybackRateHoldRef.current = hold;
+                    showControls();
+                    break;
+                }
                 case 'KeyK':
                     e.preventDefault();
                     togglePlay();
                     showControls();
+                    break;
+                case 'Comma':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        changePlaybackRateByStep(-1);
+                        showControls();
+                    }
+                    break;
+                case 'Period':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        changePlaybackRateByStep(1);
+                        showControls();
+                    }
                     break;
                 case 'ArrowLeft':
                     e.preventDefault();
@@ -761,9 +936,28 @@ export function VideoPlayer({
             }
         };
 
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.code !== 'Space') return;
+            if (hasBrowserShortcutModifier(e)) return;
+            if (!spacePlaybackRateHoldRef.current && isEditableTarget(e.target)) return;
+            e.preventDefault();
+            clearSpacePlaybackRateHold(true);
+        };
+
+        const handleBlur = () => {
+            clearSpacePlaybackRateHold(false);
+            stopTemporaryPlaybackRate();
+        };
+
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [togglePlay, seekTo, changeVolume, toggleMute, toggleFullscreen, toggleWide, exitWide, isWide, contextMenuPosition, showControls, showSeekIndicator]);
+        window.addEventListener('keyup', handleKeyUp);
+        window.addEventListener('blur', handleBlur);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+            window.removeEventListener('blur', handleBlur);
+        };
+    }, [togglePlay, seekTo, changeVolume, toggleMute, toggleFullscreen, toggleWide, exitWide, isWide, contextMenuPosition, showControls, showSeekIndicator, changePlaybackRateByStep, startTemporaryPlaybackRate, stopTemporaryPlaybackRate]);
 
     // 타임라인 좌표 -> 시간 변환
     const timelineXToTime = useCallback((clientX: number): number => {
@@ -1006,9 +1200,70 @@ export function VideoPlayer({
         setContextMenuPosition(null);
     }, []);
 
+    const finishPointerPlaybackRateHold = useCallback(() => {
+        const hold = pointerPlaybackRateHoldRef.current;
+        if (!hold) return;
+
+        if (hold.timer) {
+            clearTimeout(hold.timer);
+        }
+        pointerPlaybackRateHoldRef.current = null;
+
+        if (hold.active) {
+            suppressNextClickRef.current = true;
+            stopTemporaryPlaybackRate();
+            showControls();
+        }
+    }, [showControls, stopTemporaryPlaybackRate]);
+
+    const handleContainerMouseDown = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+        if (isTouchOnlyPointer()) return;
+        if (e.button !== 0) return;
+        if (contextMenuPosition) return;
+
+        const controls = controlsRef.current;
+        if (controls && controls.contains(e.target as Node)) return;
+
+        if (pointerPlaybackRateHoldRef.current?.timer) {
+            clearTimeout(pointerPlaybackRateHoldRef.current.timer);
+        }
+
+        const hold = {
+            active: false,
+            timer: setTimeout(() => {
+                const currentHold = pointerPlaybackRateHoldRef.current;
+                if (!currentHold) return;
+                currentHold.active = true;
+                currentHold.timer = null;
+                startTemporaryPlaybackRate();
+                showControls();
+            }, PLAYBACK_RATE_HOLD_DELAY_MS),
+        };
+        pointerPlaybackRateHoldRef.current = hold;
+    }, [contextMenuPosition, showControls, startTemporaryPlaybackRate]);
+
+    useEffect(() => {
+        const handleMouseUp = () => finishPointerPlaybackRateHold();
+        const handleBlur = () => {
+            finishPointerPlaybackRateHold();
+            suppressNextClickRef.current = false;
+        };
+
+        window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('blur', handleBlur);
+        return () => {
+            window.removeEventListener('mouseup', handleMouseUp);
+            window.removeEventListener('blur', handleBlur);
+        };
+    }, [finishPointerPlaybackRateHold]);
+
     // 컨테이너 클릭 (재생/일시정지) — 더블클릭과 구분하기 위해 딜레이 후 실행
     const handleContainerClick = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
         if (isTouchOnlyPointer()) return;
+        if (suppressNextClickRef.current) {
+            suppressNextClickRef.current = false;
+            return;
+        }
         if (contextMenuPosition) {
             closeContextMenu();
             return;
@@ -1228,6 +1483,7 @@ export function VideoPlayer({
             } touch-manipulation`}
             onMouseMove={handleContainerMouseMove}
             onMouseLeave={handleContainerMouseLeave}
+            onMouseDown={handleContainerMouseDown}
             onTouchStart={handleContainerTouchStart}
             onClick={handleContainerClick}
             onDoubleClick={handleContainerDoubleClick}
@@ -1308,11 +1564,24 @@ export function VideoPlayer({
             {volumeIndicator !== null && (
                 <div
                     key={`vol-${volumeIndicator.nonce}`}
-                    className="absolute top-6 left-1/2 -translate-x-1/2 pointer-events-none"
-                    style={{ animation: `videoPlayerFadeOut 1000ms ease-out forwards` }}
+                    className="absolute top-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none"
+                    style={{ animation: `videoPlayerFadeOut ${FEEDBACK_INDICATOR_MS}ms ease-out forwards` }}
                 >
                     <div className="px-4 py-2 bg-black/50 text-white/80 rounded-full text-sm font-medium">
                         {volumeIndicator.value}%
+                    </div>
+                </div>
+            )}
+
+            {/* 배속 인디케이터 */}
+            {playbackRateIndicator !== null && (
+                <div
+                    key={`rate-${playbackRateIndicator.value}-${playbackRateIndicator.nonce}`}
+                    className="absolute top-6 left-1/2 z-20 -translate-x-1/2 pointer-events-none"
+                    style={playbackRateIndicator.temporary ? undefined : { animation: `videoPlayerFadeOut ${FEEDBACK_INDICATOR_MS}ms ease-out forwards` }}
+                >
+                    <div className="px-4 py-2 bg-black/50 text-white rounded-full text-sm font-medium">
+                        {formatPlaybackRate(playbackRateIndicator.value)}
                     </div>
                 </div>
             )}
@@ -1322,7 +1591,7 @@ export function VideoPlayer({
                 <div
                     key={`pp-${playPauseIndicator.kind}-${playPauseIndicator.nonce}`}
                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    style={{ animation: `videoPlayerFadeOut ${PLAY_PAUSE_INDICATOR_MS}ms ease-out forwards` }}
+                    style={{ animation: `videoPlayerFadeOut ${FEEDBACK_INDICATOR_MS}ms ease-out forwards` }}
                 >
                     <div className="bg-black/50 rounded-full p-5">
                         {playPauseIndicator.kind === 'play' ? (
@@ -1341,7 +1610,7 @@ export function VideoPlayer({
                     className={`absolute top-1/2 -translate-y-1/2 pointer-events-none ${
                         seekIndicator.direction === 'backward' ? 'left-[5%]' : 'right-[5%]'
                     }`}
-                    style={{ animation: `videoPlayerFadeOut ${SEEK_INDICATOR_MS}ms ease-out forwards` }}
+                    style={{ animation: `videoPlayerFadeOut ${FEEDBACK_INDICATOR_MS}ms ease-out forwards` }}
                 >
                     <div className="flex items-center gap-4 text-white font-bold text-2xl drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                         {seekIndicator.direction === 'backward' ? (
