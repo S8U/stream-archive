@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, Settings, User } from 'lucide-react';
+import { LogOut, Settings, User, Monitor, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useGetUserMe } from '@/lib/api/endpoints/user/user';
@@ -21,6 +25,7 @@ import { ProfileEditDialog } from './profile-edit-dialog';
 export function UserMenu() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { setTheme } = useTheme();
   const { data: user, isLoading, isError } = useGetUserMe();
   const logoutMutation = useLogout();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -67,6 +72,29 @@ export function UserMenu() {
             <User className="w-4 h-4" />
             내 정보
           </DropdownMenuItem>
+
+          {/* 테마 전환 (모바일 전용 — PC는 헤더 토글 사용) */}
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="flex items-center gap-2 md:hidden">
+              <Sun className="w-4 h-4 dark:hidden" />
+              <Moon className="w-4 h-4 hidden dark:block" />
+              테마
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => setTheme('light')} className="flex items-center gap-2">
+                <Sun className="w-4 h-4" />
+                라이트 모드
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('dark')} className="flex items-center gap-2">
+                <Moon className="w-4 h-4" />
+                다크 모드
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme('system')} className="flex items-center gap-2">
+                <Monitor className="w-4 h-4" />
+                시스템 설정
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
 
           {isAdmin && (
             <>

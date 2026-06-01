@@ -3,7 +3,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { searchChannels } from "@/lib/api/endpoints/channel/channel";
 import { ModeToggle } from "@/components/common/mode-toggle";
-import { SearchBar } from "./search-bar";
+import { SearchBar, MobileSearchButton } from "./search-bar";
 import { UserMenu } from "./user-menu";
 import { SidebarContent } from "./sidebar-content";
 import { MobileSidebar } from "./mobile-sidebar";
@@ -47,18 +47,22 @@ export default async function AppLayout({
                         {/* 모바일 사이드바 */}
                         <MobileSidebar channels={channels} />
 
-                        <Link href="/" className="text-xl font-bold text-primary">
-                            <span className="md:hidden">S</span>
-                            <span className="hidden md:inline">StreamArchive</span>
+                        <Link href="/" className="text-lg md:text-xl font-bold text-primary whitespace-nowrap">
+                            StreamArchive
                         </Link>
                     </div>
 
-                    {/* 중앙: 검색창 */}
+                    {/* 중앙: 검색창 (PC 전용) */}
                     <SearchBar />
 
-                    {/* 오른쪽: 토글 & 유저 메뉴 */}
-                    <div className="flex-shrink-0 flex items-center gap-2">
-                        <ModeToggle />
+                    {/* 오른쪽: 검색(모바일) & 토글 & 유저 메뉴 */}
+                    <div className="flex-shrink-0 flex items-center gap-1 md:gap-2">
+                        {/* 검색 아이콘: 모바일 전용 */}
+                        <MobileSearchButton />
+                        {/* 테마 토글: PC만 노출 (모바일은 유저 메뉴 안으로 이동) */}
+                        <div className="hidden md:block">
+                            <ModeToggle />
+                        </div>
                         <UserMenu />
                     </div>
                 </div>
