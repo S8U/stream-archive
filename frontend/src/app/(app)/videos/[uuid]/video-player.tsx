@@ -82,7 +82,8 @@ interface ContextMenuPosition {
     y: number;
 }
 
-const HIDE_DELAY_MS = 3000;
+const DESKTOP_HIDE_DELAY_MS = 3000;
+const MOBILE_HIDE_DELAY_MS = 1750;
 const LIVE_EDGE_THRESHOLD_SEC = 15; // 이 거리 이내면 "최신 지점"으로 보고 LIVE 표시
 const SEEK_STEP_SEC = 5;
 const SEEK_STEP_LONG_SEC = 10;
@@ -451,7 +452,7 @@ export function VideoPlayer({
                     setIsControlsVisible(false);
                 }
             }
-        }, HIDE_DELAY_MS);
+        }, isTouchOnlyPointer() ? MOBILE_HIDE_DELAY_MS : DESKTOP_HIDE_DELAY_MS);
     }, []);
 
     const hideControlsImmediately = useCallback(() => {
