@@ -257,35 +257,7 @@ CREATE TABLE user_video_watch_histories
     INDEX idx_user_watched (user_id, watched_at)
 ) COMMENT '동영상 시청 기록';
 
--- 12. 공통 설정 테이블
-CREATE TABLE global_settings
-(
-    id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '전역 설정 ID',
-    setting_key   VARCHAR(100) NOT NULL UNIQUE COMMENT '설정 키',
-    setting_value TEXT         NOT NULL COMMENT '설정 값',
-    description   VARCHAR(500) NULL COMMENT '설명',
-    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
-    updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 일시',
-
-    INDEX idx_global_settings_key (setting_key)
-) COMMENT '전역 설정';
-
--- 13. 채널별 설정 테이블
-CREATE TABLE channel_settings
-(
-    id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '채널별 설정 ID',
-    channel_id    BIGINT       NOT NULL COMMENT '채널 ID',
-    setting_key   VARCHAR(100) NOT NULL COMMENT '설정 키',
-    setting_value TEXT         NOT NULL COMMENT '설정 값',
-    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
-    updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 일시',
-
-    FOREIGN KEY (channel_id) REFERENCES channels (id) ON DELETE CASCADE,
-    UNIQUE KEY uk_channel_setting (channel_id, setting_key),
-    INDEX idx_channel_settings_channel_id (channel_id)
-) COMMENT '채널별 설정';
-
--- 14. 리프레시 토큰 테이블
+-- 12. 리프레시 토큰 테이블
 CREATE TABLE refresh_tokens
 (
     id         BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '리프레시 토큰 ID',
