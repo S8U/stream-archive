@@ -16,17 +16,17 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { AdminChannelPlatformResponse, AdminChannelPlatformCreateRequestPlatformType } from "@/lib/api/models";
-import { useSearchAdminChannels } from "@/lib/api/endpoints/admin-channel/admin-channel";
+import type { ChannelPlatformAdminSearchResponse, ChannelPlatformAdminCreateRequestPlatformType } from "@/lib/api/models";
+import { useSearchAdminChannels } from "@/lib/api/endpoints/channel-admin/channel-admin";
 
 interface ChannelPlatformFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     mode: "create" | "edit";
-    platform: AdminChannelPlatformResponse | null;
+    platform: ChannelPlatformAdminSearchResponse | null;
     onSubmit: (data: {
         channelId: number;
-        platformType: AdminChannelPlatformCreateRequestPlatformType;
+        platformType: ChannelPlatformAdminCreateRequestPlatformType;
         platformChannelId: string;
         isSyncProfile: boolean;
     }) => Promise<void>;
@@ -42,7 +42,7 @@ export function ChannelPlatformFormDialog({
     isSubmitting,
 }: ChannelPlatformFormDialogProps) {
     const [channelId, setChannelId] = useState<string>("");
-    const [platformType, setPlatformType] = useState<AdminChannelPlatformCreateRequestPlatformType>("CHZZK");
+    const [platformType, setPlatformType] = useState<ChannelPlatformAdminCreateRequestPlatformType>("CHZZK");
     const [platformChannelId, setPlatformChannelId] = useState("");
     const [isSyncProfile, setIsSyncProfile] = useState(false);
 
@@ -57,7 +57,7 @@ export function ChannelPlatformFormDialog({
         if (open) {
             if (mode === "edit" && platform) {
                 setChannelId(platform.channel.id.toString());
-                setPlatformType(platform.platformType as AdminChannelPlatformCreateRequestPlatformType);
+                setPlatformType(platform.platformType as ChannelPlatformAdminCreateRequestPlatformType);
                 setPlatformChannelId(platform.platformChannelId);
                 setIsSyncProfile(platform.isSyncProfile);
             } else {
@@ -118,7 +118,7 @@ export function ChannelPlatformFormDialog({
                             <Label>플랫폼</Label>
                             <Select
                                 value={platformType}
-                                onValueChange={(value) => setPlatformType(value as AdminChannelPlatformCreateRequestPlatformType)}
+                                onValueChange={(value) => setPlatformType(value as ChannelPlatformAdminCreateRequestPlatformType)}
                                 disabled={mode === "edit"}
                             >
                                 <SelectTrigger className="w-full">

@@ -7,6 +7,9 @@
  */
 import type { RecordInfoPlatformType } from "./recordInfoPlatformType";
 
+/**
+ * 녹화 정보
+ */
 export interface RecordInfo {
   id: number;
   platformType: RecordInfoPlatformType;

@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * 동영상 정보
+ */
 export interface VideoInfo {
   uuid: string;
   title: string;

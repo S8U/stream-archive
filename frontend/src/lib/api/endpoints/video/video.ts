@@ -22,14 +22,14 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  ChatHistoryResponse,
   GetVideoChatHistoryParams,
-  PagePublicVideoResponse,
-  PublicVideoResponse,
-  SaveWatchHistoryRequest,
+  PageVideoSearchResponse,
   SearchVideosParams,
-  ViewerHistoryResponse,
-  WatchHistoryResponse,
+  VideoChatHistorySearchResponse,
+  VideoGetResponse,
+  VideoViewerHistoryGetResponse,
+  WatchHistoryGetResponse,
+  WatchHistorySaveRequest,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
@@ -44,7 +44,7 @@ export const getVideoWatchHistory = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<WatchHistoryResponse>(
+  return customAxiosInstance<WatchHistoryGetResponse>(
     { url: `/videos/${uuid}/watch-history`, method: "GET", signal },
     options,
   );
@@ -209,7 +209,7 @@ export function useGetVideoWatchHistory<
  */
 export const saveVideoWatchHistory = (
   uuid: string,
-  saveWatchHistoryRequest: SaveWatchHistoryRequest,
+  watchHistorySaveRequest: WatchHistorySaveRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
@@ -218,7 +218,7 @@ export const saveVideoWatchHistory = (
       url: `/videos/${uuid}/watch-history`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: saveWatchHistoryRequest,
+      data: watchHistorySaveRequest,
       signal,
     },
     options,
@@ -232,14 +232,14 @@ export const getSaveVideoWatchHistoryMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof saveVideoWatchHistory>>,
     TError,
-    { uuid: string; data: SaveWatchHistoryRequest },
+    { uuid: string; data: WatchHistorySaveRequest },
     TContext
   >;
   request?: SecondParameter<typeof customAxiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof saveVideoWatchHistory>>,
   TError,
-  { uuid: string; data: SaveWatchHistoryRequest },
+  { uuid: string; data: WatchHistorySaveRequest },
   TContext
 > => {
   const mutationKey = ["saveVideoWatchHistory"];
@@ -253,7 +253,7 @@ export const getSaveVideoWatchHistoryMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof saveVideoWatchHistory>>,
-    { uuid: string; data: SaveWatchHistoryRequest }
+    { uuid: string; data: WatchHistorySaveRequest }
   > = (props) => {
     const { uuid, data } = props ?? {};
 
@@ -266,7 +266,7 @@ export const getSaveVideoWatchHistoryMutationOptions = <
 export type SaveVideoWatchHistoryMutationResult = NonNullable<
   Awaited<ReturnType<typeof saveVideoWatchHistory>>
 >;
-export type SaveVideoWatchHistoryMutationBody = SaveWatchHistoryRequest;
+export type SaveVideoWatchHistoryMutationBody = WatchHistorySaveRequest;
 export type SaveVideoWatchHistoryMutationError = unknown;
 
 /**
@@ -277,7 +277,7 @@ export const useSaveVideoWatchHistory = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof saveVideoWatchHistory>>,
       TError,
-      { uuid: string; data: SaveWatchHistoryRequest },
+      { uuid: string; data: WatchHistorySaveRequest },
       TContext
     >;
     request?: SecondParameter<typeof customAxiosInstance>;
@@ -286,7 +286,7 @@ export const useSaveVideoWatchHistory = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof saveVideoWatchHistory>>,
   TError,
-  { uuid: string; data: SaveWatchHistoryRequest },
+  { uuid: string; data: WatchHistorySaveRequest },
   TContext
 > => {
   const mutationOptions = getSaveVideoWatchHistoryMutationOptions(options);
@@ -301,7 +301,7 @@ export const searchVideos = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<PagePublicVideoResponse>(
+  return customAxiosInstance<PageVideoSearchResponse>(
     { url: `/videos`, method: "GET", params, signal },
     options,
   );
@@ -443,7 +443,7 @@ export const getVideoByUuid = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<PublicVideoResponse>(
+  return customAxiosInstance<VideoGetResponse>(
     { url: `/videos/${uuid}`, method: "GET", signal },
     options,
   );
@@ -772,7 +772,7 @@ export const getVideoViewerHistory = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<ViewerHistoryResponse[]>(
+  return customAxiosInstance<VideoViewerHistoryGetResponse[]>(
     { url: `/videos/${uuid}/viewer-history`, method: "GET", signal },
     options,
   );
@@ -1285,7 +1285,7 @@ export const getVideoChatHistory = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<ChatHistoryResponse[]>(
+  return customAxiosInstance<VideoChatHistorySearchResponse[]>(
     { url: `/videos/${uuid}/chat`, method: "GET", params, signal },
     options,
   );

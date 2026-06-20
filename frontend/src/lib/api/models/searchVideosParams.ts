@@ -5,10 +5,10 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { PublicVideoSearchRequest } from "./publicVideoSearchRequest";
+import type { VideoSearchRequest } from "./videoSearchRequest";
 import type { Pageable } from "./pageable";
 
 export type SearchVideosParams = {
-  request: PublicVideoSearchRequest;
+  request: VideoSearchRequest;
   pageable: Pageable;
 };

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { useGetAdminDashboardVideoHistories } from "@/lib/api/endpoints/admin-dashboard/admin-dashboard";
+import { useGetAdminDashboardVideoHistories } from "@/lib/api/endpoints/dashboard-admin/dashboard-admin";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 

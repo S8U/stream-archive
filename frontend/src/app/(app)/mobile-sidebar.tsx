@@ -3,11 +3,11 @@
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { PublicChannelResponse } from "@/lib/api/models";
+import { ChannelGetResponse } from "@/lib/api/models";
 import { SidebarContent } from "./sidebar-content";
 
 interface MobileSidebarProps {
-    channels: PublicChannelResponse[];
+    channels: ChannelGetResponse[];
 }
 
 export function MobileSidebar({ channels }: MobileSidebarProps) {

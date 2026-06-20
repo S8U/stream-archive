@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HardDrive, Clock, Tv, Video } from "lucide-react";
-import { useGetAdminDashboardStats } from "@/lib/api/endpoints/admin-dashboard/admin-dashboard";
+import { useGetAdminDashboardStats } from "@/lib/api/endpoints/dashboard-admin/dashboard-admin";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {

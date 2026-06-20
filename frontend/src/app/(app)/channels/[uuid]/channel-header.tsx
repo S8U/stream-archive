@@ -4,10 +4,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlatformBadge } from '@/components/common/platform-badge';
 import { useGetChannelPlatforms, useGetChannelStats } from '@/lib/api/endpoints/channel/channel';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PublicChannelResponse } from "@/lib/api/models";
+import { ChannelGetResponse } from "@/lib/api/models";
 
 interface ChannelHeaderProps {
-    channel: PublicChannelResponse;
+    channel: ChannelGetResponse;
 }
 
 /**

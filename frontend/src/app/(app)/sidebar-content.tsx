@@ -7,11 +7,11 @@ import { Clock, HomeIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SheetClose } from "@/components/ui/sheet";
-import { PublicChannelResponse } from "@/lib/api/models";
+import { ChannelGetResponse } from "@/lib/api/models";
 import { cn } from "@/lib/utils";
 
 interface SidebarContentProps {
-    channels: PublicChannelResponse[];
+    channels: ChannelGetResponse[];
     isSheet?: boolean;
 }
 

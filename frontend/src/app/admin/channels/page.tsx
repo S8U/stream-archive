@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelFormDialog } from "@/components/admin/channel-form-dialog";
-import { useSearchAdminChannels, useCreateAdminChannel, useUpdateAdminChannel, useDeleteAdminChannel } from "@/lib/api/endpoints/admin-channel/admin-channel";
-import type { AdminChannelResponse, AdminChannelCreateRequestContentPrivacy, AdminChannelSearchRequestContentPrivacy } from "@/lib/api/models";
+import { useSearchAdminChannels, useCreateAdminChannel, useUpdateAdminChannel, useDeleteAdminChannel } from "@/lib/api/endpoints/channel-admin/channel-admin";
+import type { ChannelAdminSearchResponse, ChannelAdminCreateRequestContentPrivacy, ChannelAdminSearchRequestContentPrivacy } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function ChannelsPage() {
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-    const [selectedChannel, setSelectedChannel] = useState<AdminChannelResponse | null>(null);
+    const [selectedChannel, setSelectedChannel] = useState<ChannelAdminSearchResponse | null>(null);
 
     // URL 상태 (nuqs)
     const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("name"));
@@ -52,7 +52,7 @@ export default function ChannelsPage() {
             id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
             uuid: searchField === "uuid" ? searchQuery : undefined,
             name: searchField === "name" ? searchQuery : undefined,
-            contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminChannelSearchRequestContentPrivacy) : undefined,
+            contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as ChannelAdminSearchRequestContentPrivacy) : undefined,
         },
         pageable: {
             page: page - 1,
@@ -90,7 +90,7 @@ export default function ChannelsPage() {
         setIsDialogOpen(true);
     };
 
-    const handleOpenEditDialog = (channel: AdminChannelResponse) => {
+    const handleOpenEditDialog = (channel: ChannelAdminSearchResponse) => {
         setDialogMode("edit");
         setSelectedChannel(channel);
         setIsDialogOpen(true);
@@ -101,7 +101,7 @@ export default function ChannelsPage() {
         setSelectedChannel(null);
     };
 
-    const handleDialogSubmit = async (data: { name: string; contentPrivacy: AdminChannelCreateRequestContentPrivacy }) => {
+    const handleDialogSubmit = async (data: { name: string; contentPrivacy: ChannelAdminCreateRequestContentPrivacy }) => {
         try {
             if (dialogMode === "create") {
                 await createMutation.mutateAsync({ data });
@@ -122,7 +122,7 @@ export default function ChannelsPage() {
         }
     };
 
-    const handleDelete = async (channel: AdminChannelResponse) => {
+    const handleDelete = async (channel: ChannelAdminSearchResponse) => {
         if (!confirm(`"${channel.name}" 채널을 삭제하시겠습니까?`)) {
             return;
         }

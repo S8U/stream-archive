@@ -14,13 +14,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { AdminUserResponse, AdminUserUpdateRequestRole } from "@/lib/api/models";
+import type { UserAdminSearchResponse, UserAdminUpdateRequestRole } from "@/lib/api/models";
 
 interface UserFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    user: AdminUserResponse | null;
-    onSubmit: (data: { role: AdminUserUpdateRequestRole }) => Promise<void>;
+    user: UserAdminSearchResponse | null;
+    onSubmit: (data: { role: UserAdminUpdateRequestRole }) => Promise<void>;
     isSubmitting: boolean;
 }
 
@@ -31,12 +31,12 @@ export function UserFormDialog({
     onSubmit,
     isSubmitting,
 }: UserFormDialogProps) {
-    const [formRole, setFormRole] = useState<AdminUserUpdateRequestRole>("USER");
+    const [formRole, setFormRole] = useState<UserAdminUpdateRequestRole>("USER");
 
     // 다이얼로그가 열릴 때마다 폼 초기화
     useEffect(() => {
         if (open && user) {
-            setFormRole(user.role as AdminUserUpdateRequestRole);
+            setFormRole(user.role as UserAdminUpdateRequestRole);
         }
     }, [open, user]);
 
@@ -74,7 +74,7 @@ export function UserFormDialog({
                         </div>
                         <div className="grid gap-3">
                             <Label>역할</Label>
-                            <Select value={formRole} onValueChange={(value) => setFormRole(value as AdminUserUpdateRequestRole)}>
+                            <Select value={formRole} onValueChange={(value) => setFormRole(value as UserAdminUpdateRequestRole)}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="선택" />
                                 </SelectTrigger>

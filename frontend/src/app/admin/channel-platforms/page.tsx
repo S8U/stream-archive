@@ -15,11 +15,11 @@ import {
     useCreateAdminChannelPlatform,
     useUpdateAdminChannelPlatform,
     useDeleteAdminChannelPlatform
-} from "@/lib/api/endpoints/admin-channel-platform/admin-channel-platform";
+} from "@/lib/api/endpoints/channel-platform-admin/channel-platform-admin";
 import type {
-    AdminChannelPlatformResponse,
-    AdminChannelPlatformCreateRequestPlatformType,
-    AdminChannelPlatformSearchRequestPlatformType
+    ChannelPlatformAdminSearchResponse,
+    ChannelPlatformAdminCreateRequestPlatformType,
+    ChannelPlatformAdminSearchRequestPlatformType
 } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -37,7 +37,7 @@ export default function ChannelPlatformsPage() {
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-    const [selectedPlatform, setSelectedPlatform] = useState<AdminChannelPlatformResponse | null>(null);
+    const [selectedPlatform, setSelectedPlatform] = useState<ChannelPlatformAdminSearchResponse | null>(null);
 
     // URL 상태 (nuqs)
     const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("channelName"));
@@ -65,7 +65,7 @@ export default function ChannelPlatformsPage() {
             id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
             channelName: searchField === "channelName" ? searchQuery : undefined,
             platformChannelId: searchField === "platformChannelId" ? searchQuery : undefined,
-            platformType: searchPlatformType !== "__none__" ? (searchPlatformType as AdminChannelPlatformSearchRequestPlatformType) : undefined,
+            platformType: searchPlatformType !== "__none__" ? (searchPlatformType as ChannelPlatformAdminSearchRequestPlatformType) : undefined,
             isSyncProfile: searchIsSyncProfile !== "__none__" ? searchIsSyncProfile === "true" : undefined,
         },
         pageable: {
@@ -107,7 +107,7 @@ export default function ChannelPlatformsPage() {
         setIsDialogOpen(true);
     };
 
-    const handleOpenEditDialog = (platform: AdminChannelPlatformResponse) => {
+    const handleOpenEditDialog = (platform: ChannelPlatformAdminSearchResponse) => {
         setDialogMode("edit");
         setSelectedPlatform(platform);
         setIsDialogOpen(true);
@@ -120,7 +120,7 @@ export default function ChannelPlatformsPage() {
 
     const handleDialogSubmit = async (data: {
         channelId: number;
-        platformType: AdminChannelPlatformCreateRequestPlatformType;
+        platformType: ChannelPlatformAdminCreateRequestPlatformType;
         platformChannelId: string;
         isSyncProfile: boolean;
     }) => {
@@ -147,7 +147,7 @@ export default function ChannelPlatformsPage() {
         }
     };
 
-    const handleDelete = async (platform: AdminChannelPlatformResponse) => {
+    const handleDelete = async (platform: ChannelPlatformAdminSearchResponse) => {
         if (!confirm(`정말로 삭제하시겠습니까?`)) {
             return;
         }

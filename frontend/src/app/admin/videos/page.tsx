@@ -13,8 +13,8 @@ import { useEffect, useState } from "react";
 import { useQueryState, parseAsBoolean, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
-import { useSearchAdminVideos, useSetArchivedAdminVideo, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/admin-video/admin-video";
-import type { AdminVideoResponse, AdminVideoSearchRequestContentPrivacy, AdminVideoUpdateRequestContentPrivacy } from "@/lib/api/models";
+import { useSearchAdminVideos, useSetArchivedAdminVideo, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/video-admin/video-admin";
+import type { VideoAdminSearchResponse, VideoAdminSearchRequestContentPrivacy, VideoAdminUpdateRequestContentPrivacy } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function VideosPage() {
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedVideo, setSelectedVideo] = useState<AdminVideoResponse | null>(null);
+    const [selectedVideo, setSelectedVideo] = useState<VideoAdminSearchResponse | null>(null);
 
     // URL 상태 (nuqs)
     const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("title"));
@@ -57,7 +57,7 @@ export default function VideosPage() {
             channelName: searchField === "channelName" ? searchQuery : undefined,
             title: searchField === "title" ? searchQuery : undefined,
             description: searchField === "description" ? searchQuery : undefined,
-            contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as AdminVideoSearchRequestContentPrivacy) : undefined,
+            contentPrivacy: searchContentPrivacy !== "__none__" ? (searchContentPrivacy as VideoAdminSearchRequestContentPrivacy) : undefined,
             isArchived: searchArchived ? true : undefined,
         },
         pageable: {
@@ -93,7 +93,7 @@ export default function VideosPage() {
         setPage(1);
     };
 
-    const handleOpenEditDialog = (video: AdminVideoResponse) => {
+    const handleOpenEditDialog = (video: VideoAdminSearchResponse) => {
         setSelectedVideo(video);
         setIsDialogOpen(true);
     };
@@ -103,7 +103,7 @@ export default function VideosPage() {
         setSelectedVideo(null);
     };
 
-    const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
+    const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: VideoAdminUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
         if (!selectedVideo) return;
 
         try {
@@ -121,7 +121,7 @@ export default function VideosPage() {
         }
     };
 
-    const handleToggleArchive = async (video: AdminVideoResponse, checked: boolean) => {
+    const handleToggleArchive = async (video: VideoAdminSearchResponse, checked: boolean) => {
         try {
             await archiveMutation.mutateAsync({ id: video.id, data: { isArchived: checked } });
             toast.success(`"${video.title}" 동영상이 ${checked ? "소장" : "소장 해제"}되었습니다.`);
@@ -131,7 +131,7 @@ export default function VideosPage() {
         }
     };
 
-    const handleDelete = async (video: AdminVideoResponse) => {
+    const handleDelete = async (video: VideoAdminSearchResponse) => {
         if (!confirm(`"${video.title}" 동영상을 삭제하시겠습니까?`)) {
             return;
         }

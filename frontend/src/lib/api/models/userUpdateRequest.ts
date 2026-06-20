@@ -6,6 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * 내 정보 수정 요청
+ */
 export interface UserUpdateRequest {
+  /** 이름 */
   name?: string;
 }

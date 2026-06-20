@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * 채널 정보
+ */
 export interface ChannelInfo {
   id: number;
   uuid: string;

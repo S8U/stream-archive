@@ -15,13 +15,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { AdminVideoResponse, AdminVideoUpdateRequestContentPrivacy } from "@/lib/api/models";
+import type { VideoAdminSearchResponse, VideoAdminUpdateRequestContentPrivacy } from "@/lib/api/models";
 
 interface VideoFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    video: AdminVideoResponse | null;
-    onSubmit: (data: { title: string; description: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => Promise<void>;
+    video: VideoAdminSearchResponse | null;
+    onSubmit: (data: { title: string; description: string; contentPrivacy: VideoAdminUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => Promise<void>;
     isSubmitting: boolean;
 }
 
@@ -34,7 +34,7 @@ export function VideoFormDialog({
 }: VideoFormDialogProps) {
     const [formTitle, setFormTitle] = useState("");
     const [formDescription, setFormDescription] = useState("");
-    const [formPrivacy, setFormPrivacy] = useState<AdminVideoUpdateRequestContentPrivacy>("PUBLIC");
+    const [formPrivacy, setFormPrivacy] = useState<VideoAdminUpdateRequestContentPrivacy>("PUBLIC");
     const [formChatSyncOffset, setFormChatSyncOffset] = useState(0);
 
     // 다이얼로그가 열릴 때마다 폼 초기화
@@ -42,7 +42,7 @@ export function VideoFormDialog({
         if (open && video) {
             setFormTitle(video.title);
             setFormDescription(video.description ?? "");
-            setFormPrivacy(video.contentPrivacy as AdminVideoUpdateRequestContentPrivacy);
+            setFormPrivacy(video.contentPrivacy as VideoAdminUpdateRequestContentPrivacy);
             setFormChatSyncOffset(video.chatSyncOffsetMillis);
         }
     }, [open, video]);
@@ -87,7 +87,7 @@ export function VideoFormDialog({
                         </div>
                         <div className="grid gap-3">
                             <Label>공개 범위</Label>
-                            <Select value={formPrivacy} onValueChange={(value) => setFormPrivacy(value as AdminVideoUpdateRequestContentPrivacy)}>
+                            <Select value={formPrivacy} onValueChange={(value) => setFormPrivacy(value as VideoAdminUpdateRequestContentPrivacy)}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="선택" />
                                 </SelectTrigger>

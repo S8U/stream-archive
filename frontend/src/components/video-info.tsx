@@ -22,13 +22,13 @@ import {
     useSearchAdminVideos,
     useSetArchivedAdminVideo,
     useUpdateAdminVideo,
-} from '@/lib/api/endpoints/admin-video/admin-video';
+} from '@/lib/api/endpoints/video-admin/video-admin';
 import {useGetChannelPlatforms} from '@/lib/api/endpoints/channel/channel';
-import type {AdminVideoUpdateRequestContentPrivacy, PublicVideoResponse} from '@/lib/api/models';
+import type {VideoAdminUpdateRequestContentPrivacy, VideoGetResponse} from '@/lib/api/models';
 import type {ReactNode} from 'react';
 
 interface VideoInfoProps {
-    video: PublicVideoResponse;
+    video: VideoGetResponse;
     isAdmin?: boolean;
     onTimestampClick?: (seconds: number) => void;
     isLive?: boolean;
@@ -165,7 +165,7 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
         { label: '최고 시청자수', value: video.peakViewerCount != null ? video.peakViewerCount.toLocaleString('ko-KR') : '-' },
     ];
 
-    const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: AdminVideoUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
+    const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: VideoAdminUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
         if (!adminVideo) return;
 
         try {

@@ -5,10 +5,10 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { AdminRecordScheduleSearchRequest } from "./adminRecordScheduleSearchRequest";
+import type { RecordScheduleAdminSearchRequest } from "./recordScheduleAdminSearchRequest";
 import type { Pageable } from "./pageable";
 
 export type SearchAdminRecordSchedulesParams = {
-  request: AdminRecordScheduleSearchRequest;
+  request: RecordScheduleAdminSearchRequest;
   pageable: Pageable;
 };

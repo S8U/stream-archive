@@ -12,15 +12,15 @@ import {
     useSaveVideoWatchHistory,
 } from '@/lib/api/endpoints/video/video';
 import { useGetUserMe } from '@/lib/api/endpoints/user/user';
-import { PublicVideoResponse } from '@/lib/api/models';
+import { VideoGetResponse } from '@/lib/api/models';
 
 interface VideoWatchViewProps {
-    video: PublicVideoResponse;
+    video: VideoGetResponse;
 }
 
 const LIVE_VIDEO_REFRESH_INTERVAL_MS = 10_000;
 
-function isRecordingVideo(video?: PublicVideoResponse): boolean {
+function isRecordingVideo(video?: VideoGetResponse): boolean {
     return !!video?.record && !video.record.isEnded && !video.record.isCancelled;
 }
 

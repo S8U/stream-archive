@@ -23,7 +23,7 @@ import type {
 
 import type {
   GetWatchHistoriesParams,
-  PageWatchHistoryListResponse,
+  PageWatchHistorySearchResponse,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
@@ -38,7 +38,7 @@ export const getWatchHistories = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<PageWatchHistoryListResponse>(
+  return customAxiosInstance<PageWatchHistorySearchResponse>(
     { url: `/watch-histories`, method: "GET", params, signal },
     options,
   );

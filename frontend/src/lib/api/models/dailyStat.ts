@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * 일자별 누적 통계
+ */
 export interface DailyStat {
   date: string;
   videoCount: number;

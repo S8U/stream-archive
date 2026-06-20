@@ -12,7 +12,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from "@/components/ui/separator";
 import { useGetVideoChatHistory } from '@/lib/api/endpoints/video/video';
-import type { ChatHistoryResponse } from '@/lib/api/models/chatHistoryResponse';
+import type { VideoChatHistorySearchResponse } from '@/lib/api/models/videoChatHistorySearchResponse';
 
 interface ChatHistoryProps {
     videoUuid: string;
@@ -73,9 +73,9 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     // 싱크 오프셋 적용 (음수로 적용하여 채팅이 영상보다 앞서 표시되도록)
     const currentTimeMs = rawCurrentTimeMs - chatSyncOffsetMillis;
     // 화면에 표시할 채팅
-    const [displayedChats, setDisplayedChats] = useState<ChatHistoryResponse[]>([]);
+    const [displayedChats, setDisplayedChats] = useState<VideoChatHistorySearchResponse[]>([]);
     // 미리 불러온 채팅 버퍼
-    const chatBufferRef = useRef<ChatHistoryResponse[]>([]);
+    const chatBufferRef = useRef<VideoChatHistorySearchResponse[]>([]);
     // 다음에 로딩해야하는 offset millis
     const nextLoadOffsetMillisRef = useRef(0);
     // 이전 시간

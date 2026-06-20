@@ -9,8 +9,8 @@ import { AdminBadge } from "@/components/common/admin-badge";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
-import { useSearchAdminUsers, useUpdateAdminUser, useDeleteAdminUser } from "@/lib/api/endpoints/admin-user/admin-user";
-import type { AdminUserResponse, AdminUserSearchRequestRole, AdminUserUpdateRequestRole } from "@/lib/api/models";
+import { useSearchUsers, useUpdateUser, useDeleteUser } from "@/lib/api/endpoints/user-admin/user-admin";
+import type { UserAdminSearchResponse, UserAdminSearchRequestRole, UserAdminUpdateRequestRole } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { UserFormDialog } from "@/components/admin/user-form-dialog";
@@ -23,7 +23,7 @@ export default function UsersPage() {
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<AdminUserResponse | null>(null);
+    const [selectedUser, setSelectedUser] = useState<UserAdminSearchResponse | null>(null);
 
     // URL 상태 (nuqs)
     const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("username"));
@@ -48,7 +48,7 @@ export default function UsersPage() {
             id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
             username: searchField === "username" ? searchQuery : undefined,
             name: searchField === "name" ? searchQuery : undefined,
-            role: searchRole !== "__none__" ? (searchRole as AdminUserSearchRequestRole) : undefined,
+            role: searchRole !== "__none__" ? (searchRole as UserAdminSearchRequestRole) : undefined,
         },
         pageable: {
             page: page - 1,
@@ -57,9 +57,9 @@ export default function UsersPage() {
     };
 
     // API Hooks
-    const { data: usersData, isLoading, error } = useSearchAdminUsers(searchParams);
-    const updateMutation = useUpdateAdminUser();
-    const deleteMutation = useDeleteAdminUser();
+    const { data: usersData, isLoading, error } = useSearchUsers(searchParams);
+    const updateMutation = useUpdateUser();
+    const deleteMutation = useDeleteUser();
 
     // Handlers
     const handleSearch = () => {
@@ -79,7 +79,7 @@ export default function UsersPage() {
         setPage(1);
     };
 
-    const handleOpenEditDialog = (user: AdminUserResponse) => {
+    const handleOpenEditDialog = (user: UserAdminSearchResponse) => {
         setSelectedUser(user);
         setIsDialogOpen(true);
     };
@@ -89,7 +89,7 @@ export default function UsersPage() {
         setSelectedUser(null);
     };
 
-    const handleDialogSubmit = async (data: { role: AdminUserUpdateRequestRole }) => {
+    const handleDialogSubmit = async (data: { role: UserAdminUpdateRequestRole }) => {
         try {
             if (selectedUser) {
                 await updateMutation.mutateAsync({
@@ -107,7 +107,7 @@ export default function UsersPage() {
         }
     };
 
-    const handleDelete = async (user: AdminUserResponse) => {
+    const handleDelete = async (user: UserAdminSearchResponse) => {
         if (!confirm(`"${user.username}" 사용자를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
             return;
         }

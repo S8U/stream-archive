@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlatformBadge } from "@/components/common/platform-badge";
 import { AdminBadge } from "@/components/common/admin-badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
+import { useSearchAdminRecords } from "@/lib/api/endpoints/record-admin/record-admin";
 import Link from "next/link";
 
 // 길이 포맷

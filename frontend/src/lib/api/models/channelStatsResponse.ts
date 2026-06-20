@@ -6,7 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * 채널 통계 응답
+ */
 export interface ChannelStatsResponse {
+  /** 동영상 수 */
   videoCount: number;
+  /** 전체 파일 크기 (바이트) */
   totalFileSize: number;
 }

@@ -19,10 +19,10 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  ChannelPlatformResponse,
+  ChannelGetResponse,
+  ChannelPlatformSearchResponse,
   ChannelStatsResponse,
-  PagePublicChannelResponse,
-  PublicChannelResponse,
+  PageChannelSearchResponse,
   SearchChannelsParams,
 } from "../../models";
 
@@ -38,7 +38,7 @@ export const searchChannels = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<PagePublicChannelResponse>(
+  return customAxiosInstance<PageChannelSearchResponse>(
     { url: `/channels`, method: "GET", params, signal },
     options,
   );
@@ -180,7 +180,7 @@ export const getChannelByUuid = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<PublicChannelResponse>(
+  return customAxiosInstance<ChannelGetResponse>(
     { url: `/channels/${uuid}`, method: "GET", signal },
     options,
   );
@@ -686,7 +686,7 @@ export const getChannelPlatforms = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<ChannelPlatformResponse[]>(
+  return customAxiosInstance<ChannelPlatformSearchResponse[]>(
     { url: `/channels/${uuid}/platforms`, method: "GET", signal },
     options,
   );

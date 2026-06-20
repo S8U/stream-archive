@@ -15,14 +15,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { AdminChannelResponse, AdminChannelCreateRequestContentPrivacy } from "@/lib/api/models";
+import type { ChannelAdminSearchResponse, ChannelAdminCreateRequestContentPrivacy } from "@/lib/api/models";
 
 interface ChannelFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     mode: "create" | "edit";
-    channel: AdminChannelResponse | null;
-    onSubmit: (data: { name: string; contentPrivacy: AdminChannelCreateRequestContentPrivacy }) => Promise<void>;
+    channel: ChannelAdminSearchResponse | null;
+    onSubmit: (data: { name: string; contentPrivacy: ChannelAdminCreateRequestContentPrivacy }) => Promise<void>;
     isSubmitting: boolean;
 }
 
@@ -35,14 +35,14 @@ export function ChannelFormDialog({
     isSubmitting,
 }: ChannelFormDialogProps) {
     const [formName, setFormName] = useState("");
-    const [formPrivacy, setFormPrivacy] = useState<AdminChannelCreateRequestContentPrivacy>("PUBLIC");
+    const [formPrivacy, setFormPrivacy] = useState<ChannelAdminCreateRequestContentPrivacy>("PUBLIC");
 
     // 다이얼로그가 열릴 때마다 폼 초기화
     useEffect(() => {
         if (open) {
             if (mode === "edit" && channel) {
                 setFormName(channel.name);
-                setFormPrivacy(channel.contentPrivacy as AdminChannelCreateRequestContentPrivacy);
+                setFormPrivacy(channel.contentPrivacy as ChannelAdminCreateRequestContentPrivacy);
             } else {
                 setFormName("");
                 setFormPrivacy("PUBLIC");
@@ -80,7 +80,7 @@ export function ChannelFormDialog({
                         </div>
                         <div className="grid gap-3">
                             <Label>공개 범위</Label>
-                            <Select value={formPrivacy} onValueChange={(value) => setFormPrivacy(value as AdminChannelCreateRequestContentPrivacy)}>
+                            <Select value={formPrivacy} onValueChange={(value) => setFormPrivacy(value as ChannelAdminCreateRequestContentPrivacy)}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="선택" />
                                 </SelectTrigger>

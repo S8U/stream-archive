@@ -14,12 +14,12 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  LoginRequest,
-  LoginResponse,
-  LogoutRequest,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  SignupRequest,
+  AuthLoginRequest,
+  AuthLoginResponse,
+  AuthLogoutRequest,
+  AuthTokenRefreshRequest,
+  AuthTokenRefreshResponse,
+  UserSignupRequest,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
@@ -30,7 +30,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary 회원가입
  */
 export const signup = (
-  signupRequest: SignupRequest,
+  userSignupRequest: UserSignupRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
@@ -39,7 +39,7 @@ export const signup = (
       url: `/auth/signup`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: signupRequest,
+      data: userSignupRequest,
       signal,
     },
     options,
@@ -53,14 +53,14 @@ export const getSignupMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof signup>>,
     TError,
-    { data: SignupRequest },
+    { data: UserSignupRequest },
     TContext
   >;
   request?: SecondParameter<typeof customAxiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof signup>>,
   TError,
-  { data: SignupRequest },
+  { data: UserSignupRequest },
   TContext
 > => {
   const mutationKey = ["signup"];
@@ -74,7 +74,7 @@ export const getSignupMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof signup>>,
-    { data: SignupRequest }
+    { data: UserSignupRequest }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -87,7 +87,7 @@ export const getSignupMutationOptions = <
 export type SignupMutationResult = NonNullable<
   Awaited<ReturnType<typeof signup>>
 >;
-export type SignupMutationBody = SignupRequest;
+export type SignupMutationBody = UserSignupRequest;
 export type SignupMutationError = unknown;
 
 /**
@@ -98,7 +98,7 @@ export const useSignup = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof signup>>,
       TError,
-      { data: SignupRequest },
+      { data: UserSignupRequest },
       TContext
     >;
     request?: SecondParameter<typeof customAxiosInstance>;
@@ -107,7 +107,7 @@ export const useSignup = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof signup>>,
   TError,
-  { data: SignupRequest },
+  { data: UserSignupRequest },
   TContext
 > => {
   const mutationOptions = getSignupMutationOptions(options);
@@ -118,16 +118,16 @@ export const useSignup = <TError = unknown, TContext = unknown>(
  * @summary 토큰 갱신
  */
 export const refresh = (
-  refreshTokenRequest: RefreshTokenRequest,
+  authTokenRefreshRequest: AuthTokenRefreshRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<RefreshTokenResponse>(
+  return customAxiosInstance<AuthTokenRefreshResponse>(
     {
       url: `/auth/refresh`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: refreshTokenRequest,
+      data: authTokenRefreshRequest,
       signal,
     },
     options,
@@ -141,14 +141,14 @@ export const getRefreshMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof refresh>>,
     TError,
-    { data: RefreshTokenRequest },
+    { data: AuthTokenRefreshRequest },
     TContext
   >;
   request?: SecondParameter<typeof customAxiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof refresh>>,
   TError,
-  { data: RefreshTokenRequest },
+  { data: AuthTokenRefreshRequest },
   TContext
 > => {
   const mutationKey = ["refresh"];
@@ -162,7 +162,7 @@ export const getRefreshMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof refresh>>,
-    { data: RefreshTokenRequest }
+    { data: AuthTokenRefreshRequest }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -175,7 +175,7 @@ export const getRefreshMutationOptions = <
 export type RefreshMutationResult = NonNullable<
   Awaited<ReturnType<typeof refresh>>
 >;
-export type RefreshMutationBody = RefreshTokenRequest;
+export type RefreshMutationBody = AuthTokenRefreshRequest;
 export type RefreshMutationError = unknown;
 
 /**
@@ -186,7 +186,7 @@ export const useRefresh = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof refresh>>,
       TError,
-      { data: RefreshTokenRequest },
+      { data: AuthTokenRefreshRequest },
       TContext
     >;
     request?: SecondParameter<typeof customAxiosInstance>;
@@ -195,7 +195,7 @@ export const useRefresh = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof refresh>>,
   TError,
-  { data: RefreshTokenRequest },
+  { data: AuthTokenRefreshRequest },
   TContext
 > => {
   const mutationOptions = getRefreshMutationOptions(options);
@@ -206,7 +206,7 @@ export const useRefresh = <TError = unknown, TContext = unknown>(
  * @summary 로그아웃
  */
 export const logout = (
-  logoutRequest: LogoutRequest,
+  authLogoutRequest: AuthLogoutRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
@@ -215,7 +215,7 @@ export const logout = (
       url: `/auth/logout`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: logoutRequest,
+      data: authLogoutRequest,
       signal,
     },
     options,
@@ -229,14 +229,14 @@ export const getLogoutMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof logout>>,
     TError,
-    { data: LogoutRequest },
+    { data: AuthLogoutRequest },
     TContext
   >;
   request?: SecondParameter<typeof customAxiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof logout>>,
   TError,
-  { data: LogoutRequest },
+  { data: AuthLogoutRequest },
   TContext
 > => {
   const mutationKey = ["logout"];
@@ -250,7 +250,7 @@ export const getLogoutMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof logout>>,
-    { data: LogoutRequest }
+    { data: AuthLogoutRequest }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -263,7 +263,7 @@ export const getLogoutMutationOptions = <
 export type LogoutMutationResult = NonNullable<
   Awaited<ReturnType<typeof logout>>
 >;
-export type LogoutMutationBody = LogoutRequest;
+export type LogoutMutationBody = AuthLogoutRequest;
 export type LogoutMutationError = unknown;
 
 /**
@@ -274,7 +274,7 @@ export const useLogout = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof logout>>,
       TError,
-      { data: LogoutRequest },
+      { data: AuthLogoutRequest },
       TContext
     >;
     request?: SecondParameter<typeof customAxiosInstance>;
@@ -283,7 +283,7 @@ export const useLogout = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof logout>>,
   TError,
-  { data: LogoutRequest },
+  { data: AuthLogoutRequest },
   TContext
 > => {
   const mutationOptions = getLogoutMutationOptions(options);
@@ -294,16 +294,16 @@ export const useLogout = <TError = unknown, TContext = unknown>(
  * @summary 로그인
  */
 export const login = (
-  loginRequest: LoginRequest,
+  authLoginRequest: AuthLoginRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<LoginResponse>(
+  return customAxiosInstance<AuthLoginResponse>(
     {
       url: `/auth/login`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      data: loginRequest,
+      data: authLoginRequest,
       signal,
     },
     options,
@@ -317,14 +317,14 @@ export const getLoginMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof login>>,
     TError,
-    { data: LoginRequest },
+    { data: AuthLoginRequest },
     TContext
   >;
   request?: SecondParameter<typeof customAxiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof login>>,
   TError,
-  { data: LoginRequest },
+  { data: AuthLoginRequest },
   TContext
 > => {
   const mutationKey = ["login"];
@@ -338,7 +338,7 @@ export const getLoginMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof login>>,
-    { data: LoginRequest }
+    { data: AuthLoginRequest }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -351,7 +351,7 @@ export const getLoginMutationOptions = <
 export type LoginMutationResult = NonNullable<
   Awaited<ReturnType<typeof login>>
 >;
-export type LoginMutationBody = LoginRequest;
+export type LoginMutationBody = AuthLoginRequest;
 export type LoginMutationError = unknown;
 
 /**
@@ -362,7 +362,7 @@ export const useLogin = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof login>>,
       TError,
-      { data: LoginRequest },
+      { data: AuthLoginRequest },
       TContext
     >;
     request?: SecondParameter<typeof customAxiosInstance>;
@@ -371,7 +371,7 @@ export const useLogin = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof login>>,
   TError,
-  { data: LoginRequest },
+  { data: AuthLoginRequest },
   TContext
 > => {
   const mutationOptions = getLoginMutationOptions(options);

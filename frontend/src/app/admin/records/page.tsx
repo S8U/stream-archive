@@ -9,8 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
-import { useCancelAdminRecord, useSearchAdminRecords } from "@/lib/api/endpoints/admin-record/admin-record";
-import type { AdminRecordResponse, AdminRecordSearchRequestPlatformType } from "@/lib/api/models";
+import { useSearchAdminRecords } from "@/lib/api/endpoints/record-admin/record-admin";
+import { useCancelAdminRecord } from "@/lib/api/endpoints/recording-admin/recording-admin";
+import type { RecordAdminSearchResponse, RecordAdminSearchRequestPlatformType } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PlatformBadge } from "@/components/common/platform-badge";
@@ -64,7 +65,7 @@ export default function RecordsPage() {
             channelName: searchField === "channelName" ? searchQuery : undefined,
             title: searchField === "title" ? searchQuery : undefined,
             platformStreamId: searchField === "platformStreamId" ? searchQuery : undefined,
-            platformType: searchPlatform !== "__all__" ? (searchPlatform as AdminRecordSearchRequestPlatformType) : undefined,
+            platformType: searchPlatform !== "__all__" ? (searchPlatform as RecordAdminSearchRequestPlatformType) : undefined,
             ...getStatusParams(searchStatus),
         },
         pageable: {
@@ -98,7 +99,7 @@ export default function RecordsPage() {
         setPage(1);
     };
 
-    const handleCancel = async (record: AdminRecordResponse) => {
+    const handleCancel = async (record: RecordAdminSearchResponse) => {
         if (!confirm(`녹화(ID: ${record.id})를 중단하시겠습니까?`)) {
             return;
         }
@@ -116,7 +117,7 @@ export default function RecordsPage() {
         return new Date(dateString).toLocaleString("ko-KR");
     };
 
-    const getStatusBadge = (record: AdminRecordResponse) => {
+    const getStatusBadge = (record: RecordAdminSearchResponse) => {
         if (record.isCancelled) {
             return <AdminBadge tone="neutral">취소됨</AdminBadge>;
         }

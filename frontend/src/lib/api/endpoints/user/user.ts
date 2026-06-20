@@ -22,9 +22,10 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  UserResponse,
-  UserUpdatePasswordRequest,
+  UserGetResponse,
+  UserPasswordUpdateRequest,
   UserUpdateRequest,
+  UserUpdateResponse,
 } from "../../models";
 
 import { customAxiosInstance } from "../../axios-instance";
@@ -38,7 +39,7 @@ export const getUserMe = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<UserResponse>(
+  return customAxiosInstance<UserGetResponse>(
     { url: `/users/me`, method: "GET", signal },
     options,
   );
@@ -172,7 +173,7 @@ export const updateUserMe = (
   userUpdateRequest: UserUpdateRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
 ) => {
-  return customAxiosInstance<UserResponse>(
+  return customAxiosInstance<UserUpdateResponse>(
     {
       url: `/users/me`,
       method: "PUT",
@@ -255,7 +256,7 @@ export const useUpdateUserMe = <TError = unknown, TContext = unknown>(
  * @summary 비밀번호 변경
  */
 export const updateUserPassword = (
-  userUpdatePasswordRequest: UserUpdatePasswordRequest,
+  userPasswordUpdateRequest: UserPasswordUpdateRequest,
   options?: SecondParameter<typeof customAxiosInstance>,
 ) => {
   return customAxiosInstance<void>(
@@ -263,7 +264,7 @@ export const updateUserPassword = (
       url: `/users/me/password`,
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      data: userUpdatePasswordRequest,
+      data: userPasswordUpdateRequest,
     },
     options,
   );
@@ -276,14 +277,14 @@ export const getUpdateUserPasswordMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateUserPassword>>,
     TError,
-    { data: UserUpdatePasswordRequest },
+    { data: UserPasswordUpdateRequest },
     TContext
   >;
   request?: SecondParameter<typeof customAxiosInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateUserPassword>>,
   TError,
-  { data: UserUpdatePasswordRequest },
+  { data: UserPasswordUpdateRequest },
   TContext
 > => {
   const mutationKey = ["updateUserPassword"];
@@ -297,7 +298,7 @@ export const getUpdateUserPasswordMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateUserPassword>>,
-    { data: UserUpdatePasswordRequest }
+    { data: UserPasswordUpdateRequest }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -310,7 +311,7 @@ export const getUpdateUserPasswordMutationOptions = <
 export type UpdateUserPasswordMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateUserPassword>>
 >;
-export type UpdateUserPasswordMutationBody = UserUpdatePasswordRequest;
+export type UpdateUserPasswordMutationBody = UserPasswordUpdateRequest;
 export type UpdateUserPasswordMutationError = unknown;
 
 /**
@@ -321,7 +322,7 @@ export const useUpdateUserPassword = <TError = unknown, TContext = unknown>(
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateUserPassword>>,
       TError,
-      { data: UserUpdatePasswordRequest },
+      { data: UserPasswordUpdateRequest },
       TContext
     >;
     request?: SecondParameter<typeof customAxiosInstance>;
@@ -330,7 +331,7 @@ export const useUpdateUserPassword = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateUserPassword>>,
   TError,
-  { data: UserUpdatePasswordRequest },
+  { data: UserPasswordUpdateRequest },
   TContext
 > => {
   const mutationOptions = getUpdateUserPasswordMutationOptions(options);
