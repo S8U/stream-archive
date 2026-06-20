@@ -40,7 +40,8 @@ class RecordSchedule(
     scheduleType: RecordScheduleType,
     value: String,
     recordQuality: RecordQuality = RecordQuality.BEST,
-    priority: Int = 0
+    priority: Int = 0,
+    autoArchive: Boolean = false
 ) : BaseSoftDeleteEntity() {
 
     @Enumerated(EnumType.STRING)
@@ -72,6 +73,11 @@ class RecordSchedule(
     var priority: Int = priority
         protected set
 
+    @Column(nullable = false)
+    @Comment("자동 소장 여부")
+    var autoArchive: Boolean = autoArchive
+        protected set
+
     /**
      * 녹화 스케줄 정보를 수정한다.
      *
@@ -82,13 +88,15 @@ class RecordSchedule(
         scheduleType: RecordScheduleType?,
         value: String?,
         recordQuality: RecordQuality?,
-        priority: Int?
+        priority: Int?,
+        autoArchive: Boolean?
     ) {
         platformType?.let { this.platformType = it }
         scheduleType?.let { this.scheduleType = it }
         value?.let { this.value = it }
         recordQuality?.let { this.recordQuality = it }
         priority?.let { this.priority = it }
+        autoArchive?.let { this.autoArchive = it }
     }
 
 }

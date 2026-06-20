@@ -15,6 +15,7 @@ import com.github.s8u.streamarchive.platform.chat.PlatformChatStrategyFactory
 import com.github.s8u.streamarchive.platform.strategy.PlatformStrategyFactory
 import com.github.s8u.streamarchive.video.entity.Video
 import com.github.s8u.streamarchive.video.repository.VideoRepository
+import com.github.s8u.streamarchive.video.service.VideoArchiveService
 import com.github.s8u.streamarchive.video.service.VideoCategoryHistoryAppendService
 import com.github.s8u.streamarchive.video.service.VideoThumbnailSaveService
 import com.github.s8u.streamarchive.video.service.VideoTitleHistoryAppendService
@@ -35,6 +36,7 @@ import java.util.UUID
 class RecordingStartUseCase(
     private val recordRepository: RecordRepository,
     private val videoRepository: VideoRepository,
+    private val videoArchiveService: VideoArchiveService,
     private val recordingVideoProcessManager: RecordingVideoProcessManager,
     private val recordingChatCollectManager: RecordingChatCollectManager,
     private val platformStrategyFactory: PlatformStrategyFactory,
@@ -118,6 +120,11 @@ class RecordingStartUseCase(
             chatSyncOffsetMillis = chatSyncOffsetMillis
         )
         val savedVideo = videoRepository.save(video)
+
+        // 자동 소장 스케줄이면 동영상을 소장 처리한다 (자동이라 사용자/IP 없음)
+        if (command.autoArchive) {
+            videoArchiveService.setArchived(savedVideo, isArchived = true, userId = null, ip = null)
+        }
 
         // 썸네일 저장
         videoThumbnailSaveService.saveThumbnail(stream.thumbnailUrl, savedVideo.id!!)

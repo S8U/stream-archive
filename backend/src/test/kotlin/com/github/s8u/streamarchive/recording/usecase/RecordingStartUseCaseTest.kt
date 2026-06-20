@@ -19,6 +19,7 @@ import com.github.s8u.streamarchive.recording.manager.RecordingVideoViewerChange
 import com.github.s8u.streamarchive.recording.usecase.dto.command.RecordingStartCommand
 import com.github.s8u.streamarchive.video.entity.Video
 import com.github.s8u.streamarchive.video.repository.VideoRepository
+import com.github.s8u.streamarchive.video.service.VideoArchiveService
 import com.github.s8u.streamarchive.video.service.VideoCategoryHistoryAppendService
 import com.github.s8u.streamarchive.video.service.VideoThumbnailSaveService
 import com.github.s8u.streamarchive.video.service.VideoTitleHistoryAppendService
@@ -36,6 +37,7 @@ class RecordingStartUseCaseTest {
 
     private val recordRepository = mockk<RecordRepository>(relaxed = true)
     private val videoRepository = mockk<VideoRepository>(relaxed = true)
+    private val videoArchiveService = mockk<VideoArchiveService>(relaxed = true)
     private val recordingVideoProcessManager = mockk<RecordingVideoProcessManager>(relaxed = true)
     private val recordingChatCollectManager = mockk<RecordingChatCollectManager>(relaxed = true)
     private val platformStrategyFactory = mockk<PlatformStrategyFactory>()
@@ -52,6 +54,7 @@ class RecordingStartUseCaseTest {
     private val recordingStartUseCase = RecordingStartUseCase(
         recordRepository,
         videoRepository,
+        videoArchiveService,
         recordingVideoProcessManager,
         recordingChatCollectManager,
         platformStrategyFactory,
@@ -129,6 +132,26 @@ class RecordingStartUseCaseTest {
         }
 
         @Test
+        fun `자동 소장 스케줄이면 동영상을 소장 처리한다`() {
+            stubGuards(wasCancelled = false, isAlreadyRecording = false, failedCount = 0)
+            stubStartSuccess()
+
+            recordingStartUseCase.start(command(autoArchive = true))
+
+            verify { videoArchiveService.setArchived(savedVideo, true, null, null) }
+        }
+
+        @Test
+        fun `자동 소장 스케줄이 아니면 소장 처리하지 않는다`() {
+            stubGuards(wasCancelled = false, isAlreadyRecording = false, failedCount = 0)
+            stubStartSuccess()
+
+            recordingStartUseCase.start(command(autoArchive = false))
+
+            verify(exactly = 0) { videoArchiveService.setArchived(any(), any(), any(), any()) }
+        }
+
+        @Test
         fun `프로세스 시작에 실패하면 시작 실패로 표시하고 예외를 던진다`() {
             stubGuards(wasCancelled = false, isAlreadyRecording = false, failedCount = 0)
             stubStartSuccess()
@@ -175,11 +198,12 @@ class RecordingStartUseCaseTest {
         every { channelPlatformRepository.findByChannelIdAndPlatformType(CHANNEL_ID, PlatformType.CHZZK) } returns channelPlatform
     }
 
-    private fun command(): RecordingStartCommand {
+    private fun command(autoArchive: Boolean = false): RecordingStartCommand {
         return RecordingStartCommand(
             channelId = CHANNEL_ID,
             stream = stream(),
-            recordQuality = RecordQuality.BEST
+            recordQuality = RecordQuality.BEST,
+            autoArchive = autoArchive
         )
     }
 

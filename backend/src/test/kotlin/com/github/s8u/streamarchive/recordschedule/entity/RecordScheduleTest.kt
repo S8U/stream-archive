@@ -42,7 +42,8 @@ class RecordScheduleTest {
                 scheduleType = RecordScheduleType.ONCE,
                 value = "새 값",
                 recordQuality = RecordQuality.WORST,
-                priority = 5
+                priority = 5,
+                autoArchive = true
             )
 
             assertEquals(PlatformType.TWITCH, schedule.platformType)
@@ -50,6 +51,7 @@ class RecordScheduleTest {
             assertEquals("새 값", schedule.value)
             assertEquals(RecordQuality.WORST, schedule.recordQuality)
             assertEquals(5, schedule.priority)
+            assertEquals(true, schedule.autoArchive)
         }
 
         @Test
@@ -61,7 +63,8 @@ class RecordScheduleTest {
                 scheduleType = null,
                 value = "새 값",
                 recordQuality = null,
-                priority = null
+                priority = null,
+                autoArchive = null
             )
 
             assertEquals("새 값", schedule.value)
@@ -69,6 +72,7 @@ class RecordScheduleTest {
             assertEquals(RecordScheduleType.ALWAYS, schedule.scheduleType)
             assertEquals(RecordQuality.BEST, schedule.recordQuality)
             assertEquals(0, schedule.priority)
+            assertEquals(false, schedule.autoArchive)
         }
 
         @Test
@@ -80,7 +84,8 @@ class RecordScheduleTest {
                 scheduleType = null,
                 value = null,
                 recordQuality = null,
-                priority = null
+                priority = null,
+                autoArchive = null
             )
 
             assertEquals(PlatformType.CHZZK, schedule.platformType)
@@ -88,6 +93,7 @@ class RecordScheduleTest {
             assertEquals("원래 값", schedule.value)
             assertEquals(RecordQuality.BEST, schedule.recordQuality)
             assertEquals(0, schedule.priority)
+            assertEquals(false, schedule.autoArchive)
         }
     }
 }

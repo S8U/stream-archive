@@ -17,6 +17,7 @@ data class RecordScheduleAdminGetResult(
     val value: String,
     val recordQuality: RecordQuality,
     val priority: Int,
+    val autoArchive: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
@@ -46,6 +47,7 @@ data class RecordScheduleAdminGetResult(
                 value = recordSchedule.value,
                 recordQuality = recordSchedule.recordQuality,
                 priority = recordSchedule.priority,
+                autoArchive = recordSchedule.autoArchive,
                 createdAt = recordSchedule.createdAt,
                 updatedAt = recordSchedule.updatedAt
             )

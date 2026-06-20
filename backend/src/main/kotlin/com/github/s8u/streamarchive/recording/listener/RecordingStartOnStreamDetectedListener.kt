@@ -65,7 +65,8 @@ class RecordingStartOnStreamDetectedListener(
                     RecordingStartCommand(
                         channelId = event.channelId,
                         stream = event.stream,
-                        recordQuality = topSchedule.recordQuality
+                        recordQuality = topSchedule.recordQuality,
+                        autoArchive = topSchedule.autoArchive
                     )
                 )
 

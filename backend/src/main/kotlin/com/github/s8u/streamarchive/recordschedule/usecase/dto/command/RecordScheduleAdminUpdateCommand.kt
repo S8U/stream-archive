@@ -9,5 +9,6 @@ data class RecordScheduleAdminUpdateCommand(
     val scheduleType: RecordScheduleType?,
     val value: String?,
     val recordQuality: RecordQuality?,
-    val priority: Int?
+    val priority: Int?,
+    val autoArchive: Boolean?
 )

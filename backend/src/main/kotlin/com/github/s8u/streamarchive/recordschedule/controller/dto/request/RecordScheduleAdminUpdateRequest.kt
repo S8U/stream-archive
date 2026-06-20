@@ -21,7 +21,10 @@ data class RecordScheduleAdminUpdateRequest(
     val recordQuality: RecordQuality?,
 
     @field:Schema(description = "우선순위", example = "0")
-    val priority: Int?
+    val priority: Int?,
+
+    @field:Schema(description = "자동 소장 여부", example = "false")
+    val autoArchive: Boolean?
 ) {
 
     fun toCommand(): RecordScheduleAdminUpdateCommand {
@@ -30,7 +33,8 @@ data class RecordScheduleAdminUpdateRequest(
             scheduleType = scheduleType,
             value = value,
             recordQuality = recordQuality,
-            priority = priority
+            priority = priority,
+            autoArchive = autoArchive
         )
     }
 }

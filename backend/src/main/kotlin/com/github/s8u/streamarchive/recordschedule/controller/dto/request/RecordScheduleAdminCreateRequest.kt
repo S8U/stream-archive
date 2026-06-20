@@ -24,7 +24,10 @@ data class RecordScheduleAdminCreateRequest(
     val recordQuality: RecordQuality = RecordQuality.BEST,
 
     @field:Schema(description = "우선순위", example = "0")
-    val priority: Int = 0
+    val priority: Int = 0,
+
+    @field:Schema(description = "자동 소장 여부", example = "false")
+    val autoArchive: Boolean = false
 ) {
 
     fun toCommand(): RecordScheduleAdminCreateCommand {
@@ -34,7 +37,8 @@ data class RecordScheduleAdminCreateRequest(
             scheduleType = scheduleType,
             value = value,
             recordQuality = recordQuality,
-            priority = priority
+            priority = priority,
+            autoArchive = autoArchive
         )
     }
 }

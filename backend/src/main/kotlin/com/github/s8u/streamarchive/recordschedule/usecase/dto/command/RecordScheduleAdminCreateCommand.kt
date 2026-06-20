@@ -10,5 +10,6 @@ data class RecordScheduleAdminCreateCommand(
     val scheduleType: RecordScheduleType,
     val value: String,
     val recordQuality: RecordQuality = RecordQuality.BEST,
-    val priority: Int = 0
+    val priority: Int = 0,
+    val autoArchive: Boolean = false
 )

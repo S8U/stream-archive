@@ -55,7 +55,8 @@ class RecordScheduleAdminUpdateUseCase(
             scheduleType = command.scheduleType,
             value = command.value,
             recordQuality = command.recordQuality,
-            priority = command.priority
+            priority = command.priority,
+            autoArchive = command.autoArchive
         )
 
         return RecordScheduleAdminUpdateResult.from(

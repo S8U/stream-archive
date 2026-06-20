@@ -146,6 +146,7 @@ class RecordScheduleAdminCreateUseCaseTest {
         every { schedule.value } returns SCHEDULE_VALUE
         every { schedule.recordQuality } returns RecordQuality.BEST
         every { schedule.priority } returns 0
+        every { schedule.autoArchive } returns false
         every { schedule.createdAt } returns NOW
         every { schedule.updatedAt } returns NOW
         return schedule

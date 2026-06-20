@@ -30,6 +30,9 @@ data class RecordScheduleAdminSearchResponse(
     @field:Schema(description = "우선순위", example = "0")
     val priority: Int,
 
+    @field:Schema(description = "자동 소장 여부", example = "false")
+    val autoArchive: Boolean,
+
     @field:Schema(description = "생성 일시")
     val createdAt: LocalDateTime,
 
@@ -59,6 +62,7 @@ data class RecordScheduleAdminSearchResponse(
                 value = result.value,
                 recordQuality = result.recordQuality,
                 priority = result.priority,
+                autoArchive = result.autoArchive,
                 createdAt = result.createdAt,
                 updatedAt = result.updatedAt
             )

@@ -89,6 +89,7 @@ CREATE TABLE record_schedules
     value                TEXT                                                              NOT NULL COMMENT '스케줄 값',
     record_quality       ENUM ('BEST', 'P2160_60', 'P2160', 'P1440_60', 'P1440', 'P1080_60', 'P1080', 'P720_60', 'P720', 'P480', 'P240', 'P144', 'WORST') NOT NULL DEFAULT 'BEST' COMMENT '녹화 화질',
     priority             INT                                                               NOT NULL DEFAULT 0 COMMENT '우선순위',
+    auto_archive         BOOLEAN                                                           NOT NULL DEFAULT FALSE COMMENT '자동 소장 여부',
     is_active            BOOLEAN                                                           NOT NULL DEFAULT TRUE COMMENT '활성 상태',
     deleted_at           DATETIME                                                          NULL COMMENT '삭제 일시',
     deleted_by           BIGINT                                                            NULL COMMENT '삭제한 사용자 ID',
