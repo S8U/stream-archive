@@ -21,8 +21,10 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.http.CacheControl
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import java.util.concurrent.TimeUnit
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -67,7 +69,11 @@ class VideoController(
     @GetMapping("/{uuid}/thumbnail")
     fun getVideoThumbnail(@PathVariable uuid: String): ResponseEntity<Resource> {
         val resource = videoThumbnailGetUseCase.getByUuid(uuid)
-        return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(resource)
+        // 녹화 중에는 썸네일이 주기적으로 갱신되므로 짧게만 캐싱한다 (갱신 주기와 맞춰 10초)
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
+            .contentType(MediaType.IMAGE_PNG)
+            .body(resource)
     }
 
     @Operation(summary = "HLS 플레이리스트 조회")
