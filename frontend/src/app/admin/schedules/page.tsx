@@ -16,14 +16,14 @@ import {
     useCreateAdminRecordSchedule,
     useUpdateAdminRecordSchedule,
     useDeleteAdminRecordSchedule
-} from "@/lib/api/endpoints/admin-record-schedule/admin-record-schedule";
+} from "@/lib/api/endpoints/record-schedule-admin/record-schedule-admin";
 import type {
-    AdminRecordScheduleResponse,
-    AdminRecordScheduleCreateRequestPlatformType,
-    AdminRecordScheduleCreateRequestScheduleType,
-    AdminRecordScheduleCreateRequestRecordQuality,
-    AdminRecordScheduleSearchRequestPlatformType,
-    AdminRecordScheduleSearchRequestScheduleType
+    RecordScheduleAdminSearchResponse,
+    RecordScheduleAdminCreateRequestPlatformType,
+    RecordScheduleAdminCreateRequestScheduleType,
+    RecordScheduleAdminCreateRequestRecordQuality,
+    RecordScheduleAdminSearchRequestPlatformType,
+    RecordScheduleAdminSearchRequestScheduleType
 } from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -49,7 +49,7 @@ export default function RecordSchedulesPage() {
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-    const [selectedSchedule, setSelectedSchedule] = useState<AdminRecordScheduleResponse | null>(null);
+    const [selectedSchedule, setSelectedSchedule] = useState<RecordScheduleAdminSearchResponse | null>(null);
 
     // URL 상태 (nuqs)
     const [searchField, setSearchField] = useQueryState("field", parseAsStringLiteral(searchFieldOptions).withDefault("channelName"));
@@ -76,8 +76,8 @@ export default function RecordSchedulesPage() {
         request: {
             id: searchField === "id" && searchQuery ? Number(searchQuery) : undefined,
             channelName: searchField === "channelName" ? searchQuery : undefined,
-            platformType: searchPlatformType !== "__none__" ? (searchPlatformType as AdminRecordScheduleSearchRequestPlatformType) : undefined,
-            scheduleType: searchScheduleType !== "__none__" ? (searchScheduleType as AdminRecordScheduleSearchRequestScheduleType) : undefined,
+            platformType: searchPlatformType !== "__none__" ? (searchPlatformType as RecordScheduleAdminSearchRequestPlatformType) : undefined,
+            scheduleType: searchScheduleType !== "__none__" ? (searchScheduleType as RecordScheduleAdminSearchRequestScheduleType) : undefined,
         },
         pageable: {
             page: page - 1,
@@ -118,7 +118,7 @@ export default function RecordSchedulesPage() {
         setIsDialogOpen(true);
     };
 
-    const handleOpenEditDialog = (schedule: AdminRecordScheduleResponse) => {
+    const handleOpenEditDialog = (schedule: RecordScheduleAdminSearchResponse) => {
         setDialogMode("edit");
         setSelectedSchedule(schedule);
         setIsDialogOpen(true);
@@ -131,11 +131,12 @@ export default function RecordSchedulesPage() {
 
     const handleDialogSubmit = async (data: {
         channelId: number;
-        platformType: AdminRecordScheduleCreateRequestPlatformType;
-        scheduleType: AdminRecordScheduleCreateRequestScheduleType;
+        platformType: RecordScheduleAdminCreateRequestPlatformType;
+        scheduleType: RecordScheduleAdminCreateRequestScheduleType;
         value: string;
-        recordQuality: AdminRecordScheduleCreateRequestRecordQuality;
+        recordQuality: RecordScheduleAdminCreateRequestRecordQuality;
         priority: number;
+        autoArchive: boolean;
     }) => {
         try {
             if (dialogMode === "create") {
@@ -150,6 +151,7 @@ export default function RecordSchedulesPage() {
                         value: data.value,
                         recordQuality: data.recordQuality,
                         priority: data.priority,
+                        autoArchive: data.autoArchive,
                     },
                 });
                 toast.success("녹화 스케줄이 수정되었습니다.");
@@ -163,7 +165,7 @@ export default function RecordSchedulesPage() {
         }
     };
 
-    const handleDelete = async (schedule: AdminRecordScheduleResponse) => {
+    const handleDelete = async (schedule: RecordScheduleAdminSearchResponse) => {
         if (!confirm(`정말로 삭제하시겠습니까?`)) {
             return;
         }
@@ -299,6 +301,7 @@ export default function RecordSchedulesPage() {
                             <TableHead className="border-r font-semibold">값</TableHead>
                             <TableHead className="border-r font-semibold w-[100px] text-center">화질</TableHead>
                             <TableHead className="border-r font-semibold w-[80px] text-center">우선순위</TableHead>
+                            <TableHead className="border-r font-semibold w-[90px] text-center">자동 소장</TableHead>
                             <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
@@ -306,19 +309,19 @@ export default function RecordSchedulesPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8">
+                                <TableCell colSpan={10} className="text-center py-8">
                                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8 text-destructive">
+                                <TableCell colSpan={10} className="text-center py-8 text-destructive">
                                     데이터를 불러오는 중 오류가 발생했습니다.
                                 </TableCell>
                             </TableRow>
                         ) : !schedulesData?.content || schedulesData.content.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                                     등록된 녹화 스케줄이 없습니다.
                                 </TableCell>
                             </TableRow>
@@ -365,6 +368,13 @@ export default function RecordSchedulesPage() {
 
                                     {/* 우선순위 */}
                                     <TableCell className="border-r text-center">{schedule.priority}</TableCell>
+
+                                    {/* 자동 소장 */}
+                                    <TableCell className="border-r text-center">
+                                        <AdminBadge tone={schedule.autoArchive ? "success" : "neutral"}>
+                                            {schedule.autoArchive ? "ON" : "OFF"}
+                                        </AdminBadge>
+                                    </TableCell>
 
                                     {/* 생성일 */}
                                     <TableCell className="border-r text-center">{formatDate(schedule.createdAt)}</TableCell>

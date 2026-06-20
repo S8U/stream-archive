@@ -16,31 +16,34 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Loader2, CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import type {
-    AdminRecordScheduleResponse,
-    AdminRecordScheduleCreateRequestPlatformType,
-    AdminRecordScheduleCreateRequestScheduleType,
-    AdminRecordScheduleCreateRequestRecordQuality
+    RecordScheduleAdminSearchResponse,
+    RecordScheduleAdminCreateRequestPlatformType,
+    RecordScheduleAdminCreateRequestScheduleType,
+    RecordScheduleAdminCreateRequestRecordQuality
 } from "@/lib/api/models";
-import { useSearchAdminChannels } from "@/lib/api/endpoints/admin-channel/admin-channel";
+import { useSearchAdminChannels } from "@/lib/api/endpoints/channel-admin/channel-admin";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface RecordScheduleFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     mode: "create" | "edit";
-    schedule: AdminRecordScheduleResponse | null;
+    schedule: RecordScheduleAdminSearchResponse | null;
     onSubmit: (data: {
         channelId: number;
-        platformType: AdminRecordScheduleCreateRequestPlatformType;
-        scheduleType: AdminRecordScheduleCreateRequestScheduleType;
+        platformType: RecordScheduleAdminCreateRequestPlatformType;
+        scheduleType: RecordScheduleAdminCreateRequestScheduleType;
         value: string;
-        recordQuality: AdminRecordScheduleCreateRequestRecordQuality;
+        recordQuality: RecordScheduleAdminCreateRequestRecordQuality;
         priority: number;
+        autoArchive: boolean;
     }) => Promise<void>;
     isSubmitting: boolean;
 }
@@ -64,10 +67,11 @@ export function RecordScheduleFormDialog({
     isSubmitting,
 }: RecordScheduleFormDialogProps) {
     const [channelId, setChannelId] = useState<string>("");
-    const [platformType, setPlatformType] = useState<AdminRecordScheduleCreateRequestPlatformType>("CHZZK");
-    const [scheduleType, setScheduleType] = useState<AdminRecordScheduleCreateRequestScheduleType>("ONCE");
-    const [recordQuality, setRecordQuality] = useState<AdminRecordScheduleCreateRequestRecordQuality>("BEST");
+    const [platformType, setPlatformType] = useState<RecordScheduleAdminCreateRequestPlatformType>("CHZZK");
+    const [scheduleType, setScheduleType] = useState<RecordScheduleAdminCreateRequestScheduleType>("ONCE");
+    const [recordQuality, setRecordQuality] = useState<RecordScheduleAdminCreateRequestRecordQuality>("BEST");
     const [priority, setPriority] = useState<number>(0);
+    const [autoArchive, setAutoArchive] = useState<boolean>(false);
 
     // Value states
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
@@ -84,10 +88,11 @@ export function RecordScheduleFormDialog({
         if (open) {
             if (mode === "edit" && schedule) {
                 setChannelId(schedule.channel.id.toString());
-                setPlatformType(schedule.platformType as AdminRecordScheduleCreateRequestPlatformType);
-                setScheduleType(schedule.scheduleType as AdminRecordScheduleCreateRequestScheduleType);
-                setRecordQuality(schedule.recordQuality as AdminRecordScheduleCreateRequestRecordQuality);
+                setPlatformType(schedule.platformType as RecordScheduleAdminCreateRequestPlatformType);
+                setScheduleType(schedule.scheduleType as RecordScheduleAdminCreateRequestScheduleType);
+                setRecordQuality(schedule.recordQuality as RecordScheduleAdminCreateRequestRecordQuality);
                 setPriority(schedule.priority);
+                setAutoArchive(schedule.autoArchive);
 
                 // Parse value based on schedule type
                 if (schedule.scheduleType === "N_DAYS_OF_EVERY_WEEK") {
@@ -118,6 +123,7 @@ export function RecordScheduleFormDialog({
                 setScheduleType("ONCE");
                 setRecordQuality("BEST");
                 setPriority(0);
+                setAutoArchive(false);
                 setSelectedDays([]);
                 setSelectedDates([]);
             }
@@ -126,6 +132,22 @@ export function RecordScheduleFormDialog({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // 채널 미선택 방어 (Radix Select는 native required가 안 먹어 빈 값으로 제출될 수 있다)
+        if (mode === "create" && !channelId) {
+            toast.error("채널을 선택해주세요.");
+            return;
+        }
+
+        // 스케줄 값 미입력 방어
+        if (scheduleType === "N_DAYS_OF_EVERY_WEEK" && selectedDays.length === 0) {
+            toast.error("요일을 선택해주세요.");
+            return;
+        }
+        if (scheduleType === "SPECIFIC_DAY" && selectedDates.length === 0) {
+            toast.error("날짜를 선택해주세요.");
+            return;
+        }
 
         let value = "";
         if (scheduleType === "N_DAYS_OF_EVERY_WEEK") {
@@ -141,6 +163,7 @@ export function RecordScheduleFormDialog({
             value,
             recordQuality,
             priority,
+            autoArchive,
         });
     };
 
@@ -191,7 +214,7 @@ export function RecordScheduleFormDialog({
                             <Label>플랫폼</Label>
                             <Select
                                 value={platformType}
-                                onValueChange={(value) => setPlatformType(value as AdminRecordScheduleCreateRequestPlatformType)}
+                                onValueChange={(value) => setPlatformType(value as RecordScheduleAdminCreateRequestPlatformType)}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="플랫폼 선택" />
@@ -211,7 +234,7 @@ export function RecordScheduleFormDialog({
                             <Label>스케줄 유형</Label>
                             <Select
                                 value={scheduleType}
-                                onValueChange={(value) => setScheduleType(value as AdminRecordScheduleCreateRequestScheduleType)}
+                                onValueChange={(value) => setScheduleType(value as RecordScheduleAdminCreateRequestScheduleType)}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="스케줄 유형 선택" />
@@ -294,7 +317,7 @@ export function RecordScheduleFormDialog({
                             <Label>녹화 품질</Label>
                             <Select
                                 value={recordQuality}
-                                onValueChange={(value) => setRecordQuality(value as AdminRecordScheduleCreateRequestRecordQuality)}
+                                onValueChange={(value) => setRecordQuality(value as RecordScheduleAdminCreateRequestRecordQuality)}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="녹화 품질 선택" />
@@ -318,6 +341,21 @@ export function RecordScheduleFormDialog({
                                 placeholder="0"
                             />
                             <p className="text-xs text-muted-foreground">높을수록 우선순위가 높습니다.</p>
+                        </div>
+
+                        {/* 자동 소장 */}
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="grid gap-1">
+                                <Label htmlFor="auto-archive">자동 소장</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    이 스케줄로 녹화된 동영상을 자동으로 소장합니다.
+                                </p>
+                            </div>
+                            <Switch
+                                id="auto-archive"
+                                checked={autoArchive}
+                                onCheckedChange={setAutoArchive}
+                            />
                         </div>
                     </div>
                     <DialogFooter>
