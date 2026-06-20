@@ -78,11 +78,6 @@ allOpen {
     annotation("jakarta.persistence.Embeddable")
 }
 
-// .env를 항상 backend/ 기준으로 찾도록 작업 디렉토리를 고정한다
-tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
-    workingDir = projectDir
-}
-
 tasks.test {
     useJUnitPlatform {
         excludeTags("external")

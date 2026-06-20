@@ -6,7 +6,9 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
   config:
-    import: optional:file:.env[.properties]
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:backend/.env[.properties]
 
   # 데이터베이스 설정
   datasource:
