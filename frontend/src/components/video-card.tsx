@@ -77,6 +77,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     playlistUrl={playlistUrl}
                     title={title}
                     isHovered={hoveredVideoUuid === uuid}
+                    isLive={record?.isEnded === false}
                 />
                 {record?.isEnded === false ? (
                     <Badge className="absolute right-2 bottom-2 rounded bg-red-600 text-white">LIVE</Badge>

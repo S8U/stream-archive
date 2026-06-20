@@ -10,17 +10,33 @@ interface VideoPreviewProps {
     playlistUrl: string;
     title: string;
     isHovered: boolean;
+    isLive?: boolean;
 }
 
 function isInterruptedPlayback(error: unknown): boolean {
     return error instanceof DOMException && error.name === 'AbortError';
 }
 
-export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: VideoPreviewProps) {
+export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered, isLive }: VideoPreviewProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
     const [isVideoLoaded, setIsVideoLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
+    // 녹화 중에는 썸네일이 주기적으로 갱신되므로 10초마다 캐시버스터 값을 바꿔 새로 받는다
+    const [cacheBuster, setCacheBuster] = useState(0);
+
+    useEffect(() => {
+        if (!isLive) {
+            return;
+        }
+
+        setCacheBuster(Math.floor(Date.now() / 10000));
+        const timer = setInterval(() => {
+            setCacheBuster(Math.floor(Date.now() / 10000));
+        }, 10000);
+
+        return () => clearInterval(timer);
+    }, [isLive]);
 
     useEffect(() => {
         if (!isHovered || !videoRef.current) {
@@ -99,6 +115,15 @@ export function VideoPreview({ thumbnailUrl, playlistUrl, title, isHovered }: Vi
                     <div className="w-full h-full flex items-center justify-center bg-muted">
                         <VideoOff className="w-16 h-16 text-muted-foreground" />
                     </div>
+                ) : isLive ? (
+                    // 녹화 중에는 next/image 최적화 캐시를 우회하기 위해 일반 img를 쓴다
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={`${thumbnailUrl}?t=${cacheBuster}`}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                    />
                 ) : (
                     <Image
                         src={thumbnailUrl}
