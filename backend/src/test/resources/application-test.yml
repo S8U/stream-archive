@@ -1,0 +1,23 @@
+spring:
+  # 테스트는 H2 인메모리로 외부 DB 없이 격리 실행한다
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+# 테스트용 고정 시크릿 (실제 값과 무관, 길이만 충족)
+jwt:
+  secret: test-secret-key-for-junit-only-do-not-use-in-production-0123456789
+
+# 테스트는 임시 디렉토리에 저장
+storage:
+  base-path: ./build/test-storage

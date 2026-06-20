@@ -18,3 +18,8 @@ storage/
 
 # Docker
 docker-compose.override.yml
+
+# 설계 노하우 문서 (공개 리포에 올리지 않음)
+docs/architecture.md
+docs/architecture-report.html
+docs/refactoring-plan.md

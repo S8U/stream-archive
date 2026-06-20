@@ -1,7 +1,67 @@
 spring:
+  application:
+    name: stream-archive
+
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
   config:
-    import:
-      - optional:file:.env[.properties]
-      - optional:file:backend/.env[.properties]
+    import: optional:file:.env[.properties]
+
+  # 데이터베이스 설정
+  datasource:
+    url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:stream_archive}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME:stream_archive_app}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+        format_sql: true
+
+# 서버 설정
+server:
+  port: ${SERVER_PORT:8080}
+
+# 로깅 설정 (앱 로그 레벨은 프로필별로 덮어쓴다)
+logging:
+  level:
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+
+# JWT 설정 (시크릿은 .env로 외부화, 만료시간은 정책값이라 고정)
+jwt:
+  secret: ${JWT_SECRET:your_super_secret_jwt_key_change_this_in_production}
+  access-token-expiration: 1800000 # 30분 (밀리초)
+  refresh-token-expiration: 2592000000 # 30일 (밀리초)
+  cookie:
+    same-site: Lax
+    http-only: true
+    path: /
+    access-token-name: AT
+    refresh-token-name: RT
+    # secure·domain은 프로필별로 덮어쓴다 (로컬은 http, 운영은 https)
+    secure: false
+    domain: ${COOKIE_DOMAIN:localhost}
+
+# 플랫폼 설정
+platform:
+  twitch:
+    app-client-id: ${TWITCH_APP_CLIENT_ID:your_client_id}
+    app-client-secret: ${TWITCH_APP_CLIENT_SECRET:your_client_secret}
+    personal-oauth-token: ${TWITCH_PERSONAL_OAUTH_TOKEN:}
+
+# 스토리지 설정
+storage:
+  base-path: ${STORAGE_BASE_PATH:./storage}
+
+# URL 설정
+url:
+  api-base: ${API_BASE_URL:http://localhost:8080}
+  frontend-base: ${FRONTEND_BASE_URL:http://localhost:3000}

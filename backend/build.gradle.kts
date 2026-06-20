@@ -46,13 +46,6 @@ dependencies {
     // 웹소켓
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
-    // 모니터링
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.micrometer:micrometer-registry-prometheus")
-
-    // 개발 도구
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-
     // Swagger/OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
@@ -61,7 +54,7 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.3")
 
-    // Configuration Processor
+    // 구성 프로세서
     kapt("org.springframework.boot:spring-boot-configuration-processor")
 
     // 테스트
@@ -70,6 +63,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("io.mockk:mockk:1.13.13")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("com.h2database:h2")
 }
 
 kotlin {
@@ -82,6 +76,11 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
+}
+
+// .env를 항상 backend/ 기준으로 찾도록 작업 디렉토리를 고정한다
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    workingDir = projectDir
 }
 
 tasks.test {
