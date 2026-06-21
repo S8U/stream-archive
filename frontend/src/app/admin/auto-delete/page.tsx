@@ -23,6 +23,7 @@ import { AutoDeleteChannelPolicyDialog } from "@/components/admin/auto-delete-ch
 import { cn } from "@/lib/utils";
 import { Loader2, Play, ShieldCheck, TriangleAlert, Edit, Clock } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -678,7 +679,7 @@ function PreviewTable({
                     <TableRow>
                         <TableHead className="border-r font-medium w-[60px] text-center">ID</TableHead>
                         <TableHead className="border-r font-medium">채널 정보</TableHead>
-                        <TableHead className="border-r font-medium">제목</TableHead>
+                        <TableHead className="border-r font-medium">동영상 정보</TableHead>
                         <TableHead className="border-r font-medium w-[110px] text-center">용량</TableHead>
                         <TableHead className="border-r font-medium w-[120px] text-center">생성일</TableHead>
                         <TableHead className="font-medium w-[110px] text-center">경과</TableHead>
@@ -706,7 +707,24 @@ function PreviewTable({
                                     </div>
                                 </TableCell>
                                 <TableCell className="border-r">
-                                    <span className="block max-w-[360px] truncate">{video.title}</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative w-16 h-9 bg-muted rounded overflow-hidden flex-shrink-0">
+                                            {video.thumbnailUrl ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">No Img</div>
+                                            )}
+                                        </div>
+                                        <Link
+                                            href={`/videos/${video.uuid}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:underline truncate max-w-[300px]"
+                                        >
+                                            <span className="truncate">{video.title}</span>
+                                        </Link>
+                                    </div>
                                 </TableCell>
                                 <TableCell className="border-r text-center tabular-nums">{formatFileSize(video.fileSize)}</TableCell>
                                 <TableCell className="border-r text-center tabular-nums">{formatDate(video.createdAt)}</TableCell>
