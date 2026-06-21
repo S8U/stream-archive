@@ -183,6 +183,17 @@
     .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
+
+    /* number input 우측 증감 화살표(spinner) 제거 */
+    .no-spinner::-webkit-inner-spin-button,
+    .no-spinner::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .no-spinner {
+        -moz-appearance: textfield;
+    }
 }
 
 @keyframes videoPlayerFadeOut {

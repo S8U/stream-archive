@@ -158,6 +158,40 @@ CREATE TABLE video_archive_logs
     INDEX idx_video_archive_logs_created_at (created_at)
 ) COMMENT '동영상 소장 이력';
 
+-- 5-2. 동영상 자동 삭제 정책 테이블
+CREATE TABLE video_auto_delete_policies
+(
+    id                BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '동영상 자동 삭제 정책 ID',
+    channel_id        BIGINT      NULL COMMENT '채널 ID',
+    is_enabled        BOOLEAN     NOT NULL DEFAULT FALSE COMMENT '자동 삭제 활성화 여부',
+    delete_after_days INT         NOT NULL COMMENT '생성 후 며칠 지난 동영상을 삭제할지',
+    created_at        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
+    created_by        BIGINT      NULL COMMENT '생성한 사용자 ID',
+    created_ip        VARCHAR(45) NULL COMMENT '생성 시 IP',
+    updated_at        DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정 일시',
+    updated_by        BIGINT      NULL COMMENT '수정한 사용자 ID',
+    updated_ip        VARCHAR(45) NULL COMMENT '수정 시 IP',
+
+    UNIQUE KEY uk_video_auto_delete_policies_channel_id (channel_id),
+    INDEX idx_video_auto_delete_policies_channel_id (channel_id)
+) COMMENT '동영상 자동 삭제 정책';
+
+-- 5-3. 동영상 자동 삭제 이력 테이블
+CREATE TABLE video_auto_delete_histories
+(
+    id               BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '동영상 자동 삭제 이력 ID',
+    video_id         BIGINT       NOT NULL COMMENT '동영상 ID',
+    channel_id       BIGINT       NOT NULL COMMENT '채널 ID',
+    title            VARCHAR(500) NOT NULL COMMENT '삭제 시점 제목',
+    file_size        BIGINT       NOT NULL COMMENT '삭제 시점 파일 크기 (바이트)',
+    video_created_at DATETIME     NOT NULL COMMENT '동영상 생성 일시',
+    created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
+
+    INDEX idx_video_auto_delete_histories_video_id (video_id),
+    INDEX idx_video_auto_delete_histories_channel_id (channel_id),
+    INDEX idx_video_auto_delete_histories_created_at (created_at)
+) COMMENT '동영상 자동 삭제 이력';
+
 -- 6. 녹화 기록 테이블
 CREATE TABLE records
 (

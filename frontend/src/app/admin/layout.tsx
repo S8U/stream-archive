@@ -25,6 +25,7 @@ import {
     PlaySquare,
     Radio,
     Settings,
+    Trash2,
     Tv,
     Users,
     Video,
@@ -78,6 +79,7 @@ const menuConfig: MenuGroup[] = [
             { title: "녹화 스케줄 관리", href: "/admin/schedules", icon: Calendar },
             { title: "녹화 관리", href: "/admin/records", icon: Video },
             { title: "동영상 관리", href: "/admin/videos", icon: PlaySquare },
+            { title: "동영상 자동 삭제 관리", href: "/admin/auto-delete", icon: Trash2 },
         ],
     },
     {

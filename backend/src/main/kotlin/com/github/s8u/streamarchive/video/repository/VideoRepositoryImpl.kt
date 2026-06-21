@@ -12,6 +12,7 @@ import com.github.s8u.streamarchive.video.usecase.dto.command.VideoSearchCommand
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import java.time.LocalDate
+import java.time.LocalDateTime
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -100,6 +101,50 @@ class VideoRepositoryImpl(
         return PageImpl(results, pageable, total)
     }
 
+    override fun findAutoDeleteTargets(
+        channelId: Long,
+        createdBefore: LocalDateTime
+    ): List<Video> {
+        return queryFactory
+            .selectFrom(video)
+            .where(autoDeleteTargetCondition(channelId, createdBefore))
+            .orderBy(video.createdAt.asc())
+            .fetch()
+    }
+
+    override fun countAutoDeleteTargets(
+        channelId: Long,
+        createdBefore: LocalDateTime
+    ): Long {
+        return queryFactory
+            .select(video.count())
+            .from(video)
+            .where(autoDeleteTargetCondition(channelId, createdBefore))
+            .fetchOne() ?: 0L
+    }
+
+    override fun sumFileSizeAutoDeleteTargets(
+        channelId: Long,
+        createdBefore: LocalDateTime
+    ): Long {
+        return queryFactory
+            .select(video.fileSize.sum())
+            .from(video)
+            .where(autoDeleteTargetCondition(channelId, createdBefore))
+            .fetchOne() ?: 0L
+    }
+
+    // 자동 삭제 대상 조건 (소장하지 않은, 기준일 이전에 생성된 활성 동영상)
+    private fun autoDeleteTargetCondition(
+        channelId: Long,
+        createdBefore: LocalDateTime
+    ): BooleanExpression {
+        return video.channelId.eq(channelId)
+            .and(video.isActive.eq(true))
+            .and(video.isArchived.eq(false))
+            .and(video.createdAt.lt(createdBefore))
+    }
+
     private fun videoTextContains(title: String?, description: String?): BooleanExpression? {
         val titleExpression = title?.let { video.title.containsIgnoreCase(it) }
         val descriptionExpression = description?.let { video.description.containsIgnoreCase(it) }
@@ -131,18 +176,18 @@ class VideoRepositoryImpl(
             val endOfDay = currentDate.plusDays(1).atStartOfDay()
 
             val videoCount = queryFactory
-                    .select(video.count())
-                    .from(video)
-                    .where(video.createdAt.lt(endOfDay))
-                    .fetchOne()
-                    ?: 0L
+                .select(video.count())
+                .from(video)
+                .where(video.createdAt.lt(endOfDay))
+                .fetchOne()
+                ?: 0L
 
             val storageUsage = queryFactory
-                    .select(video.fileSize.sum())
-                    .from(video)
-                    .where(video.createdAt.lt(endOfDay))
-                    .fetchOne()
-                    ?: 0L
+                .select(video.fileSize.sum())
+                .from(video)
+                .where(video.createdAt.lt(endOfDay))
+                .fetchOne()
+                ?: 0L
 
             result.add(
                 VideoDailyStatProjection(
