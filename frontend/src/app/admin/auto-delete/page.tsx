@@ -34,7 +34,7 @@ import {
     useDeleteAdminAutoDeleteChannelPolicy,
     useSearchAdminAutoDeleteChannelPolicies,
     useGetAdminAutoDeletePreviewSummary,
-    useGetAdminAutoDeletePreview,
+    useSearchAdminAutoDeletePreviews,
     useSearchAdminAutoDeleteHistories,
     useRunAdminAutoDelete,
 } from "@/lib/api/endpoints/video-auto-delete-admin/video-auto-delete-admin";
@@ -632,7 +632,7 @@ function PreviewTab({ page, onPageChange }: { page: number; onPageChange: (page:
 
     const { data: channelsData } = useSearchAdminChannels({ request: {}, pageable: { page: 0, size: 200 } });
 
-    const { data, isLoading, error } = useGetAdminAutoDeletePreview({
+    const { data, isLoading, error } = useSearchAdminAutoDeletePreviews({
         pageable: { page: page - 1, size },
     });
 

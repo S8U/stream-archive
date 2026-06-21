@@ -22,16 +22,16 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  GetAdminAutoDeletePreviewParams,
   GetAdminAutoDeletePreviewSummaryParams,
   PageVideoAutoDeleteHistorySearchResponse,
   PageVideoAutoDeletePreviewResponse,
   SearchAdminAutoDeleteHistoriesParams,
+  SearchAdminAutoDeletePreviewsParams,
   VideoAutoDeleteChannelPolicySearchResponse,
   VideoAutoDeletePolicyGetResponse,
   VideoAutoDeletePolicyUpdateRequest,
   VideoAutoDeletePolicyUpdateResponse,
-  VideoAutoDeletePreviewSummaryResponse,
+  VideoAutoDeletePreviewSummaryGetResponse,
   VideoAutoDeleteRunResponse,
 } from "../../models";
 
@@ -288,7 +288,7 @@ export const useUpdateAdminAutoDeleteGlobalPolicy = <
 /**
  * @summary 채널별 자동 삭제 정책 조회
  */
-export const getAdminAutoDeleteChannelPolicy = (
+export const getAdminAutoDeleteChannelPolicyByChannelId = (
   channelId: number,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
@@ -303,21 +303,23 @@ export const getAdminAutoDeleteChannelPolicy = (
   );
 };
 
-export const getGetAdminAutoDeleteChannelPolicyQueryKey = (
+export const getGetAdminAutoDeleteChannelPolicyByChannelIdQueryKey = (
   channelId?: number,
 ) => {
   return [`/admin/videos/auto-delete/policy/channels/${channelId}`] as const;
 };
 
-export const getGetAdminAutoDeleteChannelPolicyQueryOptions = <
-  TData = Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+export const getGetAdminAutoDeleteChannelPolicyByChannelIdQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+  >,
   TError = unknown,
 >(
   channelId: number,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>,
         TError,
         TData
       >
@@ -329,12 +331,16 @@ export const getGetAdminAutoDeleteChannelPolicyQueryOptions = <
 
   const queryKey =
     queryOptions?.queryKey ??
-    getGetAdminAutoDeleteChannelPolicyQueryKey(channelId);
+    getGetAdminAutoDeleteChannelPolicyByChannelIdQueryKey(channelId);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>
+    Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>
   > = ({ signal }) =>
-    getAdminAutoDeleteChannelPolicy(channelId, requestOptions, signal);
+    getAdminAutoDeleteChannelPolicyByChannelId(
+      channelId,
+      requestOptions,
+      signal,
+    );
 
   return {
     queryKey,
@@ -342,35 +348,39 @@ export const getGetAdminAutoDeleteChannelPolicyQueryOptions = <
     enabled: !!channelId,
     ...queryOptions,
   } as UseQueryOptions<
-    Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+    Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetAdminAutoDeleteChannelPolicyQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>
+export type GetAdminAutoDeleteChannelPolicyByChannelIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>
 >;
-export type GetAdminAutoDeleteChannelPolicyQueryError = unknown;
+export type GetAdminAutoDeleteChannelPolicyByChannelIdQueryError = unknown;
 
-export function useGetAdminAutoDeleteChannelPolicy<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+export function useGetAdminAutoDeleteChannelPolicyByChannelId<
+  TData = Awaited<
+    ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+  >,
   TError = unknown,
 >(
   channelId: number,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+          Awaited<
+            ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+          >,
           TError,
-          Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>
+          Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>
         >,
         "initialData"
       >;
@@ -380,24 +390,28 @@ export function useGetAdminAutoDeleteChannelPolicy<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetAdminAutoDeleteChannelPolicy<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+export function useGetAdminAutoDeleteChannelPolicyByChannelId<
+  TData = Awaited<
+    ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+  >,
   TError = unknown,
 >(
   channelId: number,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+          Awaited<
+            ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+          >,
           TError,
-          Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>
+          Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>
         >,
         "initialData"
       >;
@@ -407,15 +421,17 @@ export function useGetAdminAutoDeleteChannelPolicy<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetAdminAutoDeleteChannelPolicy<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+export function useGetAdminAutoDeleteChannelPolicyByChannelId<
+  TData = Awaited<
+    ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+  >,
   TError = unknown,
 >(
   channelId: number,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>,
         TError,
         TData
       >
@@ -430,15 +446,17 @@ export function useGetAdminAutoDeleteChannelPolicy<
  * @summary 채널별 자동 삭제 정책 조회
  */
 
-export function useGetAdminAutoDeleteChannelPolicy<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+export function useGetAdminAutoDeleteChannelPolicyByChannelId<
+  TData = Awaited<
+    ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>
+  >,
   TError = unknown,
 >(
   channelId: number,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicy>>,
+        Awaited<ReturnType<typeof getAdminAutoDeleteChannelPolicyByChannelId>>,
         TError,
         TData
       >
@@ -449,10 +467,11 @@ export function useGetAdminAutoDeleteChannelPolicy<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetAdminAutoDeleteChannelPolicyQueryOptions(
-    channelId,
-    options,
-  );
+  const queryOptions =
+    getGetAdminAutoDeleteChannelPolicyByChannelIdQueryOptions(
+      channelId,
+      options,
+    );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -726,8 +745,8 @@ export const useRunAdminAutoDelete = <TError = unknown, TContext = unknown>(
 /**
  * @summary 자동 삭제 미리보기 목록 (다음 삭제 대상 동영상)
  */
-export const getAdminAutoDeletePreview = (
-  params: GetAdminAutoDeletePreviewParams,
+export const searchAdminAutoDeletePreviews = (
+  params: SearchAdminAutoDeletePreviewsParams,
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
@@ -737,8 +756,8 @@ export const getAdminAutoDeletePreview = (
   );
 };
 
-export const getGetAdminAutoDeletePreviewQueryKey = (
-  params?: GetAdminAutoDeletePreviewParams,
+export const getSearchAdminAutoDeletePreviewsQueryKey = (
+  params?: SearchAdminAutoDeletePreviewsParams,
 ) => {
   return [
     `/admin/videos/auto-delete/preview`,
@@ -746,15 +765,15 @@ export const getGetAdminAutoDeletePreviewQueryKey = (
   ] as const;
 };
 
-export const getGetAdminAutoDeletePreviewQueryOptions = <
-  TData = Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+export const getSearchAdminAutoDeletePreviewsQueryOptions = <
+  TData = Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
   TError = unknown,
 >(
-  params: GetAdminAutoDeletePreviewParams,
+  params: SearchAdminAutoDeletePreviewsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+        Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
         TError,
         TData
       >
@@ -765,42 +784,43 @@ export const getGetAdminAutoDeletePreviewQueryOptions = <
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getGetAdminAutoDeletePreviewQueryKey(params);
+    queryOptions?.queryKey ?? getSearchAdminAutoDeletePreviewsQueryKey(params);
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getAdminAutoDeletePreview>>
-  > = ({ signal }) => getAdminAutoDeletePreview(params, requestOptions, signal);
+    Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>
+  > = ({ signal }) =>
+    searchAdminAutoDeletePreviews(params, requestOptions, signal);
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+    Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
     TError,
     TData
   > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetAdminAutoDeletePreviewQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getAdminAutoDeletePreview>>
+export type SearchAdminAutoDeletePreviewsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>
 >;
-export type GetAdminAutoDeletePreviewQueryError = unknown;
+export type SearchAdminAutoDeletePreviewsQueryError = unknown;
 
-export function useGetAdminAutoDeletePreview<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+export function useSearchAdminAutoDeletePreviews<
+  TData = Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
   TError = unknown,
 >(
-  params: GetAdminAutoDeletePreviewParams,
+  params: SearchAdminAutoDeletePreviewsParams,
   options: {
     query: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+        Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
         TError,
         TData
       >
     > &
       Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+          Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAutoDeletePreview>>
+          Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>
         >,
         "initialData"
       >;
@@ -810,24 +830,24 @@ export function useGetAdminAutoDeletePreview<
 ): DefinedUseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetAdminAutoDeletePreview<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+export function useSearchAdminAutoDeletePreviews<
+  TData = Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
   TError = unknown,
 >(
-  params: GetAdminAutoDeletePreviewParams,
+  params: SearchAdminAutoDeletePreviewsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+        Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
         TError,
         TData
       >
     > &
       Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+          Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
           TError,
-          Awaited<ReturnType<typeof getAdminAutoDeletePreview>>
+          Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>
         >,
         "initialData"
       >;
@@ -837,15 +857,15 @@ export function useGetAdminAutoDeletePreview<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetAdminAutoDeletePreview<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+export function useSearchAdminAutoDeletePreviews<
+  TData = Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
   TError = unknown,
 >(
-  params: GetAdminAutoDeletePreviewParams,
+  params: SearchAdminAutoDeletePreviewsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+        Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
         TError,
         TData
       >
@@ -860,15 +880,15 @@ export function useGetAdminAutoDeletePreview<
  * @summary 자동 삭제 미리보기 목록 (다음 삭제 대상 동영상)
  */
 
-export function useGetAdminAutoDeletePreview<
-  TData = Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+export function useSearchAdminAutoDeletePreviews<
+  TData = Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
   TError = unknown,
 >(
-  params: GetAdminAutoDeletePreviewParams,
+  params: SearchAdminAutoDeletePreviewsParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
-        Awaited<ReturnType<typeof getAdminAutoDeletePreview>>,
+        Awaited<ReturnType<typeof searchAdminAutoDeletePreviews>>,
         TError,
         TData
       >
@@ -879,7 +899,7 @@ export function useGetAdminAutoDeletePreview<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetAdminAutoDeletePreviewQueryOptions(
+  const queryOptions = getSearchAdminAutoDeletePreviewsQueryOptions(
     params,
     options,
   );
@@ -902,7 +922,7 @@ export const getAdminAutoDeletePreviewSummary = (
   options?: SecondParameter<typeof customAxiosInstance>,
   signal?: AbortSignal,
 ) => {
-  return customAxiosInstance<VideoAutoDeletePreviewSummaryResponse>(
+  return customAxiosInstance<VideoAutoDeletePreviewSummaryGetResponse>(
     {
       url: `/admin/videos/auto-delete/preview/summary`,
       method: "GET",

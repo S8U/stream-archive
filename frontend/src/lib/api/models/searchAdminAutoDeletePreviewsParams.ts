@@ -7,7 +7,7 @@
  */
 import type { Pageable } from "./pageable";
 
-export type GetAdminAutoDeletePreviewParams = {
+export type SearchAdminAutoDeletePreviewsParams = {
   channelId?: number;
   pageable: Pageable;
 };

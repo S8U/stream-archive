@@ -9,7 +9,7 @@
 /**
  * 동영상 자동 삭제 미리보기 요약 응답 (관리자)
  */
-export interface VideoAutoDeletePreviewSummaryResponse {
+export interface VideoAutoDeletePreviewSummaryGetResponse {
   /** 채널 ID (null이면 전체) */
   channelId?: number;
   /** 다음 자동 삭제 대상 동영상 수 */
