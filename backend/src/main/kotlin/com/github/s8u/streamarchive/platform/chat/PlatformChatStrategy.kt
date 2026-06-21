@@ -20,6 +20,7 @@ interface PlatformChatStrategy {
     /**
      * 채팅 수집을 시작하고 세션을 반환한다.
      *
+     * 채팅 접속 정보를 찾을 수 없으면 null을 반환한다.
      * [onClosed]는 연결이 끊겼을 때 호출된다(재연결 여부는 호출자가 정한다).
      */
     fun startCollecting(
@@ -29,6 +30,6 @@ interface PlatformChatStrategy {
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
         onClosed: () -> Unit
-    ): PlatformChatCollectionSession
+    ): PlatformChatCollectionSession?
 
 }

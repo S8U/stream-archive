@@ -4,19 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
-import com.github.s8u.streamarchive.platform.platforms.chzzk.client.ChzzkApiClient
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketMessage
 import org.springframework.web.socket.WebSocketSession
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 class ChzzkChatWebSocketHandler(
-    val chzzkApiClient: ChzzkApiClient,
+    private val chatChannelId: String,
+    private val chatAccessToken: String,
     recordId: Long,
     videoId: Long,
     platformChannelId: String,
@@ -35,30 +33,8 @@ class ChzzkChatWebSocketHandler(
     private val logger = LoggerFactory.getLogger(javaClass)
     private val objectMapper: ObjectMapper = jacksonObjectMapper()
 
-    var chatChannelId: String? = null
-    var chatAccessToken: String? = null
-    var userId: String? = null
-
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.debug("ChzzkChatWebSocketHandler: Chzzk chat established (recordId: {})", recordId)
-
-        // 채팅 채널 ID
-        val chzzkStreamDto = chzzkApiClient.getLiveDetail(platformChannelId)?.content
-        chatChannelId = chzzkStreamDto?.chatChannelId
-
-        if (chatChannelId == null) {
-            logger.error("ChzzkChatWebSocketHandler: Chzzk chatChannelId is null (recordId: {})", recordId)
-            return
-        }
-
-        // 채팅 Access Token
-        val chatAccessTokenDto = chzzkApiClient.getChatAccessToken(chatChannelId!!)?.content
-        chatAccessToken = chatAccessTokenDto?.accessToken
-
-        if (chatAccessToken == null) {
-            logger.error("ChzzkChatWebSocketHandler: Chzzk chatAccessToken is null (recordId: {})", recordId)
-            return
-        }
 
         // 채팅방 접속
         sendConnectPacket(session)
@@ -109,11 +85,33 @@ class ChzzkChatWebSocketHandler(
     }
 
     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
-        logger.debug("ChzzkChatWebSocketHandler: Chzzk chat error (recordId: {})", recordId)
+        logger.error(
+            "ChzzkChatWebSocketHandler: Chzzk chat transport error (recordId: {}, sessionId: {})",
+            recordId,
+            session.id,
+            exception
+        )
     }
 
     override fun afterConnectionClosed(session: WebSocketSession, closeStatus: CloseStatus) {
-        logger.debug("ChzzkChatWebSocketHandler: Chzzk chat closed (recordId: {})", recordId)
+        if (closeStatus == CloseStatus.NORMAL) {
+            logger.info(
+                "ChzzkChatWebSocketHandler: Chzzk chat closed (recordId: {}, sessionId: {}, code: {}, reason: {})",
+                recordId,
+                session.id,
+                closeStatus.code,
+                closeStatus.reason
+            )
+        } else {
+            logger.warn(
+                "ChzzkChatWebSocketHandler: Chzzk chat closed abnormally (recordId: {}, sessionId: {}, code: {}, reason: {})",
+                recordId,
+                session.id,
+                closeStatus.code,
+                closeStatus.reason
+            )
+        }
+
         onConnectionClosed()
     }
 

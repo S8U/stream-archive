@@ -52,7 +52,7 @@ class RecordingChatCollectManager(
                         startCollecting(recordId, videoId, platformType, platformChannelId, recordStartedAt)
                     }
                 }
-            )
+            ) ?: return
             sessions[recordId] = session
 
             logger.info("RecordingChatCollectManager: Started chat collect: recordId={}, platformType={}", recordId, platformType)
