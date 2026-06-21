@@ -13,7 +13,6 @@ class PageableConfig : WebMvcConfigurer {
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         val resolver = PageableHandlerMethodArgumentResolver().apply {
-            setOneIndexedParameters(true)
             setMaxPageSize(100)
             setFallbackPageable(PageRequest.of(0, 20))
         }

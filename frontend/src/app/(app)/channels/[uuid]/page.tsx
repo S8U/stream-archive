@@ -75,7 +75,7 @@ export default async function ChannelPage({ params, searchParams }: Props) {
                 channelUuid: uuid,
             },
             pageable: {
-                page: page + 1,
+                page,
                 size,
             },
         },

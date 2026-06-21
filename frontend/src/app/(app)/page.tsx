@@ -26,7 +26,7 @@ export default async function Home({ searchParams }: Props) {
         {
             request: query ? { title: query, description: query } : {},
             pageable: {
-                page: page + 1,
+                page,
                 size,
             }
         },
