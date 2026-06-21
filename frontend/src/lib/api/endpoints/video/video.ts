@@ -25,6 +25,7 @@ import type {
   GetVideoChatHistoryParams,
   PageVideoSearchResponse,
   SearchVideosParams,
+  VideoChapterGetResponse,
   VideoChatHistorySearchResponse,
   VideoGetResponse,
   VideoViewerHistoryGetResponse,
@@ -1446,6 +1447,173 @@ export function useGetVideoChatHistory<
     params,
     options,
   );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 동영상 챕터 조회
+ */
+export const getVideoChapters = (
+  uuid: string,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<VideoChapterGetResponse[]>(
+    { url: `/videos/${uuid}/chapters`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetVideoChaptersQueryKey = (uuid?: string) => {
+  return [`/videos/${uuid}/chapters`] as const;
+};
+
+export const getGetVideoChaptersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoChapters>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChapters>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetVideoChaptersQueryKey(uuid);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoChapters>>
+  > = ({ signal }) => getVideoChapters(uuid, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoChapters>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoChaptersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoChapters>>
+>;
+export type GetVideoChaptersQueryError = unknown;
+
+export function useGetVideoChapters<
+  TData = Awaited<ReturnType<typeof getVideoChapters>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChapters>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChapters>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChapters>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChapters<
+  TData = Awaited<ReturnType<typeof getVideoChapters>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChapters>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChapters>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChapters>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChapters<
+  TData = Awaited<ReturnType<typeof getVideoChapters>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChapters>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 챕터 조회
+ */
+
+export function useGetVideoChapters<
+  TData = Awaited<ReturnType<typeof getVideoChapters>>,
+  TError = unknown,
+>(
+  uuid: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChapters>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoChaptersQueryOptions(uuid, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatElapsed } from '@/lib/utils';
+import { findCurrentChapter, toDisplayChapters } from '@/lib/chapters';
+import type { VideoChapterGetResponse } from '@/lib/api/models';
 
 interface ViewerPoint {
     offsetMillis: number;
@@ -43,6 +45,7 @@ interface VideoPlayerProps {
     isWide?: boolean;
     onWideToggle?: (isWide: boolean) => void;
     viewerHistory?: ViewerPoint[];
+    chapters?: VideoChapterGetResponse[];
     headerInfo?: VideoPlayerHeaderInfo;
 }
 
@@ -231,6 +234,7 @@ export function VideoPlayer({
     isWide: isWideProp,
     onWideToggle,
     viewerHistory,
+    chapters,
     headerInfo,
 }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -1408,6 +1412,18 @@ export function VideoPlayer({
         return closest.viewerCount;
     }, [hoverTime, viewerHistory]);
 
+    // 카테고리 변경 이력 기반 챕터 (duration 기준 가공, 3개 미만이면 빈 배열 → 표시 안 함)
+    const displayChapters = useMemo(
+        () => toDisplayChapters(chapters, duration),
+        [chapters, duration],
+    );
+
+    // hover 시점이 속한 챕터 (툴팁에 챕터명 표시)
+    const hoverChapter = useMemo(
+        () => (hoverTime === null ? null : findCurrentChapter(displayChapters, hoverTime)),
+        [hoverTime, displayChapters],
+    );
+
     // 녹화 시작 시각 (그 당시 실제 시각 계산용)
     const recordStartedAt = headerInfo?.streamStartedAt;
 
@@ -1735,6 +1751,17 @@ export function VideoPlayer({
                             </svg>
                         )}
 
+                        {/* 챕터 경계선 (각 챕터 시작 지점에 구분선, 첫 챕터 0:00 제외) */}
+                        {duration > 0 && displayChapters.map((chapter) =>
+                            chapter.startSec <= 0 ? null : (
+                                <div
+                                    key={chapter.startSec}
+                                    className="absolute top-0 h-full w-0.5 -translate-x-1/2 bg-black/40 pointer-events-none"
+                                    style={{ left: `${(chapter.startSec / duration) * 100}%` }}
+                                />
+                            ),
+                        )}
+
                         {/* hover 위치 표시 */}
                         {hoverTime !== null && (
                             <div
@@ -1766,6 +1793,9 @@ export function VideoPlayer({
                                     transform: 'translateX(-50%)',
                                 }}
                             >
+                                {hoverChapter !== null && (
+                                    <div className="max-w-48 truncate text-xs font-medium text-white/90">{hoverChapter.label}</div>
+                                )}
                                 <div className="text-sm font-bold tabular-nums">{formatTime(hoverTime)}</div>
                                 {hoverWallClock !== null && (
                                     <div className="text-xs text-white/60 tabular-nums">{hoverWallClock}</div>

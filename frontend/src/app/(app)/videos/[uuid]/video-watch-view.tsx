@@ -7,6 +7,7 @@ import { VideoInfo } from '@/components/video-info';
 import { ChatHistory } from '@/app/(app)/videos/[uuid]/chat-history';
 import {
     useGetVideoByUuid,
+    useGetVideoChapters,
     useGetVideoViewerHistory,
     useGetVideoWatchHistory,
     useSaveVideoWatchHistory,
@@ -141,6 +142,14 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         },
     });
 
+    // 챕터 조회 (카테고리 변경 이력 기반, 라이브 중에는 주기적 갱신)
+    const { data: chapters } = useGetVideoChapters(currentVideo.uuid, {
+        query: {
+            refetchInterval: isLive ? LIVE_VIDEO_REFRESH_INTERVAL_MS : false,
+            staleTime: isLive ? 0 : 60_000,
+        },
+    });
+
     // 와이드 모드: 사이드바를 가리고 좌측 비디오를 viewport 가득, 우측 채팅 유지
     const [isWide, setIsWide] = useState(false);
 
@@ -189,6 +198,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                     seekRequest={seekRequest}
                     isLive={isLive}
                     viewerHistory={viewerHistory}
+                    chapters={chapters}
                     isWide={isWide}
                     onWideToggle={setIsWide}
                     headerInfo={playerHeaderInfo}
@@ -200,6 +210,8 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
                         onTimestampClick={handleDescriptionTimestampClick}
                         isLive={isLive}
                         viewerCount={currentViewerCount}
+                        chapters={chapters}
+                        currentTimeMs={currentTimeMs}
                     />
                 )}
             </div>

@@ -1,10 +1,12 @@
 package com.github.s8u.streamarchive.video.controller
 
 import com.github.s8u.streamarchive.video.controller.dto.request.VideoSearchRequest
+import com.github.s8u.streamarchive.video.controller.dto.response.VideoChapterGetResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoChatHistorySearchResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoGetResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoSearchResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoViewerHistoryGetResponse
+import com.github.s8u.streamarchive.video.usecase.VideoChapterGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoChatHistorySearchUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoPlaylistGetUseCase
@@ -44,6 +46,7 @@ class VideoController(
     private val videoSegmentGetUseCase: VideoSegmentGetUseCase,
     private val videoChatHistorySearchUseCase: VideoChatHistorySearchUseCase,
     private val videoViewerHistoryGetUseCase: VideoViewerHistoryGetUseCase,
+    private val videoChapterGetUseCase: VideoChapterGetUseCase,
     private val watchHistoryGetUseCase: WatchHistoryGetUseCase,
     private val watchHistorySaveUseCase: WatchHistorySaveUseCase
 ) {
@@ -113,6 +116,13 @@ class VideoController(
     fun getVideoViewerHistory(@PathVariable uuid: String): List<VideoViewerHistoryGetResponse> {
         return videoViewerHistoryGetUseCase.getByVideoUuid(uuid)
             .map { VideoViewerHistoryGetResponse.from(it) }
+    }
+
+    @Operation(summary = "동영상 챕터 조회")
+    @GetMapping("/{uuid}/chapters")
+    fun getVideoChapters(@PathVariable uuid: String): List<VideoChapterGetResponse> {
+        return videoChapterGetUseCase.getByVideoUuid(uuid)
+            .map { VideoChapterGetResponse.from(it) }
     }
 
     @Operation(summary = "동영상 시청 기록 조회")

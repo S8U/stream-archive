@@ -24,8 +24,9 @@ import {
     useUpdateAdminVideo,
 } from '@/lib/api/endpoints/video-admin/video-admin';
 import {useGetChannelPlatforms} from '@/lib/api/endpoints/channel/channel';
-import type {VideoAdminUpdateRequestContentPrivacy, VideoGetResponse} from '@/lib/api/models';
+import type {VideoAdminUpdateRequestContentPrivacy, VideoChapterGetResponse, VideoGetResponse} from '@/lib/api/models';
 import type {ReactNode} from 'react';
+import {findCurrentChapter, toDisplayChapters} from '@/lib/chapters';
 
 interface VideoInfoProps {
     video: VideoGetResponse;
@@ -33,6 +34,8 @@ interface VideoInfoProps {
     onTimestampClick?: (seconds: number) => void;
     isLive?: boolean;
     viewerCount?: number;
+    chapters?: VideoChapterGetResponse[];
+    currentTimeMs?: number;
 }
 
 function parseTimestampToSeconds(match: RegExpExecArray): number {
@@ -87,12 +90,22 @@ function renderDescription(description: string, onTimestampClick?: (seconds: num
     return nodes.length > 0 ? nodes : description;
 }
 
-export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = false, viewerCount }: VideoInfoProps) {
+export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = false, viewerCount, chapters, currentTimeMs }: VideoInfoProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const recordedAt = video.record?.startedAt ?? video.createdAt;
+
+    // 카테고리 변경 이력 기반 챕터 (duration 기준으로 가공, 3개 미만이면 빈 배열)
+    const displayChapters = useMemo(
+        () => toDisplayChapters(chapters, video.duration),
+        [chapters, video.duration],
+    );
+    const currentChapter = useMemo(
+        () => (currentTimeMs == null ? null : findCurrentChapter(displayChapters, currentTimeMs / 1000)),
+        [displayChapters, currentTimeMs],
+    );
 
     // 스트리밍 경과 시간 (라이브 중에만 1초마다 갱신)
     const streamStartedAt = video.record?.startedAt;
@@ -353,6 +366,33 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
                             </dd>
                         </div>
                     </dl>
+                    {displayChapters.length > 0 && (
+                        <div className="mt-4 border-t border-border/60 pt-4">
+                            <p className="mb-2 text-xs text-muted-foreground">챕터</p>
+                            <ul className="flex flex-col gap-0.5">
+                                {displayChapters.map((chapter) => {
+                                    const isCurrent = chapter === currentChapter;
+                                    return (
+                                        <li key={chapter.startSec}>
+                                            <button
+                                                type="button"
+                                                disabled={!onTimestampClick}
+                                                onClick={() => onTimestampClick?.(chapter.startSec)}
+                                                className={`-mx-2 flex w-[calc(100%+1rem)] items-baseline gap-3 rounded-md px-2 py-1 text-left text-sm transition-colors ${
+                                                    onTimestampClick ? 'cursor-pointer hover:bg-foreground/5' : ''
+                                                } ${isCurrent ? 'font-semibold' : ''}`}
+                                            >
+                                                <span className={`flex-shrink-0 tabular-nums ${isCurrent ? 'text-sky-600 dark:text-sky-300' : 'text-sky-500 dark:text-sky-400'}`}>
+                                                    {formatElapsed(chapter.startSec)}
+                                                </span>
+                                                <span className="min-w-0 truncate">{chapter.label}</span>
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </div>
 
