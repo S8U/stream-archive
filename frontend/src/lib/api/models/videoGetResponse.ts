@@ -33,6 +33,8 @@ export interface VideoGetResponse {
   isArchived: boolean;
   /** 최고 시청자 수 */
   peakViewerCount?: number;
+  /** 최고 시청자 수 시점의 동영상 시작 기준 오프셋 (밀리초) */
+  peakViewerOffsetMillis?: number;
   /** 생성 일시 */
   createdAt: string;
   record?: RecordInfo;

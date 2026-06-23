@@ -19,6 +19,7 @@ data class VideoGetResult(
     val chatSyncOffsetMillis: Long,
     val isArchived: Boolean,
     val peakViewerCount: Int?,
+    val peakViewerOffsetMillis: Long?,
     val createdAt: LocalDateTime,
     val record: RecordInfo?
 ) {
@@ -45,7 +46,8 @@ data class VideoGetResult(
             channelProfileUrl: String,
             thumbnailUrl: String,
             playlistUrl: String,
-            peakViewerCount: Int?
+            peakViewerCount: Int?,
+            peakViewerOffsetMillis: Long?
         ): VideoGetResult {
             val channel = video.channel!!
 
@@ -65,6 +67,7 @@ data class VideoGetResult(
                 chatSyncOffsetMillis = video.chatSyncOffsetMillis,
                 isArchived = video.isArchived,
                 peakViewerCount = peakViewerCount,
+                peakViewerOffsetMillis = peakViewerOffsetMillis,
                 createdAt = video.createdAt,
                 record = video.record?.let { record ->
                     RecordInfo(

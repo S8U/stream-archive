@@ -172,10 +172,20 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
         return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
     };
 
-    const stats = [
+    // 최고 시청자수 시점으로 점프 (시점 데이터와 핸들러가 모두 있을 때만 클릭 가능)
+    const peakViewerSeconds =
+        video.peakViewerOffsetMillis != null ? Math.floor(video.peakViewerOffsetMillis / 1000) : null;
+    const onPeakViewerClick =
+        peakViewerSeconds != null && onTimestampClick ? () => onTimestampClick(peakViewerSeconds) : undefined;
+
+    const stats: { label: string; value: string; onClick?: () => void }[] = [
         { label: '녹화일', value: formatDateTime(recordedAt) },
         { label: '용량', value: formatFileSize(video.fileSize) },
-        { label: '최고 시청자수', value: video.peakViewerCount != null ? video.peakViewerCount.toLocaleString('ko-KR') : '-' },
+        {
+            label: '최고 시청자수',
+            value: video.peakViewerCount != null ? video.peakViewerCount.toLocaleString('ko-KR') : '-',
+            onClick: onPeakViewerClick,
+        },
     ];
 
     const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: VideoAdminUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
@@ -346,7 +356,20 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
                         {stats.map((stat) => (
                             <div key={stat.label} className="min-w-0">
                                 <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-                                <dd className="mt-0.5 truncate font-medium">{stat.value}</dd>
+                                <dd className="mt-0.5 truncate font-medium">
+                                    {stat.onClick ? (
+                                        <button
+                                            type="button"
+                                            onClick={stat.onClick}
+                                            className="cursor-pointer rounded-sm font-medium text-sky-500 hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:text-sky-400 dark:hover:text-sky-300"
+                                            title="최고 시청자 수 시점으로 이동"
+                                        >
+                                            {stat.value}
+                                        </button>
+                                    ) : (
+                                        stat.value
+                                    )}
+                                </dd>
                             </div>
                         ))}
                         <div className="min-w-0">

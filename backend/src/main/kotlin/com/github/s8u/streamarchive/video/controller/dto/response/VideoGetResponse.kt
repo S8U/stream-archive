@@ -40,6 +40,9 @@ data class VideoGetResponse(
     @field:Schema(description = "최고 시청자 수", example = "1234")
     val peakViewerCount: Int?,
 
+    @field:Schema(description = "최고 시청자 수 시점의 동영상 시작 기준 오프셋 (밀리초)", example = "1830000")
+    val peakViewerOffsetMillis: Long?,
+
     @field:Schema(description = "생성 일시")
     val createdAt: LocalDateTime,
 
@@ -81,6 +84,7 @@ data class VideoGetResponse(
                 chatSyncOffsetMillis = result.chatSyncOffsetMillis,
                 isArchived = result.isArchived,
                 peakViewerCount = result.peakViewerCount,
+                peakViewerOffsetMillis = result.peakViewerOffsetMillis,
                 createdAt = result.createdAt,
                 record = result.record?.let { record ->
                     RecordInfo(
