@@ -19,6 +19,8 @@ data class VideoSearchResult(
     val chatSyncOffsetMillis: Long,
     val isArchived: Boolean,
     val peakViewerCount: Int?,
+    val lastPosition: Int?,
+    val progress: Int?,
     val createdAt: LocalDateTime,
     val record: RecordInfo?
 ) {
@@ -45,9 +47,19 @@ data class VideoSearchResult(
             channelProfileUrl: String,
             thumbnailUrl: String,
             playlistUrl: String,
-            peakViewerCount: Int?
+            peakViewerCount: Int?,
+            lastPosition: Int?
         ): VideoSearchResult {
             val channel = video.channel!!
+
+            // 시청 위치가 있으면 진행률(%)을 계산한다.
+            val progress = lastPosition?.let {
+                if (video.duration > 0) {
+                    (it.toDouble() / video.duration * 100).toInt().coerceIn(0, 100)
+                } else {
+                    0
+                }
+            }
 
             return VideoSearchResult(
                 uuid = video.uuid,
@@ -65,6 +77,8 @@ data class VideoSearchResult(
                 chatSyncOffsetMillis = video.chatSyncOffsetMillis,
                 isArchived = video.isArchived,
                 peakViewerCount = peakViewerCount,
+                lastPosition = lastPosition,
+                progress = progress,
                 createdAt = video.createdAt,
                 record = video.record?.let { record ->
                     RecordInfo(

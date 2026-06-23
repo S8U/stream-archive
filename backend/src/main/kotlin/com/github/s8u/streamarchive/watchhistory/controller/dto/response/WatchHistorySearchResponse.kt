@@ -32,6 +32,7 @@ data class WatchHistorySearchResponse(
         val uuid: String,
         val title: String,
         val thumbnailUrl: String,
+        val playlistUrl: String,
         val duration: Int
     )
 
@@ -47,6 +48,7 @@ data class WatchHistorySearchResponse(
                     uuid = result.video.uuid,
                     title = result.video.title,
                     thumbnailUrl = result.video.thumbnailUrl,
+                    playlistUrl = result.video.playlistUrl,
                     duration = result.video.duration
                 ),
                 lastPosition = result.lastPosition,

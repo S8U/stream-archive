@@ -10,12 +10,12 @@ import type { VideoSearchResponse } from "./videoSearchResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageVideoSearchResponse {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: VideoSearchResponse[];
   number?: number;

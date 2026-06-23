@@ -10,12 +10,12 @@ import type { ChannelAdminSearchResponse } from "./channelAdminSearchResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageChannelAdminSearchResponse {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: ChannelAdminSearchResponse[];
   number?: number;

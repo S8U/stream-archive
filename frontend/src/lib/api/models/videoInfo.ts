@@ -13,5 +13,6 @@ export interface VideoInfo {
   uuid: string;
   title: string;
   thumbnailUrl: string;
+  playlistUrl: string;
   duration: number;
 }

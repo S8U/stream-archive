@@ -105,6 +105,7 @@ export default async function ChannelPage({ params, searchParams }: Props) {
                                     duration={video.duration}
                                     createdAt={video.createdAt}
                                     isArchived={video.isArchived}
+                                    progress={video.progress}
                                     channel={video.channel}
                                     record={video.record}
                                 />

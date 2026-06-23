@@ -40,6 +40,12 @@ data class VideoSearchResponse(
     @field:Schema(description = "최고 시청자 수", example = "1234")
     val peakViewerCount: Int?,
 
+    @field:Schema(description = "현재 사용자의 마지막 재생 위치 (초). 비로그인·미시청이면 null", example = "120")
+    val lastPosition: Int?,
+
+    @field:Schema(description = "현재 사용자의 시청 진행률 (%). 비로그인·미시청이면 null", example = "50")
+    val progress: Int?,
+
     @field:Schema(description = "생성 일시")
     val createdAt: LocalDateTime,
 
@@ -81,6 +87,8 @@ data class VideoSearchResponse(
                 chatSyncOffsetMillis = result.chatSyncOffsetMillis,
                 isArchived = result.isArchived,
                 peakViewerCount = result.peakViewerCount,
+                lastPosition = result.lastPosition,
+                progress = result.progress,
                 createdAt = result.createdAt,
                 record = result.record?.let { record ->
                     RecordInfo(

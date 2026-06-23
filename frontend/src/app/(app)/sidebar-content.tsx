@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { MouseEvent } from "react";
 import { Clock, HomeIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,11 +17,6 @@ interface SidebarContentProps {
 export function SidebarContent({ channels, isSheet = false }: SidebarContentProps) {
     const pathname = usePathname();
 
-    const handleComingSoon = (event: MouseEvent<HTMLAnchorElement>) => {
-        event.preventDefault();
-        alert("준비 중인 기능입니다.");
-    };
-    
     const LinkWrapper = isSheet
         ? ({ children, ...props }: React.ComponentProps<typeof Link>) => (
             <SheetClose asChild>
@@ -56,7 +50,6 @@ export function SidebarContent({ channels, isSheet = false }: SidebarContentProp
 
                 <LinkWrapper
                     href="/my/history"
-                    onClick={handleComingSoon}
                     className={cn(
                         "flex items-center gap-4 px-3 py-2 rounded-lg transition",
                         isActive("/my/history") ? "bg-secondary" : "hover:bg-secondary"

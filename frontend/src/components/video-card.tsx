@@ -15,6 +15,8 @@ interface VideoCardProps {
     duration: number;
     createdAt: string;
     isArchived?: boolean;
+    /** 현재 사용자의 시청 진행률 (%). 비로그인·미시청이면 생략 */
+    progress?: number | null;
     channel: {
         uuid: string;
         name: string;
@@ -61,8 +63,13 @@ function formatTimeAgo(dateString: string): string {
     return '방금 전';
 }
 
-export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, createdAt, isArchived, channel, record }: VideoCardProps) {
+export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, createdAt, isArchived, progress, channel, record }: VideoCardProps) {
     const [hoveredVideoUuid, setHoveredVideoUuid] = useState<string | null>(null);
+
+    const isLive = record?.isEnded === false;
+    // 라이브가 아니고 진행률이 있을 때만 이어보기 바를 표시한다.
+    const showProgress = !isLive && progress != null && progress > 0;
+    const clampedProgress = Math.min(100, Math.max(0, progress ?? 0));
 
     return (
         <div
@@ -77,12 +84,19 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     playlistUrl={playlistUrl}
                     title={title}
                     isHovered={hoveredVideoUuid === uuid}
-                    isLive={record?.isEnded === false}
+                    isLive={isLive}
                 />
-                {record?.isEnded === false ? (
+                {isLive ? (
                     <Badge className="absolute right-2 bottom-2 rounded bg-red-600 text-white">LIVE</Badge>
                 ) : (
                     <Badge className="absolute right-2 bottom-2 rounded bg-black/70 text-white">{formatDuration(duration)}</Badge>
+                )}
+
+                {/* 이어보기 진행률 바 */}
+                {showProgress && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30">
+                        <div className="h-full bg-red-600" style={{ width: `${clampedProgress}%` }} />
+                    </div>
                 )}
             </div>
             <div className="flex gap-3">

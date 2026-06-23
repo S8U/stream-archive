@@ -25,6 +25,7 @@ data class WatchHistorySearchResult(
         val uuid: String,
         val title: String,
         val thumbnailUrl: String,
+        val playlistUrl: String,
         val duration: Int
     )
 
@@ -33,7 +34,8 @@ data class WatchHistorySearchResult(
             history: UserVideoWatchHistory,
             video: Video,
             channelProfileUrl: String,
-            videoThumbnailUrl: String
+            videoThumbnailUrl: String,
+            videoPlaylistUrl: String
         ): WatchHistorySearchResult {
             val channel = video.channel!!
             val progress = if (video.duration > 0) {
@@ -52,6 +54,7 @@ data class WatchHistorySearchResult(
                     uuid = video.uuid,
                     title = video.title,
                     thumbnailUrl = videoThumbnailUrl,
+                    playlistUrl = videoPlaylistUrl,
                     duration = video.duration
                 ),
                 lastPosition = history.lastPosition,

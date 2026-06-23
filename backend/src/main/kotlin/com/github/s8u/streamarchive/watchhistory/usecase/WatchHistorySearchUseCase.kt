@@ -7,6 +7,7 @@ import com.github.s8u.streamarchive.video.repository.VideoRepository
 import com.github.s8u.streamarchive.watchhistory.repository.UserVideoWatchHistoryRepository
 import com.github.s8u.streamarchive.watchhistory.usecase.dto.result.WatchHistorySearchResult
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -34,17 +35,21 @@ class WatchHistorySearchUseCase(
         val videosById = videoRepository.findAllByIdInWithChannel(histories.content.map { it.videoId })
             .associateBy { it.id }
 
-        return histories.map { history ->
-            val video = videosById[history.videoId]
-                ?: throw BusinessException("동영상을 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        // 비활성화(삭제)된 동영상을 가리키는 기록은 건너뛴다.
+        // Video 엔티티에 @SQLRestriction("is_active = true")가 걸려 비활성 동영상은 videosById에 담기지 않기 때문이다.
+        val results = histories.content.mapNotNull { history ->
+            val video = videosById[history.videoId] ?: return@mapNotNull null
 
             WatchHistorySearchResult.from(
                 history = history,
                 video = video,
                 channelProfileUrl = urlService.channelProfileUrl(video.channel?.uuid!!),
-                videoThumbnailUrl = urlService.videoThumbnailUrl(video.uuid)
+                videoThumbnailUrl = urlService.videoThumbnailUrl(video.uuid),
+                videoPlaylistUrl = urlService.videoPlaylistUrl(video.uuid)
             )
         }
+
+        return PageImpl(results, pageable, histories.totalElements)
     }
 
 }

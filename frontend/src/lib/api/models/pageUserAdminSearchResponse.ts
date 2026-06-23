@@ -10,12 +10,12 @@ import type { UserAdminSearchResponse } from "./userAdminSearchResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageUserAdminSearchResponse {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: UserAdminSearchResponse[];
   number?: number;

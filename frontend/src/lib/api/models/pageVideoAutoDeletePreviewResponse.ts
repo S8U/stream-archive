@@ -10,12 +10,12 @@ import type { VideoAutoDeletePreviewResponse } from "./videoAutoDeletePreviewRes
 import type { SortObject } from "./sortObject";
 
 export interface PageVideoAutoDeletePreviewResponse {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: VideoAutoDeletePreviewResponse[];
   number?: number;

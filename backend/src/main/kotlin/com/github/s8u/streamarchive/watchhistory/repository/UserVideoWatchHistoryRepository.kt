@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query
 interface UserVideoWatchHistoryRepository : JpaRepository<UserVideoWatchHistory, Long> {
 
     fun findByUserIdAndVideoId(userId: Long, videoId: Long): UserVideoWatchHistory?
+    fun findByUserIdAndVideoIdIn(userId: Long, videoIds: Collection<Long>): List<UserVideoWatchHistory>
     fun findByUserIdOrderByWatchedAtDesc(userId: Long, pageable: Pageable): Page<UserVideoWatchHistory>
 
     @Modifying
@@ -19,5 +20,9 @@ interface UserVideoWatchHistoryRepository : JpaRepository<UserVideoWatchHistory,
     @Modifying
     @Query("DELETE FROM UserVideoWatchHistory h WHERE h.userId = :userId")
     fun deleteAllByUserId(userId: Long)
+
+    @Modifying
+    @Query("DELETE FROM UserVideoWatchHistory h WHERE h.videoId = :videoId")
+    fun deleteAllByVideoId(videoId: Long)
 
 }

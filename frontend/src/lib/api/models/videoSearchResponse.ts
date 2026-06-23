@@ -33,6 +33,10 @@ export interface VideoSearchResponse {
   isArchived: boolean;
   /** 최고 시청자 수 */
   peakViewerCount?: number;
+  /** 현재 사용자의 마지막 재생 위치 (초). 비로그인·미시청이면 null */
+  lastPosition?: number;
+  /** 현재 사용자의 시청 진행률 (%). 비로그인·미시청이면 null */
+  progress?: number;
   /** 생성 일시 */
   createdAt: string;
   record?: RecordInfo;

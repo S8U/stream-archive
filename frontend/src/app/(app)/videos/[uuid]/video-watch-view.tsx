@@ -121,18 +121,26 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
         );
     }, [isAuthenticated, currentVideo.uuid, saveWatchHistory]);
 
-    // 10초마다 시청 위치 저장 (라이브는 제외)
+    // savePosition은 매 렌더마다 새 참조가 되므로 ref에 담아둔다.
+    // 타이머 effect가 savePosition에 의존하면 렌더마다 interval이 리셋되어 영원히 tick이 안 온다.
+    const savePositionRef = useRef(savePosition);
+    useEffect(() => {
+        savePositionRef.current = savePosition;
+    }, [savePosition]);
+
+    // 10초마다 시청 위치 저장 (라이브는 제외).
+    // isLive가 바뀔 때만 interval을 재생성한다.
     useEffect(() => {
         if (isLive) return;
         const interval = setInterval(() => {
             const currentPosition = currentPositionRef.current;
             if (currentPosition > 0) {
-                savePosition(currentPosition);
+                savePositionRef.current(currentPosition);
             }
         }, 10000);
 
         return () => clearInterval(interval);
-    }, [savePosition, isLive]);
+    }, [isLive]);
 
     // 시청자 수 이력 조회 (라이브 중에는 주기적 갱신)
     const { data: viewerHistory } = useGetVideoViewerHistory(currentVideo.uuid, {

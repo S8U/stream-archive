@@ -10,12 +10,12 @@ import type { RecordAdminSearchResponse } from "./recordAdminSearchResponse";
 import type { SortObject } from "./sortObject";
 
 export interface PageRecordAdminSearchResponse {
-  totalPages?: number;
   totalElements?: number;
-  pageable?: PageableObject;
+  totalPages?: number;
   first?: boolean;
   last?: boolean;
   numberOfElements?: number;
+  pageable?: PageableObject;
   size?: number;
   content?: RecordAdminSearchResponse[];
   number?: number;
