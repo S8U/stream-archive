@@ -190,7 +190,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
             }
         >
             {/* 좌측: 동영상 + 정보 */}
-            <div className={`flex-shrink-0 lg:flex-1 flex flex-col ${isWide ? 'overflow-hidden' : 'overflow-y-auto scrollbar-hide'}`}>
+            <div className={`flex-shrink-0 lg:flex-1 flex flex-col ${isWide ? 'overflow-hidden' : 'overflow-y-auto overscroll-contain scrollbar-hide'}`}>
                 <VideoPlayer
                     playlistUrl={currentVideo.playlistUrl}
                     onTimeUpdate={setCurrentTimeMs}

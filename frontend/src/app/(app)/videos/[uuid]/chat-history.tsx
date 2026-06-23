@@ -252,7 +252,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
 
             {/* 채팅 목록 */}
             <div className="overflow-hidden flex-1">
-                <ScrollArea viewportRef={viewportRef} className="h-full">
+                <ScrollArea viewportRef={viewportRef} className="h-full" viewportClassName="overscroll-contain">
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat, index) => {
                             const isLast = index === displayedChats.length - 1;
@@ -268,7 +268,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                         </>
                                     )}
                                     <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>
-                                    <span className="font-normal">{chat.message}</span>
+                                    <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">{chat.message}</span>
                                 </div>
                             );
                         })}
