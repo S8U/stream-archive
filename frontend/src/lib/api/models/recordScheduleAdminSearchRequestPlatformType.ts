@@ -17,4 +17,5 @@ export const RecordScheduleAdminSearchRequestPlatformType = {
   CHZZK: "CHZZK",
   TWITCH: "TWITCH",
   SOOP: "SOOP",
+  YOUTUBE: "YOUTUBE",
 } as const;

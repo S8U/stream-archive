@@ -23,10 +23,10 @@ import java.time.Duration
 /**
  * 녹화 종료
  *
- * 녹화 프로세스가 끝났거나 사용자가 취소하면 채팅 수집을 멈추고 녹화 기록을 종료 처리한다.
- * 녹화 종료와 동영상 메타데이터 확정을 별도 트랜잭션으로 나눠, 메타데이터 갱신과 충돌해도 종료가 되돌려지지 않게 한다.
- * 느린 파일 계산은 트랜잭션 밖에서 하고, 종료를 먼저 확정한다.
- * 너무 짧은 녹화는 동영상을 지우고, 그 외에는 최고 시청자 시점 메타데이터와 파일 정보를 확정한다.
+ * 녹화 프로세스가 끝났거나 사용자가 취소하면 채팅 수집을 멈춘다.
+ * 녹화 기록을 종료 처리한다.
+ * 너무 짧은 녹화는 동영상을 지운다.
+ * 그 외에는 최고 시청자 시점 메타데이터와 파일 정보를 확정한다.
  */
 @Service
 class RecordingEndUseCase(
@@ -53,8 +53,16 @@ class RecordingEndUseCase(
         private const val MIN_RECORDING_DURATION_SECONDS = 10L
     }
 
-    fun end(recordId: Long, isCancel: Boolean = false) {
-        // 중복 호출 방지: 이미 처리 중이면 스킵
+    /**
+     * 녹화를 종료한다.
+     *
+     * [isCancelled]가 true면 녹화 프로세스를 먼저 중지한다.
+     */
+    fun end(
+        recordId: Long,
+        isCancelled: Boolean = false
+    ) {
+        // 이미 처리 중이면 스킵 (중복 호출 방지)
         if (!recordingEndStateManager.markEnding(recordId)) {
             logger.debug("RecordingEndUseCase: Record already being ended by another thread: recordId={}", recordId)
             return
@@ -62,7 +70,7 @@ class RecordingEndUseCase(
 
         try {
             // 수동 취소일 경우 프로세스 강제 종료
-            if (isCancel) {
+            if (isCancelled) {
                 recordingVideoProcessManager.stopRecording(recordId)
             }
 
@@ -74,12 +82,12 @@ class RecordingEndUseCase(
             recordingVideoTitleChangeDetectManager.clear(recordId)
             recordingVideoCategoryChangeDetectManager.clear(recordId)
 
-            // 녹화 종료 확정 (동영상과 분리된 짧은 트랜잭션이라 메타데이터 갱신과 충돌해도 되돌려지지 않음)
-            val ended = endRecord(recordId, isCancel) ?: return
+            // 녹화 종료 확정 (짧은 트랜잭션으로 먼저 처리)
+            val ended = endRecord(recordId, isCancelled) ?: return
 
             // 너무 짧게 끝난 녹화는 쓸모없으므로 동영상 삭제 (수동 취소/실패 공통)
             if (ended.durationSeconds < MIN_RECORDING_DURATION_SECONDS) {
-                deleteShortRecording(recordId, ended.videoId, ended.durationSeconds, isCancel)
+                deleteShortRecording(recordId, ended.videoId, ended.durationSeconds, isCancelled)
                 return
             }
 
@@ -94,7 +102,10 @@ class RecordingEndUseCase(
      *
      * 이미 종료된 녹화면 null을 반환한다.
      */
-    private fun endRecord(recordId: Long, isCancel: Boolean): EndedRecord? {
+    private fun endRecord(
+        recordId: Long,
+        isCancelled: Boolean
+    ): EndedRecording? {
         return transactionRunner.run {
             val record = recordRepository.findById(recordId).orElseThrow {
                 BusinessException("녹화를 찾을 수 없습니다: $recordId", HttpStatus.NOT_FOUND)
@@ -105,19 +116,20 @@ class RecordingEndUseCase(
                 return@run null
             }
 
-            record.end(isCancel)
+            record.end(isCancelled)
             recordRepository.save(record)
 
             logger.info(
-                "RecordingEndUseCase: Ended recording: recordId={}, channelId={}, platformType={}, streamId={}, cancelled={}",
+                "RecordingEndUseCase: Ended recording: recordId={}, channelId={}, platformType={}, " +
+                    "streamId={}, cancelled={}",
                 recordId,
                 record.channelId,
                 record.platformType,
                 record.platformStreamId,
-                isCancel
+                isCancelled
             )
 
-            EndedRecord(
+            EndedRecording(
                 videoId = record.videoId,
                 durationSeconds = Duration.between(record.createdAt, record.endedAt).seconds
             )
@@ -128,22 +140,28 @@ class RecordingEndUseCase(
      * 너무 짧게 끝난 녹화의 동영상을 지운다.
      *
      * 수동 취소가 아니면 시작 실패로 표시해 재녹화 폭주 방지 카운트에 포함시킨다.
-     * 동영상 삭제와 실패 표시는 함께 처리되어야 하므로 한 트랜잭션으로 묶는다.
+     * 동영상 삭제와 실패 표시는 함께 성공하거나 함께 실패하게 둔다.
      */
-    private fun deleteShortRecording(recordId: Long, videoId: Long, durationSeconds: Long, isCancel: Boolean) {
-        val markFailed = !isCancel
+    private fun deleteShortRecording(
+        recordId: Long,
+        videoId: Long,
+        durationSeconds: Long,
+        isCancelled: Boolean
+    ) {
+        val isFailureMarkRequired = !isCancelled
         logger.warn(
-            "RecordingEndUseCase: Recording duration too short, deleting video: recordId={}, videoId={}, duration={}s, markFailed={}",
+            "RecordingEndUseCase: Recording duration too short, deleting video: recordId={}, " +
+                "videoId={}, duration={}s, markFailed={}",
             recordId,
             videoId,
             durationSeconds,
-            markFailed
+            isFailureMarkRequired
         )
 
         try {
             transactionRunner.run {
                 videoDeleteService.delete(videoId)
-                if (markFailed) {
+                if (isFailureMarkRequired) {
                     val record = recordRepository.findById(recordId).orElseThrow {
                         BusinessException("녹화를 찾을 수 없습니다: $recordId", HttpStatus.NOT_FOUND)
                     }
@@ -152,7 +170,12 @@ class RecordingEndUseCase(
                 }
             }
         } catch (e: Exception) {
-            logger.error("RecordingEndUseCase: Failed to delete short recording video: recordId={}, videoId={}", recordId, videoId, e)
+            logger.error(
+                "RecordingEndUseCase: Failed to delete short recording video: recordId={}, videoId={}",
+                recordId,
+                videoId,
+                e
+            )
         }
     }
 
@@ -217,10 +240,10 @@ class RecordingEndUseCase(
         )
     }
 
-    // 종료 확정 트랜잭션이 후속 분기에 넘기는 값
-    private data class EndedRecord(
-        val videoId: Long,
-        val durationSeconds: Long
-    )
-
 }
+
+// 종료 확정 트랜잭션이 후속 분기에 넘기는 값
+private data class EndedRecording(
+    val videoId: Long,
+    val durationSeconds: Long
+)

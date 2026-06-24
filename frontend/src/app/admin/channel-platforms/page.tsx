@@ -28,7 +28,7 @@ import { PlatformBadge } from "@/components/common/platform-badge";
 import { AdminBadge } from "@/components/common/admin-badge";
 
 const searchFieldOptions = ["id", "channelName", "platformChannelId"] as const;
-const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
+const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP", "YOUTUBE"] as const;
 const syncProfileOptions = ["__none__", "true", "false"] as const;
 
 export default function ChannelPlatformsPage() {
@@ -201,6 +201,7 @@ export default function ChannelPlatformsPage() {
                                 <SelectItem value="CHZZK">치지직</SelectItem>
                                 <SelectItem value="TWITCH">트위치</SelectItem>
                                 <SelectItem value="SOOP">SOOP</SelectItem>
+                                <SelectItem value="YOUTUBE">유튜브</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

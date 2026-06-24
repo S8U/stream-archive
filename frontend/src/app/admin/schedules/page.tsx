@@ -40,7 +40,7 @@ const DAYS_MAP: Record<string, string> = {
 };
 
 const searchFieldOptions = ["id", "channelName"] as const;
-const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP"] as const;
+const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP", "YOUTUBE"] as const;
 const scheduleTypeOptions = ["__none__", "ONCE", "ALWAYS", "N_DAYS_OF_EVERY_WEEK", "SPECIFIC_DAY"] as const;
 
 export default function RecordSchedulesPage() {
@@ -250,6 +250,7 @@ export default function RecordSchedulesPage() {
                                 <SelectItem value="CHZZK">치지직</SelectItem>
                                 <SelectItem value="TWITCH">트위치</SelectItem>
                                 <SelectItem value="SOOP">SOOP</SelectItem>
+                                <SelectItem value="YOUTUBE">유튜브</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

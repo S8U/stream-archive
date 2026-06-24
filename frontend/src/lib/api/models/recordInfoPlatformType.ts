@@ -14,4 +14,5 @@ export const RecordInfoPlatformType = {
   CHZZK: "CHZZK",
   TWITCH: "TWITCH",
   SOOP: "SOOP",
+  YOUTUBE: "YOUTUBE",
 } as const;

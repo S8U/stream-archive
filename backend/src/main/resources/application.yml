@@ -58,6 +58,8 @@ platform:
     app-client-id: ${TWITCH_APP_CLIENT_ID:your_client_id}
     app-client-secret: ${TWITCH_APP_CLIENT_SECRET:your_client_secret}
     personal-oauth-token: ${TWITCH_PERSONAL_OAUTH_TOKEN:}
+  youtube:
+    api-key: ${YOUTUBE_API_KEY:}
 
 # 스토리지 설정
 storage:

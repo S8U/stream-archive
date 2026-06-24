@@ -10,6 +10,7 @@ const PLATFORM_BADGE_CLASSES: Record<string, string> = {
     CHZZK: "border-emerald-200 bg-emerald-100 text-emerald-700 hover:bg-emerald-100/80 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300",
     TWITCH: "border-violet-200 bg-violet-100 text-violet-700 hover:bg-violet-100/80 dark:border-violet-800 dark:bg-violet-950/60 dark:text-violet-300",
     SOOP: "border-sky-200 bg-sky-100 text-sky-700 hover:bg-sky-100/80 dark:border-sky-800 dark:bg-sky-950/60 dark:text-sky-300",
+    YOUTUBE: "border-red-200 bg-red-100 text-red-700 hover:bg-red-100/80 dark:border-red-800 dark:bg-red-950/60 dark:text-red-300",
 };
 
 function getPlatformLabel(platform: string): string {
@@ -20,6 +21,8 @@ function getPlatformLabel(platform: string): string {
             return "트위치";
         case "SOOP":
             return "SOOP";
+        case "YOUTUBE":
+            return "유튜브";
         default:
             return platform;
     }

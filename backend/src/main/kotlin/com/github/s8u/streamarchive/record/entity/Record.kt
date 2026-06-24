@@ -75,11 +75,11 @@ class Record(
     /**
      * 녹화를 종료한다.
      *
-     * [isCancel]은 사용자의 수동 취소 여부다.
+     * [isCancelled]는 사용자의 수동 취소 여부다.
      */
-    fun end(isCancel: Boolean) {
+    fun end(isCancelled: Boolean) {
         isEnded = true
-        isCancelled = isCancel
+        this.isCancelled = isCancelled
         endedAt = LocalDateTime.now()
     }
 

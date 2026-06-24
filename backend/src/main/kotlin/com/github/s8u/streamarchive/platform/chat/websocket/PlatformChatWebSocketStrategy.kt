@@ -5,7 +5,6 @@ import com.github.s8u.streamarchive.platform.chat.PlatformChatStrategy
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import jakarta.websocket.ContainerProvider
 import org.slf4j.LoggerFactory
-import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import java.net.URI
 import java.time.LocalDateTime
@@ -61,18 +60,6 @@ abstract class PlatformChatWebSocketStrategy : PlatformChatStrategy {
             .get()
 
         return WebSocketChatCollectionSession(session)
-    }
-
-    private class WebSocketChatCollectionSession(
-        private val session: WebSocketSession
-    ) : PlatformChatCollectionSession {
-
-        override fun stop() {
-            if (session.isOpen) {
-                session.close()
-            }
-        }
-
     }
 
     companion object {

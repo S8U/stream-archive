@@ -15,7 +15,7 @@ class RecordingEndOnProcessEndedListener(
 
     @EventListener
     fun handle(event: RecordingProcessEndedEvent) {
-        recordingEndUseCase.end(event.recordId, isCancel = false)
+        recordingEndUseCase.end(event.recordId, isCancelled = false)
     }
 
 }

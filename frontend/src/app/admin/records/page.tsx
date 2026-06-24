@@ -19,7 +19,7 @@ import Link from "next/link";
 import { AdminBadge } from "@/components/common/admin-badge";
 
 const searchFieldOptions = ["id", "channelName", "title", "platformStreamId"] as const;
-const platformOptions = ["__all__", "CHZZK", "TWITCH", "SOOP"] as const;
+const platformOptions = ["__all__", "CHZZK", "TWITCH", "SOOP", "YOUTUBE"] as const;
 const statusOptions = ["__all__", "recording", "ended", "cancelled"] as const;
 
 export default function RecordsPage() {
@@ -164,6 +164,7 @@ export default function RecordsPage() {
                                 <SelectItem value="CHZZK">치지직</SelectItem>
                                 <SelectItem value="SOOP">SOOP</SelectItem>
                                 <SelectItem value="TWITCH">트위치</SelectItem>
+                                <SelectItem value="YOUTUBE">유튜브</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>

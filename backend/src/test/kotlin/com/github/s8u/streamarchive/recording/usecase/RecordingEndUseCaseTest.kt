@@ -27,7 +27,7 @@ import java.util.Optional
 
 class RecordingEndUseCaseTest {
 
-    // 트랜잭션 경계 동작은 TransactionRunnerTest가 검증하므로, 여기서는 람다를 실행만 시킨다
+    // 트랜잭션 경계는 TransactionRunnerTest가 검증하므로, 여기서는 람다만 실행한다
     private val transactionRunner = mockk<TransactionRunner>()
 
     private val recordRepository = mockk<RecordRepository>(relaxed = true)
@@ -41,26 +41,27 @@ class RecordingEndUseCaseTest {
     private val titleHistoryGetService = mockk<VideoTitleHistoryGetService>(relaxed = true)
     private val recordingVideoViewerChangeDetectManager = mockk<RecordingVideoViewerChangeDetectManager>(relaxed = true)
     private val recordingVideoTitleChangeDetectManager = mockk<RecordingVideoTitleChangeDetectManager>(relaxed = true)
-    private val recordingVideoCategoryChangeDetectManager = mockk<RecordingVideoCategoryChangeDetectManager>(relaxed = true)
+    private val recordingVideoCategoryChangeDetectManager =
+        mockk<RecordingVideoCategoryChangeDetectManager>(relaxed = true)
 
     // 메모리 상태 매니저는 순수 로직이라 실제 객체를 쓴다
     private val recordingEndStateManager = RecordingEndStateManager()
 
     private val recordingEndUseCase = RecordingEndUseCase(
-        transactionRunner,
-        recordRepository,
-        videoRepository,
-        recordingVideoProcessManager,
-        recordingChatCollectManager,
-        videoMetadataCalculateService,
-        videoThumbnailSaveService,
-        videoDeleteService,
-        viewerHistoryGetService,
-        titleHistoryGetService,
-        recordingVideoViewerChangeDetectManager,
-        recordingVideoTitleChangeDetectManager,
-        recordingVideoCategoryChangeDetectManager,
-        recordingEndStateManager
+        transactionRunner = transactionRunner,
+        recordRepository = recordRepository,
+        videoRepository = videoRepository,
+        recordingVideoProcessManager = recordingVideoProcessManager,
+        recordingChatCollectManager = recordingChatCollectManager,
+        videoMetadataCalculateService = videoMetadataCalculateService,
+        videoThumbnailSaveService = videoThumbnailSaveService,
+        videoDeleteService = videoDeleteService,
+        viewerHistoryGetService = viewerHistoryGetService,
+        titleHistoryGetService = titleHistoryGetService,
+        recordingVideoViewerChangeDetectManager = recordingVideoViewerChangeDetectManager,
+        recordingVideoTitleChangeDetectManager = recordingVideoTitleChangeDetectManager,
+        recordingVideoCategoryChangeDetectManager = recordingVideoCategoryChangeDetectManager,
+        recordingEndStateManager = recordingEndStateManager
     )
 
     @BeforeEach
@@ -108,7 +109,7 @@ class RecordingEndUseCaseTest {
             val record = activeRecord(durationSeconds = 5)
             every { recordRepository.findById(RECORD_ID) } returns Optional.of(record)
 
-            recordingEndUseCase.end(RECORD_ID, isCancel = false)
+            recordingEndUseCase.end(RECORD_ID, isCancelled = false)
 
             verify { videoDeleteService.delete(VIDEO_ID) }
             verify { record.markFailed() }
@@ -120,7 +121,7 @@ class RecordingEndUseCaseTest {
             val record = activeRecord(durationSeconds = 5)
             every { recordRepository.findById(RECORD_ID) } returns Optional.of(record)
 
-            recordingEndUseCase.end(RECORD_ID, isCancel = true)
+            recordingEndUseCase.end(RECORD_ID, isCancelled = true)
 
             verify { videoDeleteService.delete(VIDEO_ID) }
             verify(exactly = 0) { record.markFailed() }

@@ -129,6 +129,7 @@ export function ChannelPlatformFormDialog({
                                         <SelectItem value="CHZZK">치지직</SelectItem>
                                         <SelectItem value="TWITCH">트위치</SelectItem>
                                         <SelectItem value="SOOP">SOOP</SelectItem>
+                                        <SelectItem value="YOUTUBE">유튜브</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>

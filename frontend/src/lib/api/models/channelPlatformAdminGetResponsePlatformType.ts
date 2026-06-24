@@ -17,4 +17,5 @@ export const ChannelPlatformAdminGetResponsePlatformType = {
   CHZZK: "CHZZK",
   TWITCH: "TWITCH",
   SOOP: "SOOP",
+  YOUTUBE: "YOUTUBE",
 } as const;

@@ -30,7 +30,8 @@
 
 - 치지직 (Chzzk)
 - 트위치 (Twitch)
-- ~~SOOP (아프리카TV)~~
+- SOOP
+- 유튜브 (YouTube)
 
 ## 주요 기능
 
@@ -93,6 +94,7 @@ docker compose up -d --build
 | `TWITCH_APP_CLIENT_ID` | Twitch API Client ID | - |
 | `TWITCH_APP_CLIENT_SECRET` | Twitch API Client Secret | - |
 | `TWITCH_PERSONAL_OAUTH_TOKEN` | Twitch OAuth Token | - |
+| `YOUTUBE_API_KEY` | YouTube Data API Key | - |
 
 #### Frontend (`frontend/.env`)
 

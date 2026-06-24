@@ -27,7 +27,7 @@ class RecordTest {
         fun `녹화를 종료하면 isEnded가 true가 되고 종료 일시가 채워진다`() {
             val record = record()
 
-            record.end(isCancel = false)
+            record.end(isCancelled = false)
 
             assertTrue(record.isEnded)
             assertNotNull(record.endedAt)
@@ -37,7 +37,7 @@ class RecordTest {
         fun `수동 취소로 종료하면 isCancelled가 true가 된다`() {
             val record = record()
 
-            record.end(isCancel = true)
+            record.end(isCancelled = true)
 
             assertTrue(record.isEnded)
             assertTrue(record.isCancelled)
@@ -48,7 +48,7 @@ class RecordTest {
         fun `취소 아님으로 종료하면 isCancelled가 false로 유지된다`() {
             val record = record()
 
-            record.end(isCancel = false)
+            record.end(isCancelled = false)
 
             assertFalse(record.isCancelled)
         }
@@ -97,4 +97,5 @@ class RecordTest {
             assertNull(record.endedAt)
         }
     }
+
 }
