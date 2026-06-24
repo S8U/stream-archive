@@ -226,6 +226,7 @@ CREATE TABLE video_chat_histories
     video_id      BIGINT        NOT NULL COMMENT '동영상 ID',
     username      VARCHAR(255)  NOT NULL COMMENT '사용자명',
     message       VARCHAR(1000) NOT NULL COMMENT '메시지',
+    emojis        JSON          NULL COMMENT '이모지',
     data          TEXT          NULL COMMENT '원본 데이터',
     offset_millis BIGINT        NOT NULL COMMENT '동영상 시작 기준 오프셋 (밀리초)',
     created_at    DATETIME      NOT NULL COMMENT '생성 일시',

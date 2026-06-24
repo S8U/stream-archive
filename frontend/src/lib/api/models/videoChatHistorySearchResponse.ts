@@ -5,6 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { VideoChatEmojiSearchResponse } from "./videoChatEmojiSearchResponse";
 
 /**
  * 동영상 채팅 이력 응답
@@ -14,6 +15,8 @@ export interface VideoChatHistorySearchResponse {
   username: string;
   /** 메시지 */
   message: string;
+  /** 이모지 목록 */
+  emojis: VideoChatEmojiSearchResponse[];
   /** 동영상 시작 기준 오프셋 (밀리초) */
   offsetMillis: number;
 }

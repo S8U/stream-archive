@@ -1,7 +1,9 @@
 package com.github.s8u.streamarchive.platform.platforms.chzzk.chat
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
 import org.slf4j.LoggerFactory
@@ -41,14 +43,18 @@ class ChzzkChatWebSocketHandler(
     }
 
     override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
-        logger.debug("ChzzkChatWebSocketHandler: Chzzk chat handle message (recordId: {}, payload: {})", recordId, message.payload.toString())
+        logger.debug(
+            "ChzzkChatWebSocketHandler: Chzzk chat handle message (recordId: {}, payload: {})",
+            recordId,
+            message.payload.toString()
+        )
 
         val json = message.payload.toString()
         val root = objectMapper.readTree(json)
 
         val cmd = root.path("cmd").asInt()
         when (cmd) {
-            // PING PONG
+            // 핑퐁
             ChzzkChatCommandType.PING.value -> {
                 sendPongPacket(session)
                 return
@@ -64,7 +70,8 @@ class ChzzkChatWebSocketHandler(
 
                         val nickname = profile.path("nickname").asText()
                         val msg = node.path("msg").asText()
-                        val msgTime = node.path("msgTime").asLong()
+                        val emojis = getEmojis(node)
+                            .filter { msg.contains(it.placeholder) }
 
                         val time = LocalDateTime.now()
                         val offsetMillis = Duration.between(recordStartedAt, time).toMillis()
@@ -74,6 +81,7 @@ class ChzzkChatWebSocketHandler(
                             videoId = videoId,
                             username = nickname,
                             message = msg,
+                            emojis = emojis,
                             offsetMillis = offsetMillis,
                             createdAt = time
                         )
@@ -104,7 +112,8 @@ class ChzzkChatWebSocketHandler(
             )
         } else {
             logger.warn(
-                "ChzzkChatWebSocketHandler: Chzzk chat closed abnormally (recordId: {}, sessionId: {}, code: {}, reason: {})",
+                "ChzzkChatWebSocketHandler: Chzzk chat closed abnormally " +
+                    "(recordId: {}, sessionId: {}, code: {}, reason: {})",
                 recordId,
                 session.id,
                 closeStatus.code,
@@ -159,6 +168,39 @@ class ChzzkChatWebSocketHandler(
 
     private fun sendMessage(session: WebSocketSession, message: String) {
         session.sendMessage(TextMessage(message))
+    }
+
+    private fun getEmojis(node: JsonNode): List<PlatformChatEmojiDto> {
+        val extrasJson = node.path("extras").asText()
+        if (extrasJson.isBlank()) return emptyList()
+
+        return try {
+            val extras = objectMapper.readTree(extrasJson)
+            val emojisNode = extras.path("emojis")
+            if (!emojisNode.isObject) return emptyList()
+
+            val emojis = mutableListOf<PlatformChatEmojiDto>()
+            for (field in emojisNode.properties()) {
+                val imageUrl = field.value.asText()
+                if (imageUrl.isBlank()) continue
+
+                emojis.add(
+                    PlatformChatEmojiDto(
+                        placeholder = "{:${field.key}:}",
+                        imageUrl = imageUrl
+                    )
+                )
+            }
+
+            emojis
+        } catch (e: Exception) {
+            logger.warn(
+                "ChzzkChatWebSocketHandler: Failed to parse Chzzk chat emojis (recordId: {})",
+                recordId,
+                e
+            )
+            emptyList()
+        }
     }
 
 }

@@ -11,6 +11,9 @@ data class VideoChatHistorySearchResponse(
     @field:Schema(description = "메시지")
     val message: String,
 
+    @field:Schema(description = "이모지 목록")
+    val emojis: List<VideoChatEmojiSearchResponse>,
+
     @field:Schema(description = "동영상 시작 기준 오프셋 (밀리초)", example = "12000")
     val offsetMillis: Long
 ) {
@@ -20,8 +23,10 @@ data class VideoChatHistorySearchResponse(
             return VideoChatHistorySearchResponse(
                 username = result.username,
                 message = result.message,
+                emojis = result.emojis.map { VideoChatEmojiSearchResponse.from(it) },
                 offsetMillis = result.offsetMillis
             )
         }
     }
+
 }

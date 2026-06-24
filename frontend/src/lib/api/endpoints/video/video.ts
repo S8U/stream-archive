@@ -1278,6 +1278,192 @@ export function useGetVideoPlaylist<
 }
 
 /**
+ * @summary 동영상 채팅 이모지 조회
+ */
+export const getVideoChatEmoji = (
+  uuid: string,
+  filename: string,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<Blob>(
+    {
+      url: `/videos/${uuid}/emojis/${filename}`,
+      method: "GET",
+      responseType: "blob",
+      signal,
+    },
+    options,
+  );
+};
+
+export const getGetVideoChatEmojiQueryKey = (
+  uuid?: string,
+  filename?: string,
+) => {
+  return [`/videos/${uuid}/emojis/${filename}`] as const;
+};
+
+export const getGetVideoChatEmojiQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoChatEmoji>>,
+  TError = unknown,
+>(
+  uuid: string,
+  filename: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatEmoji>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVideoChatEmojiQueryKey(uuid, filename);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoChatEmoji>>
+  > = ({ signal }) => getVideoChatEmoji(uuid, filename, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(uuid && filename),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoChatEmoji>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoChatEmojiQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoChatEmoji>>
+>;
+export type GetVideoChatEmojiQueryError = unknown;
+
+export function useGetVideoChatEmoji<
+  TData = Awaited<ReturnType<typeof getVideoChatEmoji>>,
+  TError = unknown,
+>(
+  uuid: string,
+  filename: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatEmoji>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChatEmoji>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChatEmoji>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChatEmoji<
+  TData = Awaited<ReturnType<typeof getVideoChatEmoji>>,
+  TError = unknown,
+>(
+  uuid: string,
+  filename: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatEmoji>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChatEmoji>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChatEmoji>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChatEmoji<
+  TData = Awaited<ReturnType<typeof getVideoChatEmoji>>,
+  TError = unknown,
+>(
+  uuid: string,
+  filename: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatEmoji>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 채팅 이모지 조회
+ */
+
+export function useGetVideoChatEmoji<
+  TData = Awaited<ReturnType<typeof getVideoChatEmoji>>,
+  TError = unknown,
+>(
+  uuid: string,
+  filename: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatEmoji>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoChatEmojiQueryOptions(
+    uuid,
+    filename,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
  * @summary 동영상 채팅 이력 조회
  */
 export const getVideoChatHistory = (

@@ -8,16 +8,22 @@ import com.github.s8u.streamarchive.video.entity.VideoChatHistory
 data class VideoChatHistorySearchResult(
     val username: String,
     val message: String,
+    val emojis: List<VideoChatEmojiSearchResult>,
     val offsetMillis: Long
 ) {
 
     companion object {
-        fun from(chatHistory: VideoChatHistory): VideoChatHistorySearchResult {
+        fun from(
+            chatHistory: VideoChatHistory,
+            emojis: List<VideoChatEmojiSearchResult>
+        ): VideoChatHistorySearchResult {
             return VideoChatHistorySearchResult(
                 username = chatHistory.username,
                 message = chatHistory.message,
+                emojis = emojis,
                 offsetMillis = chatHistory.offsetMillis
             )
         }
     }
+
 }

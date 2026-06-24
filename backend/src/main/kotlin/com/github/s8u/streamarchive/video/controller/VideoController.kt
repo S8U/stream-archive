@@ -7,6 +7,7 @@ import com.github.s8u.streamarchive.video.controller.dto.response.VideoGetRespon
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoSearchResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoViewerHistoryGetResponse
 import com.github.s8u.streamarchive.video.usecase.VideoChapterGetUseCase
+import com.github.s8u.streamarchive.video.usecase.VideoChatEmojiGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoChatHistorySearchUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoPlaylistGetUseCase
@@ -14,8 +15,8 @@ import com.github.s8u.streamarchive.video.usecase.VideoSearchUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoSegmentGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoThumbnailGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoViewerHistoryGetUseCase
-import com.github.s8u.streamarchive.watchhistory.controller.dto.response.WatchHistoryGetResponse
 import com.github.s8u.streamarchive.watchhistory.controller.dto.request.WatchHistorySaveRequest
+import com.github.s8u.streamarchive.watchhistory.controller.dto.response.WatchHistoryGetResponse
 import com.github.s8u.streamarchive.watchhistory.usecase.WatchHistoryGetUseCase
 import com.github.s8u.streamarchive.watchhistory.usecase.WatchHistorySaveUseCase
 import io.swagger.v3.oas.annotations.Operation
@@ -26,7 +27,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.CacheControl
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import java.util.concurrent.TimeUnit
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.TimeUnit
 
 @Tag(name = "Video", description = "동영상")
 @RestController
@@ -45,6 +46,7 @@ class VideoController(
     private val videoPlaylistGetUseCase: VideoPlaylistGetUseCase,
     private val videoSegmentGetUseCase: VideoSegmentGetUseCase,
     private val videoChatHistorySearchUseCase: VideoChatHistorySearchUseCase,
+    private val videoChatEmojiGetUseCase: VideoChatEmojiGetUseCase,
     private val videoViewerHistoryGetUseCase: VideoViewerHistoryGetUseCase,
     private val videoChapterGetUseCase: VideoChapterGetUseCase,
     private val watchHistoryGetUseCase: WatchHistoryGetUseCase,
@@ -72,7 +74,8 @@ class VideoController(
     @GetMapping("/{uuid}/thumbnail")
     fun getVideoThumbnail(@PathVariable uuid: String): ResponseEntity<Resource> {
         val resource = videoThumbnailGetUseCase.getByUuid(uuid)
-        // 녹화 중에는 썸네일이 주기적으로 갱신되므로 짧게만 캐싱한다 (갱신 주기와 맞춰 10초)
+        // 녹화 중에는 썸네일이 주기적으로 갱신되므로 짧게만 캐싱한다.
+        // 갱신 주기와 맞춰 10초로 둔다.
         return ResponseEntity.ok()
             .cacheControl(CacheControl.maxAge(10, TimeUnit.SECONDS))
             .contentType(MediaType.IMAGE_PNG)
@@ -111,6 +114,19 @@ class VideoController(
             .map { VideoChatHistorySearchResponse.from(it) }
     }
 
+    @Operation(summary = "동영상 채팅 이모지 조회")
+    @GetMapping("/{uuid}/emojis/{filename:.+}")
+    fun getVideoChatEmoji(
+        @PathVariable uuid: String,
+        @PathVariable filename: String
+    ): ResponseEntity<Resource> {
+        val resource = videoChatEmojiGetUseCase.getByUuid(uuid, filename)
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS))
+            .contentType(getEmojiContentType(filename))
+            .body(resource)
+    }
+
     @Operation(summary = "동영상 시청자 수 이력 조회")
     @GetMapping("/{uuid}/viewer-history")
     fun getVideoViewerHistory(@PathVariable uuid: String): List<VideoViewerHistoryGetResponse> {
@@ -139,6 +155,15 @@ class VideoController(
         @RequestBody request: WatchHistorySaveRequest
     ) {
         watchHistorySaveUseCase.save(uuid, request.toCommand())
+    }
+
+    private fun getEmojiContentType(filename: String): MediaType {
+        return when (filename.substringAfterLast('.').lowercase()) {
+            "gif" -> MediaType.parseMediaType("image/gif")
+            "webp" -> MediaType.parseMediaType("image/webp")
+            "jpg", "jpeg" -> MediaType.IMAGE_JPEG
+            else -> MediaType.IMAGE_PNG
+        }
     }
 
 }

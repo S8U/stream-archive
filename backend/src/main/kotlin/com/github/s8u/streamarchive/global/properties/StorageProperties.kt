@@ -35,6 +35,14 @@ class StorageProperties {
         return getVideoPath(videoId).resolve("peak-thumbnail.png")
     }
 
+    fun getVideoEmojiDirectoryPath(videoId: Long): Path {
+        return getVideoPath(videoId).resolve("emojis")
+    }
+
+    fun getVideoEmojiPath(videoId: Long, filename: String): Path {
+        return getVideoEmojiDirectoryPath(videoId).resolve(filename)
+    }
+
     fun getVideoPlaylistPath(videoId: Long): Path {
         return getVideoPath(videoId).resolve("playlist.m3u8")
     }

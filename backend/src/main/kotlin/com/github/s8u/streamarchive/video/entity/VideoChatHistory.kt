@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.video.entity
 import com.github.s8u.streamarchive.global.entity.base.BaseTimeEntity
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
+import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -27,6 +28,10 @@ class VideoChatHistory(
     @Comment("메시지")
     val message: String,
 
+    @Column(columnDefinition = "JSON")
+    @Comment("이모지")
+    val emojis: String? = null,
+
     @Lob
     @Column(columnDefinition = "TEXT")
     @Comment("원본 데이터")
@@ -34,5 +39,13 @@ class VideoChatHistory(
 
     @Column(nullable = false)
     @Comment("동영상 시작 기준 오프셋 (밀리초)")
-    val offsetMillis: Long
-) : BaseTimeEntity()
+    val offsetMillis: Long,
+
+    createdAt: LocalDateTime = LocalDateTime.now()
+) : BaseTimeEntity() {
+
+    init {
+        this.createdAt = createdAt
+    }
+
+}

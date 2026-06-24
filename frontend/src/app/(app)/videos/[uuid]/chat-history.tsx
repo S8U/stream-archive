@@ -58,6 +58,40 @@ function getUsernameColor(username: string): string {
     return colors[index];
 }
 
+function escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function renderChatMessage(chat: VideoChatHistorySearchResponse) {
+    if (!chat.emojis || chat.emojis.length === 0) {
+        return chat.message;
+    }
+
+    const emojiMap = new Map(chat.emojis.map((emoji) => [emoji.placeholder, emoji]));
+    const pattern = new RegExp(`(${chat.emojis.map((emoji) => escapeRegExp(emoji.placeholder)).join('|')})`, 'g');
+
+    return chat.message.split(pattern).map((part, index) => {
+        if (part === '') return null;
+
+        const emoji = emojiMap.get(part);
+        if (!emoji) return <span key={index}>{part}</span>;
+
+        return (
+            <img
+                key={index}
+                src={emoji.imageUrl}
+                alt={emoji.placeholder}
+                title={emoji.placeholder}
+                className="mx-0.5 inline-block h-6 w-6 align-middle object-contain"
+                loading="lazy"
+                draggable={false}
+                onError={(event) => {
+                    event.currentTarget.style.display = 'none';
+                }}
+            />
+        );
+    });
+}
 
 // 한번에 불러올 채팅 시간 (ms)
 const CHAT_LOAD_MILLIS = 3000;
@@ -264,11 +298,17 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                 >
                                     {showTimeline && (
                                         <>
-                                            <span className="text-muted-foreground text-xs">[{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]</span>
+                                            <span className="text-muted-foreground text-xs">
+                                                [{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]
+                                            </span>
                                         </>
                                     )}
-                                    <span className={`font-semibold ${getUsernameColor(chat.username)}`}>{chat.username}</span>
-                                    <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">{chat.message}</span>
+                                    <span className={`font-semibold ${getUsernameColor(chat.username)}`}>
+                                        {chat.username}
+                                    </span>
+                                    <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">
+                                        {renderChatMessage(chat)}
+                                    </span>
                                 </div>
                             );
                         })}

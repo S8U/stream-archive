@@ -7,6 +7,7 @@ data class PlatformChatMessageDto(
     val videoId: Long,
     val username: String,
     val message: String,
+    val emojis: List<PlatformChatEmojiDto> = emptyList(),
     val offsetMillis: Long,
     val createdAt: LocalDateTime
 )

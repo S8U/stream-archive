@@ -29,4 +29,8 @@ class UrlService(
         return "${urlProperties.apiBase}/videos/$videoUuid/$filename"
     }
 
+    fun videoEmojiUrl(videoUuid: String, filename: String): String {
+        return "${urlProperties.apiBase}/videos/$videoUuid/emojis/$filename"
+    }
+
 }

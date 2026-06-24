@@ -152,6 +152,7 @@ export * from "./videoAutoDeletePreviewResponse";
 export * from "./videoAutoDeletePreviewSummaryGetResponse";
 export * from "./videoAutoDeleteRunResponse";
 export * from "./videoChapterGetResponse";
+export * from "./videoChatEmojiSearchResponse";
 export * from "./videoChatHistorySearchResponse";
 export * from "./videoGetResponse";
 export * from "./videoInfo";
