@@ -4,12 +4,16 @@ import com.github.s8u.streamarchive.channel.entity.Channel
 import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
 import com.github.s8u.streamarchive.channel.usecase.dto.command.ChannelAdminSearchCommand
 import com.github.s8u.streamarchive.channel.usecase.dto.command.ChannelSearchCommand
+import com.github.s8u.streamarchive.video.entity.Video
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
+import com.github.s8u.streamarchive.video.repository.VideoRepository
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,7 +21,8 @@ import org.springframework.transaction.annotation.Transactional
 @ActiveProfiles("test")
 @Transactional
 class ChannelRepositorySearchTest @Autowired constructor(
-    private val channelRepository: ChannelRepository
+    private val channelRepository: ChannelRepository,
+    private val videoRepository: VideoRepository
 ) {
 
     @Nested
@@ -35,6 +40,28 @@ class ChannelRepositorySearchTest @Autowired constructor(
             )
 
             assertEquals(listOf(third.id, second.id, first.id), channels.content.map { it.id })
+        }
+
+        @Test
+        fun `동영상 용량 합계로 정렬한다`() {
+            val small = channelRepository.save(channel(uuid = "admin-channel-small", name = "작은 채널"))
+            val large = channelRepository.save(channel(uuid = "admin-channel-large", name = "큰 채널"))
+            val empty = channelRepository.save(channel(uuid = "admin-channel-empty", name = "빈 채널"))
+            saveVideo(channelId = small.id!!, fileSize = 100L)
+            saveVideo(channelId = large.id!!, fileSize = 1000L)
+            saveVideo(channelId = large.id!!, fileSize = 2000L)
+
+            val channels = channelRepository.searchForAdmin(
+                command = ChannelAdminSearchCommand(),
+                pageable = PageRequest.of(
+                    0,
+                    10,
+                    Sort.by(Sort.Direction.DESC, "totalVideoFileSize")
+                )
+            )
+
+            assertEquals(listOf(large.id, small.id, empty.id), channels.content.map { it.id })
+            assertEquals(listOf(3000L, 100L, 0L), channels.content.map { it.totalVideoFileSize })
         }
     }
 
@@ -73,6 +100,17 @@ class ChannelRepositorySearchTest @Autowired constructor(
             name = name,
             contentPrivacy = contentPrivacy
         )
+    }
+
+    private fun saveVideo(channelId: Long, fileSize: Long) {
+        val video = Video(
+            uuid = "video-$channelId-$fileSize",
+            channelId = channelId,
+            title = "동영상",
+            contentPrivacy = VideoContentPrivacy.PUBLIC
+        )
+        video.applyMetadata(fileSize = fileSize, duration = 60)
+        videoRepository.save(video)
     }
 
 }

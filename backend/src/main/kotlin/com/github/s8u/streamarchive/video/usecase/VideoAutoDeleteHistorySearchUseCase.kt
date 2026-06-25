@@ -29,9 +29,9 @@ class VideoAutoDeleteHistorySearchUseCase(
         pageable: Pageable
     ): Page<VideoAutoDeleteHistorySearchResult> {
         val histories = if (channelId == null) {
-            videoAutoDeleteHistoryRepository.findAllByOrderByCreatedAtDescVideoIdDesc(pageable)
+            videoAutoDeleteHistoryRepository.findAllByOrderByIdDesc(pageable)
         } else {
-            videoAutoDeleteHistoryRepository.findAllByChannelIdOrderByCreatedAtDescVideoIdDesc(channelId, pageable)
+            videoAutoDeleteHistoryRepository.findAllByChannelIdOrderByIdDesc(channelId, pageable)
         }
 
         val channelNames = findChannelNames(histories.content)

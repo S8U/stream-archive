@@ -7,8 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { AdminBadge } from "@/components/common/admin-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { RecordScheduleFormDialog } from "@/components/admin/record-schedule-form-dialog";
 import {
@@ -42,6 +44,17 @@ const DAYS_MAP: Record<string, string> = {
 const searchFieldOptions = ["id", "channelName"] as const;
 const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP", "YOUTUBE"] as const;
 const scheduleTypeOptions = ["__none__", "ONCE", "ALWAYS", "N_DAYS_OF_EVERY_WEEK", "SPECIFIC_DAY"] as const;
+const sortFieldOptions = [
+    "id",
+    "channelName",
+    "platformType",
+    "scheduleType",
+    "value",
+    "recordQuality",
+    "priority",
+    "autoArchive",
+    "createdAt",
+] as const;
 
 export default function RecordSchedulesPage() {
     const queryClient = useQueryClient();
@@ -57,6 +70,7 @@ export default function RecordSchedulesPage() {
     const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
     const [searchScheduleType, setSearchScheduleType] = useQueryState("type", parseAsStringLiteral(scheduleTypeOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const { sortField, sortDirection, sortParam, handleSort, resetSort } = useTableSort(sortFieldOptions, setPage);
     const [draftSearchField, setDraftSearchField] = useState(searchField);
     const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
     const [draftSearchPlatformType, setDraftSearchPlatformType] = useState(searchPlatformType);
@@ -82,6 +96,7 @@ export default function RecordSchedulesPage() {
         pageable: {
             page: page - 1,
             size,
+            sort: [sortParam],
         },
     };
 
@@ -109,6 +124,7 @@ export default function RecordSchedulesPage() {
         setSearchQuery("");
         setSearchPlatformType("__none__");
         setSearchScheduleType("__none__");
+        resetSort();
         setPage(1);
     };
 
@@ -295,15 +311,94 @@ export default function RecordSchedulesPage() {
                 <Table className="w-full">
                     <TableHeader className="bg-muted">
                         <TableRow>
-                            <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
-                            <TableHead className="border-r font-semibold">채널 정보</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">플랫폼</TableHead>
-                            <TableHead className="border-r font-semibold w-[120px] text-center">유형</TableHead>
-                            <TableHead className="border-r font-semibold">값</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">화질</TableHead>
-                            <TableHead className="border-r font-semibold w-[80px] text-center">우선순위</TableHead>
-                            <TableHead className="border-r font-semibold w-[90px] text-center">자동 소장</TableHead>
-                            <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[60px] text-center"
+                                field="id"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="channelName"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                채널 정보
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="platformType"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                플랫폼
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[120px] text-center"
+                                field="scheduleType"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                유형
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="value"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                값
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="recordQuality"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                화질
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[80px] text-center"
+                                field="priority"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                우선순위
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[90px] text-center"
+                                field="autoArchive"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                자동 소장
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[120px] text-center"
+                                field="createdAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                생성일
+                            </SortableTableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
                     </TableHeader>

@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ban, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useSearchAdminRecords } from "@/lib/api/endpoints/record-admin/record-admin";
 import { useCancelAdminRecord } from "@/lib/api/endpoints/recording-admin/recording-admin";
@@ -21,6 +23,16 @@ import { AdminBadge } from "@/components/common/admin-badge";
 const searchFieldOptions = ["id", "channelName", "title", "platformStreamId"] as const;
 const platformOptions = ["__all__", "CHZZK", "TWITCH", "SOOP", "YOUTUBE"] as const;
 const statusOptions = ["__all__", "recording", "ended", "cancelled"] as const;
+const sortFieldOptions = [
+    "id",
+    "channelName",
+    "platformType",
+    "title",
+    "platformStreamId",
+    "recordQuality",
+    "createdAt",
+    "endedAt",
+] as const;
 
 export default function RecordsPage() {
     const queryClient = useQueryClient();
@@ -31,6 +43,7 @@ export default function RecordsPage() {
     const [searchPlatform, setSearchPlatform] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__all__"));
     const [searchStatus, setSearchStatus] = useQueryState("status", parseAsStringLiteral(statusOptions).withDefault("__all__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const { sortField, sortDirection, sortParam, handleSort, resetSort } = useTableSort(sortFieldOptions, setPage);
     const [draftSearchField, setDraftSearchField] = useState(searchField);
     const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
     const [draftSearchPlatform, setDraftSearchPlatform] = useState(searchPlatform);
@@ -71,6 +84,7 @@ export default function RecordsPage() {
         pageable: {
             page: page - 1,
             size,
+            sort: [sortParam],
         },
     };
 
@@ -96,6 +110,7 @@ export default function RecordsPage() {
         setSearchQuery("");
         setSearchPlatform("__all__");
         setSearchStatus("__all__");
+        resetSort();
         setPage(1);
     };
 
@@ -202,15 +217,84 @@ export default function RecordsPage() {
                 <Table className="w-full">
                     <TableHeader className="bg-muted">
                         <TableRow>
-                            <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
-                            <TableHead className="border-r font-semibold">채널 정보</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">플랫폼</TableHead>
-                            <TableHead className="border-r font-semibold">동영상 정보</TableHead>
-                            <TableHead className="border-r font-semibold">스트림 ID</TableHead>
-                            <TableHead className="border-r font-semibold w-[80px] text-center">화질</TableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[60px] text-center"
+                                field="id"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="channelName"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                채널 정보
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="platformType"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                플랫폼
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="title"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                동영상 정보
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="platformStreamId"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                스트림 ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[80px] text-center"
+                                field="recordQuality"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                화질
+                            </SortableTableHead>
                             <TableHead className="border-r font-semibold w-[80px] text-center">상태</TableHead>
-                            <TableHead className="border-r font-semibold w-[180px] text-center">시작 시간</TableHead>
-                            <TableHead className="border-r font-semibold w-[180px] text-center">종료 시간</TableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[180px] text-center"
+                                field="createdAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                시작 시간
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[180px] text-center"
+                                field="endedAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                종료 시간
+                            </SortableTableHead>
                             <TableHead className="font-semibold w-[80px] text-center">작업</TableHead>
                         </TableRow>
                     </TableHeader>

@@ -1,7 +1,7 @@
 package com.github.s8u.streamarchive.channel.usecase.dto.result
 
-import com.github.s8u.streamarchive.channel.entity.Channel
 import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
+import com.github.s8u.streamarchive.channel.repository.dto.ChannelAdminSearchProjection
 import java.time.LocalDateTime
 
 /**
@@ -19,13 +19,13 @@ data class ChannelAdminSearchResult(
 ) {
 
     companion object {
-        fun from(channel: Channel, profileUrl: String, totalVideoFileSize: Long = 0): ChannelAdminSearchResult {
+        fun from(channel: ChannelAdminSearchProjection, profileUrl: String): ChannelAdminSearchResult {
             return ChannelAdminSearchResult(
-                id = channel.id!!,
+                id = channel.id,
                 uuid = channel.uuid,
                 name = channel.name,
                 profileUrl = profileUrl,
-                totalVideoFileSize = totalVideoFileSize,
+                totalVideoFileSize = channel.totalVideoFileSize,
                 contentPrivacy = channel.contentPrivacy,
                 createdAt = channel.createdAt,
                 updatedAt = channel.updatedAt

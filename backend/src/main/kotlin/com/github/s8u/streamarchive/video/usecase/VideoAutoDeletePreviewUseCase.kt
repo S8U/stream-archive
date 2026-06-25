@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit
  * 동영상 자동 삭제 미리보기 목록 조회 (관리자)
  *
  * 현재 정책의 다음 자동 삭제 대상 목록을 보여준다.
- * 채널별 조회 결과를 합쳐 최근 생성순으로 정렬한다.
+ * 채널별 조회 결과를 합쳐 최신 ID순으로 정렬한다.
  * 채널 ID가 없으면 전체 채널을 대상으로 한다.
  */
 @Service
@@ -43,13 +43,13 @@ class VideoAutoDeletePreviewUseCase(
         val now = LocalDateTime.now()
         val targets = getTargets(channelId, now)
 
-        // 채널별 삭제 대상을 모아 최근 생성순으로 정렬
+        // 채널별 삭제 대상을 모아 최신 ID순으로 정렬한다
         val allTargets = targets
             .flatMap { target ->
                 videoRepository.findAutoDeleteTargets(target.channelId, target.createdBefore)
                     .map { video -> video to target.deleteAfterDays }
             }
-            .sortedByDescending { it.first.createdAt }
+            .sortedByDescending { it.first.id ?: 0L }
 
         // 현재 페이지만 잘라서 변환
         val pageContent = allTargets

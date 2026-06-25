@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Trash2 } from "lucide-react";
 import { AdminBadge } from "@/components/common/admin-badge";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { useSearchUsers, useUpdateUser, useDeleteUser } from "@/lib/api/endpoints/user-admin/user-admin";
 import type { UserAdminSearchResponse, UserAdminSearchRequestRole, UserAdminUpdateRequestRole } from "@/lib/api/models";
@@ -17,6 +19,7 @@ import { UserFormDialog } from "@/components/admin/user-form-dialog";
 
 const searchFieldOptions = ["id", "username", "name"] as const;
 const roleOptions = ["__none__", "ADMIN", "USER"] as const;
+const sortFieldOptions = ["id", "username", "name", "role", "lastLoginAt", "createdAt"] as const;
 
 export default function UsersPage() {
     const queryClient = useQueryClient();
@@ -30,6 +33,7 @@ export default function UsersPage() {
     const [searchQuery, setSearchQuery] = useQueryState("q", { defaultValue: "" });
     const [searchRole, setSearchRole] = useQueryState("role", parseAsStringLiteral(roleOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const { sortField, sortDirection, sortParam, handleSort, resetSort } = useTableSort(sortFieldOptions, setPage);
     const [draftSearchField, setDraftSearchField] = useState(searchField);
     const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
     const [draftSearchRole, setDraftSearchRole] = useState(searchRole);
@@ -53,6 +57,7 @@ export default function UsersPage() {
         pageable: {
             page: page - 1,
             size,
+            sort: [sortParam],
         },
     };
 
@@ -76,6 +81,7 @@ export default function UsersPage() {
         setSearchField("username");
         setSearchQuery("");
         setSearchRole("__none__");
+        resetSort();
         setPage(1);
     };
 
@@ -197,12 +203,64 @@ export default function UsersPage() {
                 <Table className="w-full">
                     <TableHeader className="bg-muted">
                         <TableRow>
-                            <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
-                            <TableHead className="border-r font-semibold w-[150px]">아이디</TableHead>
-                            <TableHead className="border-r font-semibold">이름</TableHead>
-                            <TableHead className="border-r font-semibold w-[80px] text-center">역할</TableHead>
-                            <TableHead className="border-r font-semibold w-[180px] text-center">마지막 로그인</TableHead>
-                            <TableHead className="border-r font-semibold w-[120px] text-center">가입일</TableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[60px] text-center"
+                                field="id"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[150px]"
+                                field="username"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                아이디
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="name"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                이름
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[80px] text-center"
+                                field="role"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                역할
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[180px] text-center"
+                                field="lastLoginAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                마지막 로그인
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[120px] text-center"
+                                field="createdAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                가입일
+                            </SortableTableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
                     </TableHeader>

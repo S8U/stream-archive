@@ -5,6 +5,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 export const AXIOS_INSTANCE = Axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  paramsSerializer: {
+    indexes: null,
+  },
 });
 
 // 토큰 리프레시 상태 관리

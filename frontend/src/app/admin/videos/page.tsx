@@ -9,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Bookmark, Edit, Loader2, Trash2 } from "lucide-react";
 import { AdminBadge, getPrivacyBadgeTone, getPrivacyLabel } from "@/components/common/admin-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsBoolean, parseAsInteger, parseAsStringLiteral } from "nuqs";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { VideoFormDialog } from "@/components/admin/video-form-dialog";
 import { useSearchAdminVideos, useSetArchivedAdminVideo, useUpdateAdminVideo, useDeleteAdminVideo } from "@/lib/api/endpoints/video-admin/video-admin";
@@ -21,6 +23,17 @@ import Link from "next/link";
 
 const searchFieldOptions = ["id", "uuid", "channelName", "title", "description"] as const;
 const privacyOptions = ["__none__", "PUBLIC", "UNLISTED", "PRIVATE"] as const;
+const sortFieldOptions = [
+    "id",
+    "channelName",
+    "title",
+    "uuid",
+    "duration",
+    "fileSize",
+    "contentPrivacy",
+    "isArchived",
+    "createdAt",
+] as const;
 
 export default function VideosPage() {
     const queryClient = useQueryClient();
@@ -35,6 +48,7 @@ export default function VideosPage() {
     const [searchContentPrivacy, setSearchContentPrivacy] = useQueryState("privacy", parseAsStringLiteral(privacyOptions).withDefault("__none__"));
     const [searchArchived, setSearchArchived] = useQueryState("archived", parseAsBoolean.withDefault(false));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const { sortField, sortDirection, sortParam, handleSort, resetSort } = useTableSort(sortFieldOptions, setPage);
     const [draftSearchField, setDraftSearchField] = useState(searchField);
     const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
     const [draftSearchContentPrivacy, setDraftSearchContentPrivacy] = useState(searchContentPrivacy);
@@ -63,6 +77,7 @@ export default function VideosPage() {
         pageable: {
             page: page - 1,
             size,
+            sort: [sortParam],
         },
     };
 
@@ -90,6 +105,7 @@ export default function VideosPage() {
         setSearchQuery("");
         setSearchContentPrivacy("__none__");
         setSearchArchived(false);
+        resetSort();
         setPage(1);
     };
 
@@ -230,15 +246,93 @@ export default function VideosPage() {
                 <Table className="w-full">
                     <TableHeader className="bg-muted">
                         <TableRow>
-                            <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
-                            <TableHead className="border-r font-semibold">채널 정보</TableHead>
-                            <TableHead className="border-r font-semibold">동영상 정보</TableHead>
-                            <TableHead className="border-r font-semibold w-[350px]">UUID</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">길이</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">용량</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">공개 범위</TableHead>
-                            <TableHead className="border-r font-semibold w-[80px] text-center">소장</TableHead>
-                            <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[60px] text-center"
+                                field="id"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="channelName"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                채널 정보
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="title"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                동영상 정보
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[350px]"
+                                field="uuid"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                UUID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="duration"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                길이
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="fileSize"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                용량
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="contentPrivacy"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                공개 범위
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[80px] text-center"
+                                field="isArchived"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                소장
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[120px] text-center"
+                                field="createdAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                생성일
+                            </SortableTableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
                     </TableHeader>

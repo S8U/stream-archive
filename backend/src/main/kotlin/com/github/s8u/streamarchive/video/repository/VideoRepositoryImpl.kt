@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.video.repository
 import com.github.s8u.streamarchive.channel.entity.QChannel
 import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
+import com.github.s8u.streamarchive.global.util.QueryDslOrderUtils
 import com.github.s8u.streamarchive.record.entity.QRecord
 import com.github.s8u.streamarchive.video.entity.QVideo
 import com.github.s8u.streamarchive.video.entity.Video
@@ -44,7 +45,39 @@ class VideoRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(video.createdAt.desc())
+            .orderBy(
+                *QueryDslOrderUtils.getOrderSpecifiers(
+                    pageable = pageable,
+                    orderBuilders = mapOf(
+                        "id" to { isAscending -> if (isAscending) video.id.asc() else video.id.desc() },
+                        "uuid" to { isAscending -> if (isAscending) video.uuid.asc() else video.uuid.desc() },
+                        "channelName" to { isAscending ->
+                            if (isAscending) channel.name.asc() else channel.name.desc()
+                        },
+                        "title" to { isAscending -> if (isAscending) video.title.asc() else video.title.desc() },
+                        "duration" to { isAscending ->
+                            if (isAscending) video.duration.asc() else video.duration.desc()
+                        },
+                        "fileSize" to { isAscending ->
+                            if (isAscending) video.fileSize.asc() else video.fileSize.desc()
+                        },
+                        "contentPrivacy" to { isAscending ->
+                            if (isAscending) video.contentPrivacy.asc() else video.contentPrivacy.desc()
+                        },
+                        "isArchived" to { isAscending ->
+                            if (isAscending) video.isArchived.asc() else video.isArchived.desc()
+                        },
+                        "createdAt" to { isAscending ->
+                            if (isAscending) video.createdAt.asc() else video.createdAt.desc()
+                        },
+                        "updatedAt" to { isAscending ->
+                            if (isAscending) video.updatedAt.asc() else video.updatedAt.desc()
+                        }
+                    ),
+                    defaultOrders = listOf(video.id.desc()),
+                    tieBreaker = video.id.desc()
+                )
+            )
             .fetch()
 
         val total = queryFactory

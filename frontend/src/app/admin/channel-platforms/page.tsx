@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit, Loader2, Plus, Trash2, ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SortableTableHead } from "@/components/common/sortable-table-head";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelPlatformFormDialog } from "@/components/admin/channel-platform-form-dialog";
 import {
@@ -30,6 +32,7 @@ import { AdminBadge } from "@/components/common/admin-badge";
 const searchFieldOptions = ["id", "channelName", "platformChannelId"] as const;
 const platformOptions = ["__none__", "CHZZK", "TWITCH", "SOOP", "YOUTUBE"] as const;
 const syncProfileOptions = ["__none__", "true", "false"] as const;
+const sortFieldOptions = ["id", "channelName", "platformType", "platformChannelId", "isSyncProfile", "createdAt"] as const;
 
 export default function ChannelPlatformsPage() {
     const queryClient = useQueryClient();
@@ -45,6 +48,7 @@ export default function ChannelPlatformsPage() {
     const [searchPlatformType, setSearchPlatformType] = useQueryState("platform", parseAsStringLiteral(platformOptions).withDefault("__none__"));
     const [searchIsSyncProfile, setSearchIsSyncProfile] = useQueryState("sync", parseAsStringLiteral(syncProfileOptions).withDefault("__none__"));
     const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+    const { sortField, sortDirection, sortParam, handleSort, resetSort } = useTableSort(sortFieldOptions, setPage);
     const [draftSearchField, setDraftSearchField] = useState(searchField);
     const [draftSearchQuery, setDraftSearchQuery] = useState(searchQuery);
     const [draftSearchPlatformType, setDraftSearchPlatformType] = useState(searchPlatformType);
@@ -71,6 +75,7 @@ export default function ChannelPlatformsPage() {
         pageable: {
             page: page - 1,
             size,
+            sort: [sortParam],
         },
     };
 
@@ -98,6 +103,7 @@ export default function ChannelPlatformsPage() {
         setSearchQuery("");
         setSearchPlatformType("__none__");
         setSearchIsSyncProfile("__none__");
+        resetSort();
         setPage(1);
     };
 
@@ -244,12 +250,64 @@ export default function ChannelPlatformsPage() {
                 <Table className="w-full">
                     <TableHeader className="bg-muted">
                         <TableRow>
-                            <TableHead className="border-r font-semibold w-[60px] text-center">ID</TableHead>
-                            <TableHead className="border-r font-semibold">채널 정보</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">플랫폼</TableHead>
-                            <TableHead className="border-r font-semibold">플랫폼 채널 ID</TableHead>
-                            <TableHead className="border-r font-semibold w-[100px] text-center">프로필 동기화</TableHead>
-                            <TableHead className="border-r font-semibold w-[120px] text-center">생성일</TableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[60px] text-center"
+                                field="id"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="channelName"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                채널 정보
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="platformType"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                플랫폼
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold"
+                                field="platformChannelId"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                            >
+                                플랫폼 채널 ID
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[100px] text-center"
+                                field="isSyncProfile"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                프로필 동기화
+                            </SortableTableHead>
+                            <SortableTableHead
+                                className="border-r font-semibold w-[120px] text-center"
+                                field="createdAt"
+                                currentField={sortField}
+                                currentDirection={sortDirection}
+                                onSort={handleSort}
+                                align="center"
+                            >
+                                생성일
+                            </SortableTableHead>
                             <TableHead className="font-semibold w-[100px] text-center">작업</TableHead>
                         </TableRow>
                     </TableHeader>

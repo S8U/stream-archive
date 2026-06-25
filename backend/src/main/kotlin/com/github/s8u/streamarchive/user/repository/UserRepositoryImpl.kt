@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.user.repository
 
+import com.github.s8u.streamarchive.global.util.QueryDslOrderUtils
 import com.github.s8u.streamarchive.user.entity.QUser
 import com.github.s8u.streamarchive.user.entity.User
 import com.github.s8u.streamarchive.user.usecase.dto.command.UserAdminSearchCommand
@@ -29,7 +30,28 @@ class UserRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(user.createdAt.desc())
+            .orderBy(
+                *QueryDslOrderUtils.getOrderSpecifiers(
+                    pageable = pageable,
+                    orderBuilders = mapOf(
+                        "id" to { isAscending -> if (isAscending) user.id.asc() else user.id.desc() },
+                        "username" to { isAscending -> if (isAscending) user.username.asc() else user.username.desc() },
+                        "name" to { isAscending -> if (isAscending) user.name.asc() else user.name.desc() },
+                        "role" to { isAscending -> if (isAscending) user.role.asc() else user.role.desc() },
+                        "lastLoginAt" to { isAscending ->
+                            if (isAscending) user.lastLoginAt.asc() else user.lastLoginAt.desc()
+                        },
+                        "createdAt" to { isAscending ->
+                            if (isAscending) user.createdAt.asc() else user.createdAt.desc()
+                        },
+                        "updatedAt" to { isAscending ->
+                            if (isAscending) user.updatedAt.asc() else user.updatedAt.desc()
+                        }
+                    ),
+                    defaultOrders = listOf(user.id.desc()),
+                    tieBreaker = user.id.desc()
+                )
+            )
             .fetch()
 
         val total = queryFactory

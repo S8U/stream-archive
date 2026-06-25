@@ -31,7 +31,7 @@ class VideoAutoDeleteHistorySearchUseCaseTest {
             val pageable = PageRequest.of(0, 20)
             val firstHistory = history(id = 1L, videoId = 10L, channelId = 1L)
             val secondHistory = history(id = 2L, videoId = 20L, channelId = 2L)
-            every { videoAutoDeleteHistoryRepository.findAllByOrderByCreatedAtDescVideoIdDesc(pageable) } returns
+            every { videoAutoDeleteHistoryRepository.findAllByOrderByIdDesc(pageable) } returns
                 PageImpl(listOf(firstHistory, secondHistory), pageable, 2)
             every { channelRepository.findAllById(any<Iterable<Long>>()) } returns listOf(
                 channel(id = 1L, name = "첫 번째 채널"),
@@ -43,7 +43,7 @@ class VideoAutoDeleteHistorySearchUseCaseTest {
             assertEquals(listOf(10L, 20L), result.content.map { it.videoId })
             assertEquals(listOf("첫 번째 채널", "두 번째 채널"), result.content.map { it.channelName })
             verify(exactly = 0) {
-                videoAutoDeleteHistoryRepository.findAllByChannelIdOrderByCreatedAtDescVideoIdDesc(any(), any())
+                videoAutoDeleteHistoryRepository.findAllByChannelIdOrderByIdDesc(any(), any())
             }
         }
 
@@ -52,7 +52,7 @@ class VideoAutoDeleteHistorySearchUseCaseTest {
             val pageable = PageRequest.of(0, 20)
             val channelHistory = history(id = 1L, videoId = 10L, channelId = 1L)
             every {
-                videoAutoDeleteHistoryRepository.findAllByChannelIdOrderByCreatedAtDescVideoIdDesc(1L, pageable)
+                videoAutoDeleteHistoryRepository.findAllByChannelIdOrderByIdDesc(1L, pageable)
             } returns PageImpl(listOf(channelHistory), pageable, 1)
             every { channelRepository.findAllById(any<Iterable<Long>>()) } returns listOf(
                 channel(id = 1L, name = "첫 번째 채널")
@@ -63,7 +63,7 @@ class VideoAutoDeleteHistorySearchUseCaseTest {
             assertEquals(listOf(10L), result.content.map { it.videoId })
             assertEquals(listOf("첫 번째 채널"), result.content.map { it.channelName })
             verify(exactly = 0) {
-                videoAutoDeleteHistoryRepository.findAllByOrderByCreatedAtDescVideoIdDesc(any())
+                videoAutoDeleteHistoryRepository.findAllByOrderByIdDesc(any())
             }
         }
 
@@ -71,7 +71,7 @@ class VideoAutoDeleteHistorySearchUseCaseTest {
         fun `채널이 삭제돼 이름을 찾지 못하면 빈 문자열을 채운다`() {
             val pageable = PageRequest.of(0, 20)
             val orphanHistory = history(id = 1L, videoId = 10L, channelId = 99L)
-            every { videoAutoDeleteHistoryRepository.findAllByOrderByCreatedAtDescVideoIdDesc(pageable) } returns
+            every { videoAutoDeleteHistoryRepository.findAllByOrderByIdDesc(pageable) } returns
                 PageImpl(listOf(orphanHistory), pageable, 1)
             every { channelRepository.findAllById(any<Iterable<Long>>()) } returns emptyList()
 

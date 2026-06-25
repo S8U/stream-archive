@@ -4,6 +4,7 @@ import com.github.s8u.streamarchive.channel.entity.QChannel
 import com.github.s8u.streamarchive.channelplatform.entity.ChannelPlatform
 import com.github.s8u.streamarchive.channelplatform.entity.QChannelPlatform
 import com.github.s8u.streamarchive.channelplatform.usecase.dto.command.ChannelPlatformAdminSearchCommand
+import com.github.s8u.streamarchive.global.util.QueryDslOrderUtils
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -31,7 +32,44 @@ class ChannelPlatformRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
-            .orderBy(channelPlatform.createdAt.desc())
+            .orderBy(
+                *QueryDslOrderUtils.getOrderSpecifiers(
+                    pageable = pageable,
+                    orderBuilders = mapOf(
+                        "id" to { isAscending ->
+                            if (isAscending) channelPlatform.id.asc() else channelPlatform.id.desc()
+                        },
+                        "channelName" to { isAscending ->
+                            if (isAscending) channel.name.asc() else channel.name.desc()
+                        },
+                        "platformType" to { isAscending ->
+                            if (isAscending) channelPlatform.platformType.asc() else channelPlatform.platformType.desc()
+                        },
+                        "platformChannelId" to { isAscending ->
+                            if (isAscending) {
+                                channelPlatform.platformChannelId.asc()
+                            } else {
+                                channelPlatform.platformChannelId.desc()
+                            }
+                        },
+                        "isSyncProfile" to { isAscending ->
+                            if (isAscending) {
+                                channelPlatform.isSyncProfile.asc()
+                            } else {
+                                channelPlatform.isSyncProfile.desc()
+                            }
+                        },
+                        "createdAt" to { isAscending ->
+                            if (isAscending) channelPlatform.createdAt.asc() else channelPlatform.createdAt.desc()
+                        },
+                        "updatedAt" to { isAscending ->
+                            if (isAscending) channelPlatform.updatedAt.asc() else channelPlatform.updatedAt.desc()
+                        }
+                    ),
+                    defaultOrders = listOf(channelPlatform.id.desc()),
+                    tieBreaker = channelPlatform.id.desc()
+                )
+            )
             .fetch()
 
         val total = queryFactory

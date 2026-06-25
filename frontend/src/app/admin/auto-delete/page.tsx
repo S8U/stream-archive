@@ -39,6 +39,7 @@ import {
     useRunAdminAutoDelete,
 } from "@/lib/api/endpoints/video-auto-delete-admin/video-auto-delete-admin";
 import { useSearchAdminChannels } from "@/lib/api/endpoints/channel-admin/channel-admin";
+import type { PageVideoAutoDeletePreviewResponse } from "@/lib/api/models";
 import { MIN_DAYS, MAX_DAYS, DAY_PRESETS as PRESETS } from "./constants";
 
 const AUTO_DELETE_QUERY_KEY = "/admin/videos/auto-delete";
@@ -666,8 +667,7 @@ function PreviewTable({
     isError,
     profileByChannelId,
 }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any;
+    data: PageVideoAutoDeletePreviewResponse | undefined;
     isLoading: boolean;
     isError: boolean;
     profileByChannelId: Map<number, string>;
@@ -693,8 +693,7 @@ function PreviewTable({
                     ) : !data?.content || data.content.length === 0 ? (
                         <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">현재 정책으로 삭제될 동영상이 없습니다.</TableCell></TableRow>
                     ) : (
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        data.content.map((video: any) => (
+                        data.content.map((video) => (
                             <TableRow key={video.id}>
                                 <TableCell className="border-r text-center">{video.id}</TableCell>
                                 <TableCell className="border-r">
