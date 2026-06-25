@@ -16,6 +16,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class TwitchStrategyTest {
@@ -36,6 +37,27 @@ class TwitchStrategyTest {
 
         assertTrue(streamUrl.contains("twitch.tv"))
         assertTrue(streamUrl.contains(LOGIN))
+    }
+
+    @Nested
+    inner class ParseChannelId {
+
+        @Test
+        fun `채널 URL에서 로그인 아이디를 추출한다`() {
+            val channelId = twitchStrategy.parseChannelId("https://www.twitch.tv/$URL_LOGIN")
+
+            assertEquals(URL_LOGIN, channelId)
+        }
+
+        @Test
+        fun `트위치 URL이 아니면 로그인 아이디를 추출하지 않는다`() {
+            val channelId = twitchStrategy.parseChannelId(
+                "https://chzzk.naver.com/live/abcdef0123456789abcdef0123456789"
+            )
+
+            assertNull(channelId)
+        }
+
     }
 
     @Test
@@ -125,6 +147,7 @@ class TwitchStrategyTest {
 
     companion object {
         private const val LOGIN = "test-login"
+        private const val URL_LOGIN = "test_login"
         private const val USER_ID = "user-123"
         private const val STREAM_ID = "stream-123"
     }

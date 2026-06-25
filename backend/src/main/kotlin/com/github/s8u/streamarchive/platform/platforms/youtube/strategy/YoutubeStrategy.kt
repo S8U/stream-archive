@@ -35,6 +35,21 @@ class YoutubeStrategy(
         }
     }
 
+    override fun parseChannelId(url: String): String? {
+        // youtube.com/channel/{UCxxx} 형태 (채널 ID)
+        CHANNEL_ID_REGEX.find(url)?.let {
+            return it.groupValues[1]
+        }
+
+        // youtube.com/@{handle} 형태 (핸들)
+        // @ 를 붙여 반환하면 normalize가 떼어낸다
+        HANDLE_REGEX.find(url)?.let {
+            return "@${it.groupValues[1]}"
+        }
+
+        return null
+    }
+
     override fun getChannel(username: String): PlatformChannelDto? {
         val channel = channelFindService.find(username) ?: return null
 
@@ -82,6 +97,14 @@ class YoutubeStrategy(
             ?: this["high"]?.url
             ?: this["medium"]?.url
             ?: this["default"]?.url
+    }
+
+    companion object {
+        // youtube.com/channel/{UCxxx} 에서 채널 ID를 뽑는다
+        private val CHANNEL_ID_REGEX = Regex("youtube\\.com/channel/(UC[a-zA-Z0-9_-]{22})")
+
+        // youtube.com/@{handle} 에서 핸들을 뽑는다
+        private val HANDLE_REGEX = Regex("youtube\\.com/@([a-zA-Z0-9._-]+)")
     }
 
 }

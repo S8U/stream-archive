@@ -51,6 +51,32 @@ class YoutubeStrategyTest {
     }
 
     @Nested
+    inner class ParseChannelId {
+
+        @Test
+        fun `채널 URL에서 채널 ID를 추출한다`() {
+            val channelId = youtubeStrategy.parseChannelId("https://www.youtube.com/channel/$CHANNEL_ID")
+
+            assertEquals(CHANNEL_ID, channelId)
+        }
+
+        @Test
+        fun `핸들 URL에서 핸들을 추출한다`() {
+            val channelId = youtubeStrategy.parseChannelId("https://www.youtube.com/@test-handle")
+
+            assertEquals("@test-handle", channelId)
+        }
+
+        @Test
+        fun `유튜브 URL이 아니면 채널 ID를 추출하지 않는다`() {
+            val channelId = youtubeStrategy.parseChannelId("https://www.twitch.tv/test-login")
+
+            assertNull(channelId)
+        }
+
+    }
+
+    @Nested
     inner class GetChannel {
 
         @Test

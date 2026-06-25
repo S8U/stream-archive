@@ -335,13 +335,15 @@ export function RecordScheduleFormDialog({
                         {/* 우선순위 */}
                         <div className="grid gap-3">
                             <Label>우선순위</Label>
-                            <Input
-                                type="number"
-                                value={priority}
-                                onChange={(e) => setPriority(Number(e.target.value))}
-                                placeholder="0"
-                            />
-                            <p className="text-xs text-muted-foreground">높을수록 우선순위가 높습니다.</p>
+                            <div className="grid gap-1.5">
+                                <Input
+                                    type="number"
+                                    value={priority}
+                                    onChange={(e) => setPriority(Number(e.target.value))}
+                                    placeholder="0"
+                                />
+                                <p className="text-xs text-muted-foreground">높을수록 우선순위가 높습니다.</p>
+                            </div>
                         </div>
 
                         {/* 자동 소장 */}

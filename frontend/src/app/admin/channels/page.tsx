@@ -4,15 +4,28 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
+import { Edit, Loader2, Plus, Trash2, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AdminBadge, getPrivacyBadgeTone, getPrivacyLabel } from "@/components/common/admin-badge";
+import { getPlatformLabel } from "@/components/common/platform-badge";
 import { useEffect, useState } from "react";
 import { useQueryState, parseAsInteger, parseAsStringLiteral } from "nuqs";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import { ChannelFormDialog } from "@/components/admin/channel-form-dialog";
-import { useSearchAdminChannels, useCreateAdminChannel, useUpdateAdminChannel, useDeleteAdminChannel } from "@/lib/api/endpoints/channel-admin/channel-admin";
-import type { ChannelAdminSearchResponse, ChannelAdminCreateRequestContentPrivacy, ChannelAdminSearchRequestContentPrivacy } from "@/lib/api/models";
+import { QuickChannelAddDialog } from "@/components/admin/quick-channel-add-dialog";
+import {
+    useSearchAdminChannels,
+    useCreateAdminChannel,
+    useCreateAdminChannelQuick,
+    useUpdateAdminChannel,
+    useDeleteAdminChannel,
+} from "@/lib/api/endpoints/channel-admin/channel-admin";
+import type {
+    ChannelAdminSearchResponse,
+    ChannelAdminCreateRequestContentPrivacy,
+    ChannelAdminQuickCreateRequest,
+    ChannelAdminSearchRequestContentPrivacy,
+} from "@/lib/api/models";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -26,6 +39,7 @@ export default function ChannelsPage() {
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isQuickDialogOpen, setIsQuickDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
     const [selectedChannel, setSelectedChannel] = useState<ChannelAdminSearchResponse | null>(null);
 
@@ -63,6 +77,7 @@ export default function ChannelsPage() {
     // API Hooks
     const { data: channelsData, isLoading, error } = useSearchAdminChannels(searchParams);
     const createMutation = useCreateAdminChannel();
+    const quickCreateMutation = useCreateAdminChannelQuick();
     const updateMutation = useUpdateAdminChannel();
     const deleteMutation = useDeleteAdminChannel();
 
@@ -101,6 +116,10 @@ export default function ChannelsPage() {
         setSelectedChannel(null);
     };
 
+    const handleQuickDialogClose = () => {
+        setIsQuickDialogOpen(false);
+    };
+
     const handleDialogSubmit = async (data: { name: string; contentPrivacy: ChannelAdminCreateRequestContentPrivacy }) => {
         try {
             if (dialogMode === "create") {
@@ -119,6 +138,22 @@ export default function ChannelsPage() {
             handleDialogClose();
         } catch (error) {
             toast.error(dialogMode === "create" ? "채널 생성에 실패했습니다." : "채널 수정에 실패했습니다.");
+        }
+    };
+
+    const handleQuickDialogSubmit = async (data: ChannelAdminQuickCreateRequest) => {
+        try {
+            await quickCreateMutation.mutateAsync({ data });
+            toast.success(`"${data.name}" 채널에 ${getPlatformLabel(data.platformType)} 플랫폼을 추가했습니다.`);
+
+            queryClient.invalidateQueries({ queryKey: ["/admin/channels"] });
+            queryClient.invalidateQueries({ queryKey: ["/admin/channel-platforms"] });
+            queryClient.invalidateQueries({ queryKey: ["/admin/record-schedules"] });
+            handleQuickDialogClose();
+        } catch (error) {
+            // 백엔드가 내려준 메시지(이미 등록된 채널 플랫폼 등)가 있으면 그대로 보여준다
+            const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "빠른 채널 추가에 실패했습니다.");
         }
     };
 
@@ -201,10 +236,20 @@ export default function ChannelsPage() {
                 </div>
 
                 {/* 오른쪽: 액션 버튼 */}
-                <Button className="w-full lg:w-auto" onClick={handleOpenCreateDialog}>
-                    <Plus />
-                    채널 추가
-                </Button>
+                <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+                    <Button
+                        className="w-full sm:w-auto"
+                        variant="outline"
+                        onClick={() => setIsQuickDialogOpen(true)}
+                    >
+                        <Zap />
+                        빠른 채널 추가
+                    </Button>
+                    <Button className="w-full sm:w-auto" onClick={handleOpenCreateDialog}>
+                        <Plus />
+                        채널 추가
+                    </Button>
+                </div>
             </div>
 
             {/* 채널 목록 */}
@@ -335,6 +380,14 @@ export default function ChannelsPage() {
                 channel={selectedChannel}
                 onSubmit={handleDialogSubmit}
                 isSubmitting={createMutation.isPending || updateMutation.isPending}
+            />
+
+            {/* 빠른 채널 추가 다이얼로그 */}
+            <QuickChannelAddDialog
+                open={isQuickDialogOpen}
+                onOpenChange={handleQuickDialogClose}
+                onSubmit={handleQuickDialogSubmit}
+                isSubmitting={quickCreateMutation.isPending}
             />
         </div>
     );

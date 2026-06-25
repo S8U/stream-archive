@@ -9,5 +9,6 @@ interface ChannelPlatformRepository : JpaRepository<ChannelPlatform, Long>, Chan
     fun findByChannelId(channelId: Long): List<ChannelPlatform>
     fun findByChannelIdAndPlatformType(channelId: Long, platformType: PlatformType): ChannelPlatform?
     fun findByIsSyncProfile(isSyncProfile: Boolean): List<ChannelPlatform>
+    fun existsByPlatformTypeAndPlatformChannelId(platformType: PlatformType, platformChannelId: String): Boolean
 
 }

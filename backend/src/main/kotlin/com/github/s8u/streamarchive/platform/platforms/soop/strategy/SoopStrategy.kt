@@ -21,6 +21,11 @@ class SoopStrategy(
         return "https://play.sooplive.co.kr/$username"
     }
 
+    override fun parseChannelId(url: String): String? {
+        val match = CHANNEL_ID_REGEX.find(url) ?: return null
+        return match.groupValues[1].lowercase()
+    }
+
     override fun getChannel(username: String): PlatformChannelDto? {
         val response = apiClient.getStation(username) ?: return null
         val station = response.station ?: return null
@@ -73,6 +78,11 @@ class SoopStrategy(
                 }
             } ?: LocalDateTime.now()
         )
+    }
+
+    companion object {
+        // sooplive.co.kr/{id} 또는 구 afreecatv.com/{id} 에서 아이디(영숫자)를 뽑는다
+        private val CHANNEL_ID_REGEX = Regex("(?:sooplive\\.co\\.kr|afreecatv\\.com)/([a-zA-Z0-9]+)")
     }
 
 }

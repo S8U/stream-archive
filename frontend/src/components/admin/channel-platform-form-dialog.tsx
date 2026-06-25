@@ -148,8 +148,13 @@ export function ChannelPlatformFormDialog({
                         </div>
 
                         {/* 프로필 동기화 */}
-                        <div className="flex items-center justify-between space-x-2">
-                            <Label htmlFor="sync-profile">프로필 동기화</Label>
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="grid gap-1">
+                                <Label htmlFor="sync-profile">프로필 동기화</Label>
+                                <p className="text-xs text-muted-foreground">
+                                    플랫폼의 채널 이미지를 주기적으로 동기화합니다.
+                                </p>
+                            </div>
                             <Switch
                                 id="sync-profile"
                                 checked={isSyncProfile}

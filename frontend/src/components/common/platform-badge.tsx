@@ -13,7 +13,7 @@ const PLATFORM_BADGE_CLASSES: Record<string, string> = {
     YOUTUBE: "border-red-200 bg-red-100 text-red-700 hover:bg-red-100/80 dark:border-red-800 dark:bg-red-950/60 dark:text-red-300",
 };
 
-function getPlatformLabel(platform: string): string {
+export function getPlatformLabel(platform: string): string {
     switch (platform) {
         case "CHZZK":
             return "치지직";

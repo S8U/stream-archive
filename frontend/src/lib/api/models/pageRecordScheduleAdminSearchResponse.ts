@@ -5,20 +5,20 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { PageableObject } from "./pageableObject";
 import type { RecordScheduleAdminSearchResponse } from "./recordScheduleAdminSearchResponse";
 import type { SortObject } from "./sortObject";
+import type { PageableObject } from "./pageableObject";
 
 export interface PageRecordScheduleAdminSearchResponse {
   totalElements?: number;
   totalPages?: number;
-  first?: boolean;
-  last?: boolean;
-  numberOfElements?: number;
-  pageable?: PageableObject;
   size?: number;
   content?: RecordScheduleAdminSearchResponse[];
   number?: number;
   sort?: SortObject;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  pageable?: PageableObject;
   empty?: boolean;
 }

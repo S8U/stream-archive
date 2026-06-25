@@ -25,6 +25,8 @@ import type {
   ChannelAdminCreateRequest,
   ChannelAdminCreateResponse,
   ChannelAdminGetResponse,
+  ChannelAdminQuickCreateRequest,
+  ChannelAdminQuickCreateResponse,
   ChannelAdminUpdateRequest,
   ChannelAdminUpdateResponse,
   PageChannelAdminSearchResponse,
@@ -620,6 +622,98 @@ export const useCreateAdminChannel = <TError = unknown, TContext = unknown>(
   TContext
 > => {
   const mutationOptions = getCreateAdminChannelMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 간편 채널 생성 (채널·플랫폼·스케줄 한 번에)
+ */
+export const createAdminChannelQuick = (
+  channelAdminQuickCreateRequest: ChannelAdminQuickCreateRequest,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<ChannelAdminQuickCreateResponse>(
+    {
+      url: `/admin/channels/quick`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: channelAdminQuickCreateRequest,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCreateAdminChannelQuickMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAdminChannelQuick>>,
+    TError,
+    { data: ChannelAdminQuickCreateRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAdminChannelQuick>>,
+  TError,
+  { data: ChannelAdminQuickCreateRequest },
+  TContext
+> => {
+  const mutationKey = ["createAdminChannelQuick"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAdminChannelQuick>>,
+    { data: ChannelAdminQuickCreateRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createAdminChannelQuick(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAdminChannelQuickMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAdminChannelQuick>>
+>;
+export type CreateAdminChannelQuickMutationBody =
+  ChannelAdminQuickCreateRequest;
+export type CreateAdminChannelQuickMutationError = unknown;
+
+/**
+ * @summary 간편 채널 생성 (채널·플랫폼·스케줄 한 번에)
+ */
+export const useCreateAdminChannelQuick = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createAdminChannelQuick>>,
+      TError,
+      { data: ChannelAdminQuickCreateRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createAdminChannelQuick>>,
+  TError,
+  { data: ChannelAdminQuickCreateRequest },
+  TContext
+> => {
+  const mutationOptions = getCreateAdminChannelQuickMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

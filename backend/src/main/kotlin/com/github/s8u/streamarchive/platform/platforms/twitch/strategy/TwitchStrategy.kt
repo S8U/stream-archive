@@ -25,6 +25,11 @@ class TwitchStrategy(
         return "https://www.twitch.tv/$username"
     }
 
+    override fun parseChannelId(url: String): String? {
+        val match = CHANNEL_ID_REGEX.find(url) ?: return null
+        return match.groupValues[1].lowercase()
+    }
+
     override fun getChannel(username: String): PlatformChannelDto? {
         val response = apiClient.getUsers(TwitchUsersRequestDto(login = listOf(username)))
             ?: return null
@@ -80,6 +85,11 @@ class TwitchStrategy(
         args.add("--twitch-low-latency")
 
         return args
+    }
+
+    companion object {
+        // twitch.tv/{login} 에서 로그인 아이디(영숫자·언더스코어)를 뽑는다
+        private val CHANNEL_ID_REGEX = Regex("twitch\\.tv/([a-zA-Z0-9_]+)")
     }
 
 }

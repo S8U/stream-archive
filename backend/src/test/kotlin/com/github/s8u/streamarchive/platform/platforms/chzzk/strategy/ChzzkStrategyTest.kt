@@ -12,6 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class ChzzkStrategyTest {
@@ -25,6 +26,25 @@ class ChzzkStrategyTest {
 
         assertTrue(streamUrl.contains("chzzk.naver.com"))
         assertTrue(streamUrl.contains(CHANNEL_ID))
+    }
+
+    @Nested
+    inner class ParseChannelId {
+
+        @Test
+        fun `채널 URL에서 채널 ID를 추출한다`() {
+            val channelId = chzzkStrategy.parseChannelId("https://chzzk.naver.com/live/$CHZZK_CHANNEL_ID")
+
+            assertEquals(CHZZK_CHANNEL_ID, channelId)
+        }
+
+        @Test
+        fun `치지직 URL이 아니면 채널 ID를 추출하지 않는다`() {
+            val channelId = chzzkStrategy.parseChannelId("https://www.twitch.tv/test")
+
+            assertNull(channelId)
+        }
+
     }
 
     @Test
@@ -143,6 +163,7 @@ class ChzzkStrategyTest {
 
     companion object {
         private const val CHANNEL_ID = "test-channel-id"
+        private const val CHZZK_CHANNEL_ID = "abcdef0123456789abcdef0123456789"
         private const val LIVE_ID = 123L
     }
 }

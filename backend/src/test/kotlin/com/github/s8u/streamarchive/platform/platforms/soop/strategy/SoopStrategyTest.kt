@@ -14,6 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class SoopStrategyTest {
@@ -27,6 +28,25 @@ class SoopStrategyTest {
 
         assertTrue(streamUrl.contains("play.sooplive.co.kr"))
         assertTrue(streamUrl.contains(USER_ID))
+    }
+
+    @Nested
+    inner class ParseChannelId {
+
+        @Test
+        fun `채널 URL에서 사용자 ID를 추출한다`() {
+            val channelId = soopStrategy.parseChannelId("https://play.sooplive.co.kr/$URL_USER_ID")
+
+            assertEquals(URL_USER_ID, channelId)
+        }
+
+        @Test
+        fun `숲 URL이 아니면 사용자 ID를 추출하지 않는다`() {
+            val channelId = soopStrategy.parseChannelId("https://www.twitch.tv/test-login")
+
+            assertNull(channelId)
+        }
+
     }
 
     @Test
@@ -150,6 +170,7 @@ class SoopStrategyTest {
 
     companion object {
         private const val USER_ID = "test-user-id"
+        private const val URL_USER_ID = "testuser"
         private const val BROAD_NO = "98765"
     }
 }

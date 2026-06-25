@@ -21,6 +21,11 @@ class ChzzkStrategy(
         return "https://chzzk.naver.com/live/$username"
     }
 
+    override fun parseChannelId(url: String): String? {
+        val match = CHANNEL_ID_REGEX.find(url) ?: return null
+        return match.groupValues[1]
+    }
+
     override fun getChannel(username: String): PlatformChannelDto? {
         val response = apiClient.getChannel(username) ?: return null
 
@@ -67,6 +72,11 @@ class ChzzkStrategy(
                 LocalDateTime.parse(it, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             } ?: LocalDateTime.now()
         )
+    }
+
+    companion object {
+        // chzzk.naver.com/live/{id} 또는 chzzk.naver.com/{id} 에서 채널 ID(32자리 hex)를 뽑는다
+        private val CHANNEL_ID_REGEX = Regex("chzzk\\.naver\\.com/(?:live/)?([0-9a-f]{32})")
     }
 
 }
