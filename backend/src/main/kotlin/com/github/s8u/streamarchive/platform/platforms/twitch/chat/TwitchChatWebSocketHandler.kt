@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.platform.platforms.twitch.chat
 
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
 import org.slf4j.LoggerFactory
@@ -103,19 +104,7 @@ class TwitchChatWebSocketHandler(
             if (privmsgIndex == -1) return null
 
             // 태그 부분 파싱 (@ 로 시작하는 부분)
-            val tags = mutableMapOf<String, String>()
-            if (line.startsWith("@")) {
-                val tagsEnd = line.indexOf(" ")
-                if (tagsEnd > 0) {
-                    val tagsString = line.substring(1, tagsEnd)
-                    tagsString.split(";").forEach { tag ->
-                        val parts = tag.split("=", limit = 2)
-                        if (parts.size == 2) {
-                            tags[parts[0]] = parts[1]
-                        }
-                    }
-                }
-            }
+            val tags = getTags(line)
 
             // display-name 추출 (없으면 username 사용)
             val displayName = tags["display-name"]?.ifEmpty { null }
@@ -135,6 +124,7 @@ class TwitchChatWebSocketHandler(
             val messageStart = line.indexOf(":", privmsgIndex)
             if (messageStart == -1) return null
             val chatText = line.substring(messageStart + 1)
+            val emojis = getEmojis(tags, chatText)
 
             val time = LocalDateTime.now()
             val offsetMillis = Duration.between(recordStartedAt, time).toMillis()
@@ -144,6 +134,7 @@ class TwitchChatWebSocketHandler(
                 videoId = videoId,
                 username = username,
                 message = chatText,
+                emojis = emojis,
                 offsetMillis = offsetMillis,
                 createdAt = time
             )
@@ -155,6 +146,86 @@ class TwitchChatWebSocketHandler(
 
     private fun sendMessage(session: WebSocketSession, message: String) {
         session.sendMessage(TextMessage(message))
+    }
+
+    private fun getTags(line: String): Map<String, String> {
+        if (!line.startsWith("@")) return emptyMap()
+
+        val tagsEnd = line.indexOf(" ")
+        if (tagsEnd <= 0) return emptyMap()
+
+        return line.substring(1, tagsEnd)
+            .split(";")
+            .mapNotNull { tag ->
+                val parts = tag.split("=", limit = 2)
+                if (parts.size != 2) return@mapNotNull null
+
+                parts[0] to unescapeTagValue(parts[1])
+            }
+            .toMap()
+    }
+
+    private fun unescapeTagValue(value: String): String {
+        return value
+            .replace("\\s", " ")
+            .replace("\\:", ";")
+            .replace("\\r", "\r")
+            .replace("\\n", "\n")
+            .replace("\\\\", "\\")
+    }
+
+    /**
+     * IRC emotes 태그를 공통 이모지 DTO 목록으로 변환
+     *
+     * 같은 위치를 가리키는 이모트는 한 번만 담는다.
+     */
+    private fun getEmojis(
+        tags: Map<String, String>,
+        message: String
+    ): List<PlatformChatEmojiDto> {
+        val emotes = tags["emotes"]
+        if (emotes.isNullOrBlank()) return emptyList()
+
+        // 트위치가 주는 인덱스는 코드포인트 기준이라, 서로게이트 이모지가 섞여도 깨지지 않게 코드포인트로 다룬다
+        val codePointLength = message.codePointCount(0, message.length)
+
+        // emotes 태그 형식: emoteId:start-end,start-end/emoteId:start-end
+        val emojis = mutableListOf<PlatformChatEmojiDto>()
+        val addedKeys = mutableSetOf<String>()
+
+        for (emote in emotes.split("/")) {
+            val parts = emote.split(":", limit = 2)
+            if (parts.size != 2) continue
+
+            val emoteId = parts[0]
+            for (range in parts[1].split(",")) {
+                val indexes = range.split("-", limit = 2)
+                if (indexes.size != 2) continue
+
+                val start = indexes[0].toIntOrNull() ?: continue
+                val end = indexes[1].toIntOrNull() ?: continue
+                if (start < 0 || end < start || end >= codePointLength) continue
+
+                val startIndex = message.offsetByCodePoints(0, start)
+                val endIndex = message.offsetByCodePoints(0, end + 1)
+                val placeholder = message.substring(startIndex, endIndex)
+                val key = "$emoteId:$placeholder"
+                if (!addedKeys.add(key)) continue
+
+                emojis.add(
+                    PlatformChatEmojiDto(
+                        placeholder = placeholder,
+                        imageUrl = getEmoteImageUrl(emoteId)
+                    )
+                )
+            }
+        }
+
+        return emojis
+    }
+
+    private fun getEmoteImageUrl(emoteId: String): String {
+        return "https://static-cdn.jtvnw.net/emoticons/v2/$emoteId/default/dark/2.0"
     }
 
 }

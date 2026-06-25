@@ -106,8 +106,10 @@ class YoutubeChatCollectionSession(
     }
 
     private fun toChatMessage(message: YoutubeLiveChatMessage): PlatformChatMessageDto? {
-        val text = message.snippet.textMessageDetails?.messageText
-            ?: message.snippet.displayMessage
+        // 유튜브 공식 API는 이모지 이미지 URL을 주지 않는다
+        // 그래서 사용자가 보는 표시 문자열을 우선 저장한다
+        val text = message.snippet.displayMessage
+            ?: message.snippet.textMessageDetails?.messageText
             ?: return null
         val publishedAt = message.snippet.publishedAt ?: return null
         val time = Instant.parse(publishedAt)
