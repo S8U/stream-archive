@@ -6,6 +6,7 @@ import { Clock, HomeIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SheetClose } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChannelGetResponse } from "@/lib/api/models";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +64,7 @@ export function SidebarContent({ channels, isSheet = false }: SidebarContentProp
             <Separator className="mb-4" />
 
             {/* 채널 목록 */}
-            <div className="px-3 overflow-y-auto">
+            <ScrollArea className="flex-1 min-h-0 px-3">
                 <h3 className="px-3 mb-2 text-sm font-semibold text-muted-foreground">채널</h3>
                 {channels.map((channel) => {
                     const channelHref = "/channels/" + channel.uuid;
@@ -84,7 +85,7 @@ export function SidebarContent({ channels, isSheet = false }: SidebarContentProp
                         </LinkWrapper>
                     );
                 })}
-            </div>
+            </ScrollArea>
         </div>
     );
 }
