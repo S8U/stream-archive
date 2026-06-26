@@ -90,4 +90,14 @@ class SoopApiClient {
         }
     }
 
+    /**
+     * 채팅 이모티콘 매니페스트 조회
+     */
+    fun getChatEmoticonManifest(): SoopChatEmoticonManifestDto? {
+        return restClient.get()
+            .uri("https://res.sooplive.com/manifests/chat/emoticons.json")
+            .retrieve()
+            .body(SoopChatEmoticonManifestDto::class.java)
+    }
+
 }

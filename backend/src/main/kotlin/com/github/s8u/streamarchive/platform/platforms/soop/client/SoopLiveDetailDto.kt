@@ -20,5 +20,13 @@ data class SoopLiveDetailDto(
     @JsonProperty("RESOLUTION")
     val resolution: String?,
     @JsonProperty("BPS")
-    val bps: String?
+    val bps: String?,
+    @JsonProperty("CHATNO")
+    val chatNo: String?,
+    @JsonProperty("CHIP")
+    val chatIp: String?,
+    @JsonProperty("CHPT")
+    val chatPort: Int?,
+    @JsonProperty("FTK")
+    val fanTicket: String?
 )

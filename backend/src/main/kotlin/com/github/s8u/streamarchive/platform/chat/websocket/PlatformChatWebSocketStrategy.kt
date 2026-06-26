@@ -5,6 +5,7 @@ import com.github.s8u.streamarchive.platform.chat.PlatformChatStrategy
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import jakarta.websocket.ContainerProvider
 import org.slf4j.LoggerFactory
+import org.springframework.web.socket.WebSocketHttpHeaders
 import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import java.net.URI
 import java.time.LocalDateTime
@@ -53,17 +54,21 @@ abstract class PlatformChatWebSocketStrategy : PlatformChatStrategy {
         )
 
         val webSocketContainer = ContainerProvider.getWebSocketContainer().apply {
-            defaultMaxTextMessageBufferSize = MAX_TEXT_MESSAGE_BUFFER_SIZE
+            if (connection.binary) {
+                defaultMaxBinaryMessageBufferSize = MAX_MESSAGE_BUFFER_SIZE
+            } else {
+                defaultMaxTextMessageBufferSize = MAX_MESSAGE_BUFFER_SIZE
+            }
         }
         val session = StandardWebSocketClient(webSocketContainer)
-            .execute(connection.handler, null, URI(connection.url))
+            .execute(connection.handler, WebSocketHttpHeaders(), URI(connection.url))
             .get()
 
-        return WebSocketChatCollectionSession(session)
+        return WebSocketChatCollectionSession(session, connection.handler)
     }
 
     companion object {
-        private const val MAX_TEXT_MESSAGE_BUFFER_SIZE = 1024 * 1024
+        private const val MAX_MESSAGE_BUFFER_SIZE = 1024 * 1024
     }
 
 }

@@ -151,7 +151,11 @@ class SoopStrategyTest {
                 cate = "테스트 카테고리",
                 btime = 1000,
                 resolution = "1920x1080",
-                bps = "8000"
+                bps = "8000",
+                chatNo = "12345",
+                chatIp = "127.0.0.1",
+                chatPort = 8000,
+                fanTicket = "test-fan-ticket"
             )
         } else {
             SoopLiveDetailDto(
@@ -163,7 +167,11 @@ class SoopStrategyTest {
                 cate = null,
                 btime = null,
                 resolution = null,
-                bps = null
+                bps = null,
+                chatNo = null,
+                chatIp = null,
+                chatPort = null,
+                fanTicket = null
             )
         }
     }
