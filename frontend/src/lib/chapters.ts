@@ -3,10 +3,10 @@ import type { VideoChapterGetResponse } from '@/lib/api/models';
 /**
  * 챕터가 이보다 적으면 타임라인/목록에 표시하지 않는다.
  *
- * 카테고리 변경 시점이 곧 챕터라, 변경이 한 번도 없는 영상(챕터 1개)만 걸러낸다.
- * 2구간(talk → 게임 등)부터 의미가 있으므로 2로 둔다.
+ * 카테고리 변경 시점이 곧 챕터라, 변경이 한 번도 없는 영상도 챕터 1개(전체 = 한 카테고리)로 본다.
+ * 카테고리가 무엇인지는 늘 알려주는 게 일관되므로, 챕터가 1개라도 표시한다(0개일 때만 숨김).
  */
-export const MIN_CHAPTER_COUNT = 2;
+export const MIN_CHAPTER_COUNT = 1;
 
 /** 화면 표시용으로 가공된 챕터. 시작·끝을 초 단위로 들고, 라벨을 미리 계산해 둔다. */
 export interface DisplayChapter {
@@ -56,7 +56,7 @@ export function toDisplayChapters(
         });
     }
 
-    // 잘려 나간 끝에서 다시 3개 미만이 되면 표시하지 않는다.
+    // duration 초과분이 잘려 나가 남는 구간이 없으면 표시하지 않는다.
     return result.length < MIN_CHAPTER_COUNT ? [] : result;
 }
 

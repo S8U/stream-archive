@@ -2,11 +2,13 @@ package com.github.s8u.streamarchive.video.controller
 
 import com.github.s8u.streamarchive.video.controller.dto.request.VideoSearchRequest
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoChapterGetResponse
+import com.github.s8u.streamarchive.video.controller.dto.response.VideoChatAnalysisGetResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoChatHistorySearchResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoGetResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoSearchResponse
 import com.github.s8u.streamarchive.video.controller.dto.response.VideoViewerHistoryGetResponse
 import com.github.s8u.streamarchive.video.usecase.VideoChapterGetUseCase
+import com.github.s8u.streamarchive.video.usecase.VideoChatAnalysisGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoChatEmojiGetUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoChatHistorySearchUseCase
 import com.github.s8u.streamarchive.video.usecase.VideoGetUseCase
@@ -46,6 +48,7 @@ class VideoController(
     private val videoPlaylistGetUseCase: VideoPlaylistGetUseCase,
     private val videoSegmentGetUseCase: VideoSegmentGetUseCase,
     private val videoChatHistorySearchUseCase: VideoChatHistorySearchUseCase,
+    private val videoChatAnalysisGetUseCase: VideoChatAnalysisGetUseCase,
     private val videoChatEmojiGetUseCase: VideoChatEmojiGetUseCase,
     private val videoViewerHistoryGetUseCase: VideoViewerHistoryGetUseCase,
     private val videoChapterGetUseCase: VideoChapterGetUseCase,
@@ -112,6 +115,17 @@ class VideoController(
     ): List<VideoChatHistorySearchResponse> {
         return videoChatHistorySearchUseCase.search(uuid, offsetStart, offsetEnd)
             .map { VideoChatHistorySearchResponse.from(it) }
+    }
+
+    @Operation(summary = "동영상 채팅 분석 조회")
+    @GetMapping("/{uuid}/chat-analysis")
+    fun getVideoChatAnalysis(
+        @PathVariable uuid: String,
+        @RequestParam(defaultValue = "60") bucketSeconds: Long,
+        @RequestParam(defaultValue = "2") keywordCount: Int
+    ): VideoChatAnalysisGetResponse {
+        val result = videoChatAnalysisGetUseCase.getByVideoUuid(uuid, bucketSeconds, keywordCount)
+        return VideoChatAnalysisGetResponse.from(result)
     }
 
     @Operation(summary = "동영상 채팅 이모지 조회")

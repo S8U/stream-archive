@@ -13,7 +13,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {Bookmark, BookmarkX, ChevronDown, Edit, Loader2, MoreVertical, Trash2, Users} from 'lucide-react';
+import {Bookmark, BookmarkX, ChevronDown, Edit, History, Loader2, MoreVertical, Trash2, Users} from 'lucide-react';
 import {useEffect, useMemo, useState} from 'react';
 import {toast} from 'sonner';
 import {formatElapsed} from '@/lib/utils';
@@ -36,6 +36,8 @@ interface VideoInfoProps {
     viewerCount?: number;
     chapters?: VideoChapterGetResponse[];
     currentTimeMs?: number;
+    /** 채널 줄의 타임라인 버튼을 누르면 호출한다. */
+    onTimelineClick?: () => void;
 }
 
 function parseTimestampToSeconds(match: RegExpExecArray): number {
@@ -90,14 +92,14 @@ function renderDescription(description: string, onTimestampClick?: (seconds: num
     return nodes.length > 0 ? nodes : description;
 }
 
-export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = false, viewerCount, chapters, currentTimeMs }: VideoInfoProps) {
+export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = false, viewerCount, chapters, currentTimeMs, onTimelineClick }: VideoInfoProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const recordedAt = video.record?.startedAt ?? video.createdAt;
 
-    // 카테고리 변경 이력 기반 챕터 (duration 기준으로 가공, 3개 미만이면 빈 배열)
+    // 카테고리 변경 이력 기반 챕터 (duration 기준으로 가공, 카테고리가 없으면 빈 배열)
     const displayChapters = useMemo(
         () => toDisplayChapters(chapters, video.duration),
         [chapters, video.duration],
@@ -243,9 +245,9 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
             <DropdownMenuTrigger asChild>
                 <Button
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
-                    className="-mr-2 h-9 w-9 flex-shrink-0"
+                    className="h-9 w-9 flex-shrink-0 rounded-full"
                     aria-label="동영상 관리 메뉴"
                 >
                     {isAdminVideoLoading ? (
@@ -343,12 +345,26 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
                             <p className="truncate font-medium">{video.channel.name}</p>
                         </div>
                     </Link>
+                    {/* 채널 줄 최우측 기능 버튼 (타임라인 + 관리 메뉴) */}
+                    <div className="flex flex-shrink-0 items-center gap-1.5">
+                        {onTimelineClick && (
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={onTimelineClick}
+                                className="gap-1.5 rounded-full"
+                            >
+                                <History className="h-4 w-4" />
+                                타임라인
+                            </Button>
+                        )}
+                        {adminMenu}
+                    </div>
                 </div>
 
-                <div className={`${isExpanded ? 'block' : 'hidden'} relative mt-4 mb-4 rounded-lg bg-muted px-4 py-4 lg:block`}>
-                    {adminMenu && <div className="absolute top-2 right-3">{adminMenu}</div>}
+                <div className={`${isExpanded ? 'block' : 'hidden'} mt-4 mb-4 rounded-lg bg-muted px-4 py-4 lg:block`}>
                     {video.description && (
-                        <p className="mb-4 pr-10 whitespace-pre-wrap text-sm leading-6">
+                        <p className="mb-4 whitespace-pre-wrap text-sm leading-6">
                             {renderDescription(video.description, onTimestampClick)}
                         </p>
                     )}

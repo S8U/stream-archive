@@ -22,10 +22,12 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  GetVideoChatAnalysisParams,
   GetVideoChatHistoryParams,
   PageVideoSearchResponse,
   SearchVideosParams,
   VideoChapterGetResponse,
+  VideoChatAnalysisGetResponse,
   VideoChatHistorySearchResponse,
   VideoGetResponse,
   VideoViewerHistoryGetResponse,
@@ -1629,6 +1631,191 @@ export function useGetVideoChatHistory<
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
   const queryOptions = getGetVideoChatHistoryQueryOptions(
+    uuid,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 동영상 채팅 분석 조회
+ */
+export const getVideoChatAnalysis = (
+  uuid: string,
+  params?: GetVideoChatAnalysisParams,
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<VideoChatAnalysisGetResponse>(
+    { url: `/videos/${uuid}/chat-analysis`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getGetVideoChatAnalysisQueryKey = (
+  uuid?: string,
+  params?: GetVideoChatAnalysisParams,
+) => {
+  return [
+    `/videos/${uuid}/chat-analysis`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetVideoChatAnalysisQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoChatAnalysisParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVideoChatAnalysisQueryKey(uuid, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVideoChatAnalysis>>
+  > = ({ signal }) =>
+    getVideoChatAnalysis(uuid, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!uuid,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetVideoChatAnalysisQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVideoChatAnalysis>>
+>;
+export type GetVideoChatAnalysisQueryError = unknown;
+
+export function useGetVideoChatAnalysis<
+  TData = Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params: undefined | GetVideoChatAnalysisParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChatAnalysis>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChatAnalysis<
+  TData = Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoChatAnalysisParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+          TError,
+          Awaited<ReturnType<typeof getVideoChatAnalysis>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetVideoChatAnalysis<
+  TData = Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoChatAnalysisParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 동영상 채팅 분석 조회
+ */
+
+export function useGetVideoChatAnalysis<
+  TData = Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+  TError = unknown,
+>(
+  uuid: string,
+  params?: GetVideoChatAnalysisParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getVideoChatAnalysis>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetVideoChatAnalysisQueryOptions(
     uuid,
     params,
     options,

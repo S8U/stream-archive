@@ -46,6 +46,9 @@ dependencies {
     // 웹소켓
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
+    // 한국어 형태소 분석 (채팅 키워드 추출)
+    implementation("org.apache.lucene:lucene-analysis-nori:9.12.1")
+
     // Swagger/OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
