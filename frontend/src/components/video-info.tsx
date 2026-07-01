@@ -76,7 +76,7 @@ function renderDescription(description: string, onTimestampClick?: (seconds: num
             <button
                 key={`${timestampStart}-${timestampText}`}
                 type="button"
-                className="inline cursor-pointer rounded-sm font-medium text-sky-500 hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:text-sky-400 dark:hover:text-sky-300"
+                className="inline cursor-pointer rounded-sm font-medium text-link hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 onClick={() => onTimestampClick(timestampSeconds)}
             >
                 {timestampText}
@@ -179,16 +179,6 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
         video.peakViewerOffsetMillis != null ? Math.floor(video.peakViewerOffsetMillis / 1000) : null;
     const onPeakViewerClick =
         peakViewerSeconds != null && onTimestampClick ? () => onTimestampClick(peakViewerSeconds) : undefined;
-
-    const stats: { label: string; value: string; onClick?: () => void }[] = [
-        { label: '녹화일', value: formatDateTime(recordedAt) },
-        { label: '용량', value: formatFileSize(video.fileSize) },
-        {
-            label: '최고 시청자수',
-            value: video.peakViewerCount != null ? video.peakViewerCount.toLocaleString('ko-KR') : '-',
-            onClick: onPeakViewerClick,
-        },
-    ];
 
     const handleDialogSubmit = async (data: { title: string; description: string; contentPrivacy: VideoAdminUpdateRequestContentPrivacy; chatSyncOffsetMillis: number }) => {
         if (!adminVideo) return;
@@ -295,11 +285,11 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
 
     return (
         <>
-            <div className="p-3">
+            <div className="px-4 py-3">
                 {/* 제목 */}
                 <button
                     type="button"
-                    className={`flex w-full items-start justify-between gap-3 text-left lg:pointer-events-none ${isLive ? 'mb-1.5' : 'mb-3'}`}
+                    className={`flex w-full items-start justify-between gap-3 text-left lg:pointer-events-none ${isLive ? 'mb-1.5' : 'mb-2'}`}
                     onClick={() => setIsExpanded((prev) => !prev)}
                     aria-expanded={isExpanded}
                 >
@@ -362,51 +352,49 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
                     </div>
                 </div>
 
-                <div className={`${isExpanded ? 'block' : 'hidden'} mt-4 mb-4 rounded-lg bg-muted px-4 py-4 lg:block`}>
-                    {video.description && (
-                        <p className="mb-4 whitespace-pre-wrap text-sm leading-6">
-                            {renderDescription(video.description, onTimestampClick)}
-                        </p>
-                    )}
-                    <dl className="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2 xl:grid-cols-4">
-                        {stats.map((stat) => (
-                            <div key={stat.label} className="min-w-0">
-                                <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-                                <dd className="mt-0.5 truncate font-medium">
-                                    {stat.onClick ? (
+                <div className={`${isExpanded ? 'block' : 'hidden'} mt-3 rounded-lg bg-muted p-3.5 lg:block`}>
+                    {/* 핵심 정보 줄 (유튜브 설명란의 조회수·날짜 줄 포지션).
+                        의미 단위로 묶는다 — 녹화물 속성(날짜·용량) / 방송 속성(최고 시청자·플랫폼).
+                        모바일에서는 이 두 묶음이 의도된 두 줄이 되고, PC에서는 한 줄로 이어진다.
+                        구분점 없이 간격(12px)과 항목별 색·무게 차이로 구분한다. */}
+                    <div className="flex flex-col gap-1 text-sm font-medium sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+                        <div className="flex items-center gap-x-3">
+                            <span>{formatDateTime(recordedAt)}</span>
+                            <span className="text-muted-foreground">{formatFileSize(video.fileSize)}</span>
+                        </div>
+                        {(video.peakViewerCount != null || platformType) && (
+                            <div className="flex items-center gap-x-3">
+                                {video.peakViewerCount != null &&
+                                    (onPeakViewerClick ? (
                                         <button
                                             type="button"
-                                            onClick={stat.onClick}
-                                            className="cursor-pointer rounded-sm font-medium text-sky-500 hover:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:text-sky-400 dark:hover:text-sky-300"
+                                            onClick={onPeakViewerClick}
+                                            className="cursor-pointer rounded-sm text-link hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                             title="최고 시청자 수 시점으로 이동"
                                         >
-                                            {stat.value}
+                                            최고 시청자 {video.peakViewerCount.toLocaleString('ko-KR')}명
                                         </button>
                                     ) : (
-                                        stat.value
-                                    )}
-                                </dd>
-                            </div>
-                        ))}
-                        <div className="min-w-0">
-                            <dt className="text-xs text-muted-foreground">플랫폼</dt>
-                            <dd className="mt-0.5">
-                                {platformType ? (
-                                    platformLink ? (
+                                        <span>최고 시청자 {video.peakViewerCount.toLocaleString('ko-KR')}명</span>
+                                    ))}
+                                {platformType &&
+                                    (platformLink ? (
                                         <a href={platformLink} target="_blank" rel="noopener noreferrer" className="inline-flex">
                                             <PlatformBadge platform={platformType} />
                                         </a>
                                     ) : (
                                         <PlatformBadge platform={platformType} />
-                                    )
-                                ) : (
-                                    <span className="font-medium">-</span>
-                                )}
-                            </dd>
-                        </div>
-                    </dl>
+                                    ))}
+                            </div>
+                        )}
+                    </div>
+                    {video.description && (
+                        <p className="mt-3 whitespace-pre-wrap text-sm leading-6">
+                            {renderDescription(video.description, onTimestampClick)}
+                        </p>
+                    )}
                     {displayChapters.length > 0 && (
-                        <div className="mt-4 border-t border-border/60 pt-4">
+                        <div className="mt-3 border-t border-border/60 pt-3">
                             <p className="mb-2 text-xs text-muted-foreground">챕터</p>
                             <ul className="flex flex-col gap-0.5">
                                 {displayChapters.map((chapter) => {
@@ -421,7 +409,7 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
                                                     onTimestampClick ? 'cursor-pointer hover:bg-foreground/5' : ''
                                                 } ${isCurrent ? 'font-semibold' : ''}`}
                                             >
-                                                <span className={`flex-shrink-0 tabular-nums ${isCurrent ? 'text-sky-600 dark:text-sky-300' : 'text-sky-500 dark:text-sky-400'}`}>
+                                                <span className="flex-shrink-0 tabular-nums text-link">
                                                     {formatElapsed(chapter.startSec)}
                                                 </span>
                                                 <span className="min-w-0 truncate">{chapter.label}</span>

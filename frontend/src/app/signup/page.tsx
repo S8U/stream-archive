@@ -48,9 +48,13 @@ export default function SignupPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background px-4">
-            <Card className="w-full max-w-sm">
+            <div className="w-full max-w-sm">
+                <Link href="/" className="mb-6 block text-center text-2xl font-bold">
+                    StreamArchive
+                </Link>
+                <Card>
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">회원가입</CardTitle>
+                    <CardTitle className="text-xl font-bold">회원가입</CardTitle>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
@@ -121,7 +125,8 @@ export default function SignupPage() {
                         </p>
                     </CardContent>
                 </form>
-            </Card>
+                </Card>
+            </div>
         </div>
     );
 }

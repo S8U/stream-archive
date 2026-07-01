@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { VideoPreview } from "@/components/video-preview";
+import { VideoGridSkeleton } from "@/components/video-grid-skeleton";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import {
     useGetWatchHistories,
@@ -130,16 +131,14 @@ export function WatchHistoryList() {
             </div>
 
             {isLoading ? (
-                <div className="text-center py-12">
-                    <p className="text-muted-foreground">불러오는 중...</p>
-                </div>
+                <VideoGridSkeleton />
             ) : histories.length === 0 ? (
                 <div className="text-center py-12">
                     <p className="text-muted-foreground">시청 기록이 없습니다.</p>
                 </div>
             ) : (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
                         {histories.map((item) => (
                             <WatchHistoryCard
                                 key={item.video.uuid}
@@ -172,7 +171,7 @@ function WatchHistoryCard({ item, onDelete }: WatchHistoryCardProps) {
 
     return (
         <div
-            className="relative flex flex-col gap-3 mb-4 md:mb-5"
+            className="relative flex flex-col gap-3"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -209,7 +208,7 @@ function WatchHistoryCard({ item, onDelete }: WatchHistoryCardProps) {
                 </Link>
                 <div className="flex flex-1 min-w-0 gap-1">
                     <div className="flex flex-col min-w-0">
-                        <h3 className="text-md font-medium line-clamp-2">{video.title}</h3>
+                        <h3 className="text-base font-medium line-clamp-2">{video.title}</h3>
                         <Link
                             href={`/channels/${channel.uuid}`}
                             className="relative z-20 text-sm text-muted-foreground hover:text-foreground"

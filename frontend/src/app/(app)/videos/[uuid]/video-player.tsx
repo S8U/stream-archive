@@ -1787,7 +1787,7 @@ export function VideoPlayer({
                         {/* hover 시간/시청자 툴팁 */}
                         {hoverTime !== null && (
                             <div
-                                className="absolute bottom-full mb-6 px-4 py-2 bg-black/50 text-white rounded-full pointer-events-none whitespace-nowrap text-center leading-tight"
+                                className="absolute bottom-full mb-6 px-4 py-2 bg-black/50 text-white rounded-2xl pointer-events-none whitespace-nowrap text-center leading-tight"
                                 style={{
                                     left: `${tooltipX}px`,
                                     transform: 'translateX(-50%)',

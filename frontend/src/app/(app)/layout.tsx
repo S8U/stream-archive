@@ -37,7 +37,7 @@ export default async function AppLayout({
         <SidebarProvider>
             <div className={"bg-background"}>
                 {/* 헤더 */}
-                <header className="sticky top-0 left-0 right-0 h-14 bg-background z-50">
+                <header className="sticky top-0 left-0 right-0 h-14 bg-background z-50 border-b">
                     <div className="h-full px-4 flex items-center justify-between gap-4">
                         {/* 왼쪽: 로고. PC에서 pl-1로 햄버거 중심 X를 사이드바 아이콘 중심(40px)과 맞춘다. */}
                         <div className="flex-shrink-0 flex items-center gap-2 md:pl-1">
@@ -66,7 +66,6 @@ export default async function AppLayout({
                             <UserMenu />
                         </div>
                     </div>
-                    {/*<Separator />*/}
                 </header>
 
                 {/* PC 사이드바 */}

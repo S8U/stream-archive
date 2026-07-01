@@ -223,7 +223,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
       className={
         isWide
           ? "fixed inset-0 z-[60] bg-background flex flex-col lg:flex-row overflow-hidden"
-          : "flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden"
+          : "flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] overflow-hidden"
       }
     >
       {/* 좌측: 동영상 + 정보 */}
@@ -258,7 +258,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
 
       {/* 우측: 채팅창. 타임라인 버튼을 누르면 타임라인 패널이 그 위를 덮는다. (와이드 모드는 항상 다크) */}
       <div
-        className={`flex-1 lg:flex-initial w-full lg:w-88 lg:h-full mt-3 lg:mt-0 min-h-0 relative ${isWide ? "dark bg-background text-foreground" : ""}`}
+        className={`flex-1 lg:flex-initial w-full lg:w-88 lg:h-full min-h-0 relative lg:border-l ${isWide ? "dark bg-background text-foreground" : ""}`}
       >
         <ChatHistory
           videoUuid={currentVideo.uuid}

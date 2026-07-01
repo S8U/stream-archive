@@ -15,7 +15,7 @@ export function PcSidebar({ channels }: PcSidebarProps) {
     return (
         <div
             className={cn(
-                "hidden md:block fixed h-full transition-[width] duration-200 ease-in-out overflow-hidden",
+                "hidden md:block fixed h-full transition-[width] duration-200 ease-in-out overflow-hidden bg-sidebar border-r",
                 isOpen ? "w-60" : "w-20"
             )}
         >

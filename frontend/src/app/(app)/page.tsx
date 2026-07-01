@@ -37,11 +37,11 @@ export default async function Home({ searchParams }: Props) {
     const totalPages = data?.totalPages || 0;
 
     return (
-        <div className="p-4">
+        <div className="p-4 md:p-6">
             {/* 동영상 목록 */}
             {videos.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
                         {videos.map((video) => (
                             <VideoCard
                                 key={video.uuid}

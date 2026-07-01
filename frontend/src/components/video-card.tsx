@@ -73,7 +73,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
 
     return (
         <div
-            className="relative flex flex-col gap-3 mb-4 md:mb-5"
+            className="relative flex flex-col gap-3"
             onMouseEnter={() => setHoveredVideoUuid(uuid)}
             onMouseLeave={() => setHoveredVideoUuid(null)}
         >
@@ -107,7 +107,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     </Avatar>
                 </Link>
                 <div className="flex flex-col min-w-0">
-                    <h3 className="text-md font-medium line-clamp-2">
+                    <h3 className="text-base font-medium line-clamp-2">
                         {title}
                         {isArchived && (
                             <Bookmark size={13} className="ml-1 inline-block flex-shrink-0 text-muted-foreground opacity-50" fill="currentColor" />

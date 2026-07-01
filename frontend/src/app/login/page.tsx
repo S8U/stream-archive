@@ -34,9 +34,13 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background px-4">
-            <Card className="w-full max-w-sm">
+            <div className="w-full max-w-sm">
+                <Link href="/" className="mb-6 block text-center text-2xl font-bold">
+                    StreamArchive
+                </Link>
+                <Card>
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">로그인</CardTitle>
+                    <CardTitle className="text-xl font-bold">로그인</CardTitle>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
@@ -85,7 +89,8 @@ export default function LoginPage() {
                         </p>
                     </CardContent>
                 </form>
-            </Card>
+                </Card>
+            </div>
         </div>
     );
 }

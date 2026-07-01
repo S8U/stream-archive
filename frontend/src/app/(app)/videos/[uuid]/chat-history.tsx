@@ -285,7 +285,12 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
             <Separator />
 
             {/* 채팅 목록 */}
-            <div className="overflow-hidden flex-1">
+            <div className="overflow-hidden flex-1 relative">
+                {displayedChats.length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                        재생 시점에 맞춰 채팅 다시보기가 표시됩니다.
+                    </div>
+                )}
                 <ScrollArea viewportRef={viewportRef} className="h-full" viewportClassName="overscroll-contain" hideScrollbar>
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat, index) => {

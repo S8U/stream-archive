@@ -86,7 +86,7 @@ export default async function ChannelPage({ params, searchParams }: Props) {
     const totalPages = videosData.totalPages || 0;
 
     return (
-        <div className="p-4">
+        <div className="p-4 md:p-6">
             {/* 채널 헤더 */}
             <ChannelHeader channel={channel} />
 
@@ -94,7 +94,7 @@ export default async function ChannelPage({ params, searchParams }: Props) {
             <div className="mt-8">
                 {videos.length > 0 ? (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
                             {videos.map((video) => (
                                 <VideoCard
                                     key={video.uuid}
