@@ -271,6 +271,7 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
               videoUuid={currentVideo.uuid}
               currentTimeMs={currentTimeMs}
               durationSec={currentVideo.duration}
+              streamStartedAt={currentVideo.record?.startedAt}
               viewerHistory={viewerHistory}
               chapters={chapters}
               isLive={isLive}

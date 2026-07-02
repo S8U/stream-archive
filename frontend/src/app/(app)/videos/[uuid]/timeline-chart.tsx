@@ -34,6 +34,18 @@ function clipLabel(label: string, maxChars: number): string {
   return label.length > maxChars ? label.slice(0, maxChars) + "…" : label;
 }
 
+// 방송 시작 시각 + 오프셋(ms) = 그 눈금의 실제 시각을 구한다.
+// 비디오 플레이어와 같은 표기("오후 2:32")를 쓴다.
+function formatClock(startedAtMs: number, offsetMillis: number): string {
+  const d = new Date(startedAtMs + offsetMillis);
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const period = hours < 12 ? "오전" : "오후";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  return `${period} ${hours}:${minutes.toString().padStart(2, "0")}`;
+}
+
 // 세로 그래프 레이아웃 (원본 짤처럼 시간이 위→아래로 흐른다)
 const ROW_HEIGHT = 22; // 버킷 1개당 세로 픽셀
 const LABEL_GAP = 8; // 그래프와 텍스트 주석 사이 간격
@@ -48,8 +60,10 @@ const CHAPTER_CHIP_CHAR_WIDTH = 5.6; // 칩 텍스트(10px bold) 글자 한 칸�
 // viewWidth는 패널 실제 폭(lg:w-88 = 352px)에 맞춘다.
 const WIDE_LAYOUT = { viewWidth: 720, axisWidth: 56, graphWidth: 180 };
 const PANEL_LAYOUT = { viewWidth: 352, axisWidth: 40, graphWidth: 90 };
-// 1시간 이상이면 시간 라벨이 H:MM:SS로 길어지므로 좌측 축을 이만큼 더 넓힌다.
+// 1시간 넘어 시간 라벨이 H:MM:SS로 길어질 때 좌측 축을 이만큼 더 넓힌다.
 const AXIS_WIDTH_EXTRA_FOR_HOURS = 16;
+// 실제 시각("오후 12:32")을 함께 표시할 때는 라벨이 더 길어 축을 더 넓힌다.
+const AXIS_WIDTH_EXTRA_FOR_CLOCK = 30;
 
 // 챕터 색상 팔레트 (카테고리 등장 순서대로 순환 배정).
 // 그래프 색(chart-1·chart-4는 모두 파랑 계열)과 섞이지 않도록 따뜻한 계열 고정값을 쓴다.
@@ -85,6 +99,8 @@ interface TimelineChartProps {
   currentTimeMs?: number;
   /** 재생 시간(초). 챕터 마지막 구간의 끝을 잡는 데 쓴다. */
   durationSec?: number;
+  /** 방송 시작 실제 시각(ISO 8601). 있으면 시간 눈금 아래에 그때 당시 시각을 함께 표시한다. */
+  streamStartedAt?: string;
   /** 시청자 수 이력. 채팅 수 그래프 위에 겹쳐 그린다. */
   viewerHistory?: VideoViewerHistoryGetResponse[];
   /** 카테고리 변경 이력(챕터). 시간축 옆 세로 띠로 표시한다. */
@@ -103,6 +119,7 @@ export function TimelineChart({
   isLive = false,
   currentTimeMs,
   durationSec,
+  streamStartedAt,
   viewerHistory,
   chapters,
   embedded = false,
@@ -149,17 +166,22 @@ export function TimelineChart({
 
   // 좁은 우측 패널이면 그래프·라벨 폭을 줄인 배치를 쓴다.
   const baseLayout = embedded ? PANEL_LAYOUT : WIDE_LAYOUT;
-  // 1시간을 넘으면 시간 라벨이 M:SS → H:MM:SS로 길어진다.
-  // 그만큼 좌측 축 폭을 넓혀 라벨이 잘리지 않게 하고, 늘어난 만큼 그래프 폭을 줄여 총폭을 유지한다.
+  // 좌측 축 라벨이 길어지는 경우(1시간 초과로 H:MM:SS가 되거나, 실제 시각을 함께 표시)
+  // 좌측 축 폭을 넓혀 라벨이 잘리지 않게 하고, 늘어난 만큼 그래프 폭을 줄여 총폭을 유지한다.
   const layout = useMemo(() => {
-    if (totalMillis < 3_600_000) return baseLayout;
-    const extra = AXIS_WIDTH_EXTRA_FOR_HOURS;
+    // 실제 시각("오후 12:32")이 H:MM:SS보다 길므로 더 넓게 잡는다(둘 다면 실제 시각 기준).
+    const extra = streamStartedAt
+      ? AXIS_WIDTH_EXTRA_FOR_CLOCK
+      : totalMillis >= 3_600_000
+        ? AXIS_WIDTH_EXTRA_FOR_HOURS
+        : 0;
+    if (extra === 0) return baseLayout;
     return {
       ...baseLayout,
       axisWidth: baseLayout.axisWidth + extra,
       graphWidth: baseLayout.graphWidth - extra,
     };
-  }, [baseLayout, totalMillis]);
+  }, [baseLayout, totalMillis, streamStartedAt]);
   // 좌측부터: 시간 눈금 → 그래프 → 라벨 순으로 가로를 나눈다.
   // 챕터는 별도 가로 칸을 차지하지 않고 전환 지점에 풀폭 구분선 + 라벨 칩으로 얹는다.
   const graphLeft = layout.axisWidth;
@@ -175,18 +197,26 @@ export function TimelineChart({
     [buckets],
   );
 
+  // 방송 시작 실제 시각(ms). 없거나 파싱 실패면 null → 그때 당시 시각은 표시하지 않는다.
+  const startedAtMs = useMemo(() => {
+    if (!streamStartedAt) return null;
+    const ms = new Date(streamStartedAt).getTime();
+    return Number.isNaN(ms) ? null : ms;
+  }, [streamStartedAt]);
+
   // 각 버킷의 y중심 좌표와 채팅 수 그래프 폭을 미리 계산한다.
   const points = useMemo(() => {
     return buckets.map((b, i) => ({
       offsetMillis: b.offsetMillis,
       time: formatOffset(b.offsetMillis),
+      clock: startedAtMs != null ? formatClock(startedAtMs, b.offsetMillis) : null,
       count: b.count,
       keywords: b.keywords,
       y: TOP_PAD + i * ROW_HEIGHT + ROW_HEIGHT / 2,
       width: maxCount > 0 ? (b.count / maxCount) * layout.graphWidth : 0,
       isCurrent: i === currentBucketIndex,
     }));
-  }, [buckets, maxCount, currentBucketIndex, layout.graphWidth]);
+  }, [buckets, maxCount, currentBucketIndex, layout.graphWidth, startedAtMs]);
 
   const svgHeight = TOP_PAD + buckets.length * ROW_HEIGHT + BOTTOM_PAD;
 
@@ -302,13 +332,25 @@ export function TimelineChart({
               />
               <text
                 x={graphLeft - 6}
-                y={p.y}
+                y={p.clock != null ? p.y - 7 : p.y}
                 textAnchor="end"
                 dominantBaseline="middle"
                 className="fill-muted-foreground font-mono text-[10px] tabular-nums"
               >
                 {p.time}
               </text>
+              {/* 그때 당시 실제 시각을 경과 시간 아래에 함께 표시한다. */}
+              {p.clock != null && (
+                <text
+                  x={graphLeft - 6}
+                  y={p.y + 7}
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  className="fill-muted-foreground/60 font-mono text-[10px] tabular-nums"
+                >
+                  {p.clock}
+                </text>
+              )}
             </g>
           ) : null,
         )}

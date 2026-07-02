@@ -12,6 +12,8 @@ interface TimelinePanelProps {
   currentTimeMs: number;
   /** 재생 시간(초). 챕터 마지막 구간의 끝을 잡는 데 쓴다. */
   durationSec: number;
+  /** 방송 시작 실제 시각(ISO 8601). 시간 눈금 아래에 그때 당시 시각을 함께 표시한다. */
+  streamStartedAt?: string;
   /** 시청자 수 이력. 채팅 수 그래프 위에 겹쳐 그린다. */
   viewerHistory?: VideoViewerHistoryGetResponse[];
   /** 카테고리 변경 이력(챕터). 시간축 옆 세로 띠로 표시한다. */
@@ -29,6 +31,7 @@ export function TimelinePanel({
   videoUuid,
   currentTimeMs,
   durationSec,
+  streamStartedAt,
   viewerHistory,
   chapters,
   isLive,
@@ -42,6 +45,7 @@ export function TimelinePanel({
         isLive={isLive}
         currentTimeMs={currentTimeMs}
         durationSec={durationSec}
+        streamStartedAt={streamStartedAt}
         viewerHistory={viewerHistory}
         chapters={chapters}
         embedded
