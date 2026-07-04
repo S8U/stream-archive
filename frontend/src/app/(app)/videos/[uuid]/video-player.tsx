@@ -1505,7 +1505,7 @@ export function VideoPlayer({
                     ? 'w-screen h-screen overflow-hidden'
                     : isWide
                         ? 'w-full h-screen overflow-hidden'
-                        : 'w-full aspect-video'
+                        : 'w-full aspect-video max-h-[calc(100vh-9rem)]'
             } touch-manipulation`}
             onMouseMove={handleContainerMouseMove}
             onMouseLeave={handleContainerMouseLeave}
