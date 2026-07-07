@@ -14,7 +14,13 @@ import type {
   VideoViewerHistoryGetResponse,
 } from "@/lib/api/models";
 import { toDisplayChapters, type DisplayChapter } from "@/lib/chapters";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 
 // 오프셋(ms)을 방송 경과 시간 문자열로 변환한다.
 function formatOffset(milliseconds: number): string {
@@ -263,15 +269,17 @@ export function TimelineChart({
     return `M ${graphLeft} ${top} ${right} L ${graphLeft} ${bottom} Z`;
   }, [points, graphLeft]);
 
+  // 시청자 수 최댓값 (라인 정규화 + 최고 지점 표시에 함께 쓴다).
+  const maxViewer = useMemo(
+    () => viewerHistory?.reduce((m, v) => Math.max(m, v.viewerCount), 0) ?? 0,
+    [viewerHistory],
+  );
+
   // 시청자 수 라인: 자기 최댓값으로 따로 정규화해 같은 그래프 영역에 겹쳐 그린다.
   const viewerLinePath = useMemo(() => {
     if (!viewerHistory || viewerHistory.length < 2 || totalMillis <= 0) {
       return "";
     }
-    const maxViewer = viewerHistory.reduce(
-      (m, v) => Math.max(m, v.viewerCount),
-      0,
-    );
     if (maxViewer <= 0) return "";
     return viewerHistory
       .map((v, i) => {
@@ -280,7 +288,23 @@ export function TimelineChart({
         return `${i === 0 ? "M" : "L"} ${x} ${y}`;
       })
       .join(" ");
-  }, [viewerHistory, totalMillis, graphLeft, layout.graphWidth, offsetToY]);
+  }, [viewerHistory, totalMillis, maxViewer, graphLeft, layout.graphWidth, offsetToY]);
+
+  // 시청자 수가 가장 높은 지점 (타임라인에 마커로 표시한다).
+  const viewerPeak = useMemo(() => {
+    if (!viewerHistory || viewerHistory.length === 0 || maxViewer <= 0) {
+      return null;
+    }
+    const peak = viewerHistory.reduce((best, v) =>
+      v.viewerCount > best.viewerCount ? v : best,
+    );
+    return {
+      offsetMillis: peak.offsetMillis,
+      viewerCount: peak.viewerCount,
+      x: graphLeft + (peak.viewerCount / maxViewer) * layout.graphWidth,
+      y: offsetToY(peak.offsetMillis),
+    };
+  }, [viewerHistory, maxViewer, graphLeft, layout.graphWidth, offsetToY]);
 
   // 표시용 챕터(카테고리 구간)와 카테고리별 색상 매핑.
   const displayChapters = useMemo<DisplayChapter[]>(
@@ -297,6 +321,63 @@ export function TimelineChart({
     [points],
   );
 
+  // hover 툴팁 상태. 마우스가 그래프 위에 있을 때 해당 시점의 채팅 수·시청자 수를 띄운다.
+  const [hover, setHover] = useState<{
+    x: number;
+    y: number;
+    offsetMillis: number;
+    chatCount: number | null;
+    viewerCount: number | null;
+  } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  // 오프셋(ms)에서 가장 가까운 시청자 이력의 viewerCount를 찾는다.
+  const viewerCountAt = (offsetMillis: number): number | null => {
+    if (!viewerHistory || viewerHistory.length === 0) return null;
+    let best = viewerHistory[0];
+    let bestDist = Math.abs(best.offsetMillis - offsetMillis);
+    for (const v of viewerHistory) {
+      const dist = Math.abs(v.offsetMillis - offsetMillis);
+      if (dist < bestDist) {
+        best = v;
+        bestDist = dist;
+      }
+    }
+    return best.viewerCount;
+  };
+
+  // 마우스 위치(SVG 좌표) → 시각 오프셋 → 그 시점의 채팅 수·시청자 수를 계산해 hover 상태로 둔다.
+  const handlePointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
+    const svg = svgRef.current;
+    if (svg == null || totalMillis <= 0) return;
+    // 화면 좌표 → SVG viewBox 좌표로 정확히 역변환한다(스크롤·종횡비 스케일 모두 반영).
+    const ctm = svg.getScreenCTM();
+    if (ctm == null) return;
+    const point = svg.createSVGPoint();
+    point.x = e.clientX;
+    point.y = e.clientY;
+    const svgPoint = point.matrixTransform(ctm.inverse());
+    // 그래프 영역(좌측 시간축·우측 라벨 제외) 안에 있을 때만 툴팁을 띄운다.
+    if (svgPoint.x < graphLeft || svgPoint.x > graphRight) {
+      setHover(null);
+      return;
+    }
+    const svgY = svgPoint.y;
+    // 채팅 그래프·시간눈금은 버킷 인덱스 균등 간격(ROW_HEIGHT)으로 그려지므로,
+    // 점선 위치와 이동 시점이 어긋나지 않게 y를 그 좌표계 그대로 해석한다.
+    if (points.length === 0) return;
+    const rawIndex = (svgY - TOP_PAD - ROW_HEIGHT / 2) / ROW_HEIGHT;
+    const index = Math.min(points.length - 1, Math.max(0, Math.round(rawIndex)));
+    const snapped = points[index];
+    setHover({
+      x: svgPoint.x,
+      y: snapped.y,
+      offsetMillis: snapped.offsetMillis,
+      chatCount: layers.chat ? snapped.count : null,
+      viewerCount: layers.viewer ? viewerCountAt(snapped.offsetMillis) : null,
+    });
+  };
+
   const content = isLoading ? (
     <Skeleton className="h-[400px] w-full" />
   ) : !hasData ? (
@@ -311,11 +392,17 @@ export function TimelineChart({
       }
     >
       <svg
+        ref={svgRef}
         width="100%"
         height={svgHeight}
         viewBox={`0 0 ${layout.viewWidth} ${svgHeight}`}
         preserveAspectRatio="xMinYMin meet"
-        className={embedded ? undefined : "min-w-[680px]"}
+        className={embedded ? "cursor-pointer" : "min-w-[680px] cursor-pointer"}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={() => setHover(null)}
+        onClick={() => {
+          if (hover != null) onSeek?.(hover.offsetMillis);
+        }}
       >
         {/* 시간 눈금 (좌측) + 가로 보조선 */}
         {points.map((p, i) =>
@@ -421,7 +508,10 @@ export function TimelineChart({
                   ? "fill-primary cursor-pointer text-[12px] font-bold"
                   : "fill-foreground cursor-pointer text-[12px]"
               }
-              onClick={() => onSeek?.(p.offsetMillis)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSeek?.(p.offsetMillis);
+              }}
             >
               {clipLabel(
                 p.keywords.map((k) => k.label).join("  "),
@@ -443,7 +533,10 @@ export function TimelineChart({
               <g
                 key={`chapter-${chapter.startSec}`}
                 className="cursor-pointer"
-                onClick={() => onSeek?.(chapter.startSec * 1000)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSeek?.(chapter.startSec * 1000);
+                }}
               >
                 {/* 전환 지점 풀폭 구분선 */}
                 <line
@@ -474,6 +567,101 @@ export function TimelineChart({
               </g>
             );
           })}
+
+        {/* 시청자 수 최고 지점 마커 (라인 위, 툴팁 아래) */}
+        {layers.viewer && viewerPeak != null && (
+          <g className="pointer-events-none">
+            <circle
+              cx={viewerPeak.x}
+              cy={viewerPeak.y}
+              r={3.5}
+              fill="var(--chart-4)"
+              stroke="var(--background)"
+              strokeWidth={1.5}
+            />
+            <text
+              x={viewerPeak.x - 7}
+              y={viewerPeak.y}
+              textAnchor="end"
+              dominantBaseline="middle"
+              className="fill-[var(--chart-4)] text-[10px] font-bold tabular-nums"
+            >
+              최고 {viewerPeak.viewerCount.toLocaleString()}명
+            </text>
+          </g>
+        )}
+
+        {/* hover 툴팁: 마우스가 가리키는 시점의 채팅 수·시청자 수 */}
+        {hover != null &&
+          (hover.chatCount != null || hover.viewerCount != null) &&
+          (() => {
+            // 툴팁은 실제 HTML(foreignObject)로 그려 페이지의 다른 UI와 톤을 맞춘다.
+            const rows: { color: string; label: string; value: string }[] = [];
+            if (hover.viewerCount != null) {
+              rows.push({
+                color: "var(--chart-4)",
+                label: "시청자",
+                value: `${hover.viewerCount.toLocaleString()}명`,
+              });
+            }
+            if (hover.chatCount != null) {
+              rows.push({
+                color: "var(--chart-1)",
+                label: "채팅",
+                value: `${hover.chatCount.toLocaleString()}개`,
+              });
+            }
+            // foreignObject 크기(넉넉히 잡고 내부 div가 w-fit으로 줄인다).
+            const boxWidth = 128;
+            const boxHeight = rows.length * 20 + 12;
+            // 툴팁 X는 그래프 오른쪽 옆에 고정하고 Y만 커서를 따라간다.
+            const boxX = Math.min(graphRight + 8, layout.viewWidth - boxWidth - 2);
+            const boxY = Math.min(
+              Math.max(hover.y - boxHeight / 2, TOP_PAD),
+              svgHeight - boxHeight - BOTTOM_PAD,
+            );
+            return (
+              <g className="pointer-events-none">
+                {/* 마우스 위치 가로 기준선 (그래프 영역에만) */}
+                <line
+                  x1={graphLeft}
+                  y1={hover.y}
+                  x2={graphRight}
+                  y2={hover.y}
+                  className="stroke-foreground/40"
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                />
+                <foreignObject
+                  x={boxX}
+                  y={boxY}
+                  width={boxWidth}
+                  height={boxHeight}
+                  style={{ overflow: "visible" }}
+                >
+                  <div className="bg-popover text-popover-foreground border-border w-fit rounded-md border px-2.5 py-1.5 text-xs shadow-md">
+                    {rows.map((row) => (
+                      <div
+                        key={row.label}
+                        className="flex items-center gap-1.5 whitespace-nowrap py-0.5"
+                      >
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: row.color }}
+                        />
+                        <span className="text-muted-foreground">
+                          {row.label}
+                        </span>
+                        <span className="ml-auto pl-2 font-medium tabular-nums">
+                          {row.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </foreignObject>
+              </g>
+            );
+          })()}
       </svg>
     </div>
   );
