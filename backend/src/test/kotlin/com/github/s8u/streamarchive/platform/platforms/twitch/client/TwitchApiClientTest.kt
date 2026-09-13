@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.platform.platforms.twitch.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.github.s8u.streamarchive.platform.config.PlatformApiClientConfig
 import com.github.s8u.streamarchive.platform.platforms.twitch.properties.TwitchProperties
 import java.nio.file.Files
 import java.nio.file.Path
@@ -16,7 +17,10 @@ import org.junit.jupiter.api.Test
 @Tag("external")
 class TwitchApiClientTest {
 
-    private val twitchApiClient = TwitchApiClient(twitchProperties())
+    private val twitchApiClient = TwitchApiClient(
+        twitchProperties = twitchProperties(),
+        platformApiClientRequestFactory = PlatformApiClientConfig().platformApiClientRequestFactory()
+    )
 
     private val objectMapper = ObjectMapper().apply {
         enable(SerializationFeature.INDENT_OUTPUT)

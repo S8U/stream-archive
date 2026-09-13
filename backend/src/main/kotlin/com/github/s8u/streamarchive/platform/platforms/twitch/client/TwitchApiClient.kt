@@ -6,16 +6,18 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.s8u.streamarchive.platform.platforms.twitch.properties.TwitchProperties
 import org.slf4j.LoggerFactory
+import org.springframework.http.MediaType
+import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.stereotype.Component
-import org.springframework.http.MediaType
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 
 @Component
 class TwitchApiClient(
-    private val twitchProperties: TwitchProperties
+    private val twitchProperties: TwitchProperties,
+    private val platformApiClientRequestFactory: ClientHttpRequestFactory
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -23,6 +25,7 @@ class TwitchApiClient(
     private var appOauthToken: String? = null
 
     private val restClient: RestClient = RestClient.builder()
+        .requestFactory(platformApiClientRequestFactory)
         .messageConverters { converters ->
             val objectMapper = ObjectMapper().apply {
                 registerKotlinModule()

@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.platform.platforms.soop.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.github.s8u.streamarchive.platform.config.PlatformApiClientConfig
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test
 @Tag("external")
 class SoopApiClientTest {
 
-    private val soopApiClient = SoopApiClient()
+    private val soopApiClient = SoopApiClient(PlatformApiClientConfig().platformApiClientRequestFactory())
 
     private val objectMapper = ObjectMapper().apply {
         enable(SerializationFeature.INDENT_OUTPUT)

@@ -10,6 +10,7 @@ import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.Youtub
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeVideosResponse
 import com.github.s8u.streamarchive.platform.platforms.youtube.properties.YoutubeProperties
 import org.slf4j.LoggerFactory
+import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
@@ -20,12 +21,14 @@ import org.springframework.web.client.RestClientResponseException
  */
 @Component
 class YoutubeApiClient(
-    private val youtubeProperties: YoutubeProperties
+    private val youtubeProperties: YoutubeProperties,
+    private val platformApiClientRequestFactory: ClientHttpRequestFactory
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     private val restClient: RestClient = RestClient.builder()
+        .requestFactory(platformApiClientRequestFactory)
         .messageConverters { converters ->
             val objectMapper = ObjectMapper().apply {
                 registerKotlinModule()

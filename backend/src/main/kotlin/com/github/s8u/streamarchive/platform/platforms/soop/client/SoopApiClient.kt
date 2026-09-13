@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
+import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.stereotype.Component
 import org.springframework.util.LinkedMultiValueMap
@@ -12,11 +13,14 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestClientResponseException
 
 @Component
-class SoopApiClient {
+class SoopApiClient(
+    private val platformApiClientRequestFactory: ClientHttpRequestFactory
+) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     private val restClient: RestClient = RestClient.builder()
+        .requestFactory(platformApiClientRequestFactory)
         .messageConverters { converters ->
             val objectMapper = ObjectMapper().apply {
                 registerKotlinModule()
