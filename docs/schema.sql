@@ -8,6 +8,7 @@
 -- RecordScheduleType: 'ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY'
 -- RecordQuality: 'BEST', 'P2160_60', 'P2160', 'P1440_60', 'P1440', 'P1080_60', 'P1080', 'P720_60', 'P720', 'P480', 'P240', 'P144', 'WORST'
 -- Role: 'ADMIN', 'USER'
+-- PlatformChatUserRole: 'STREAMER', 'MANAGER'
 
 -- 1. 사용자 테이블
 CREATE TABLE users
@@ -225,6 +226,7 @@ CREATE TABLE video_chat_histories
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
     video_id      BIGINT        NOT NULL COMMENT '동영상 ID',
     username      VARCHAR(255)  NOT NULL COMMENT '사용자명',
+    user_role     ENUM ('STREAMER', 'MANAGER') NULL COMMENT '작성자 역할 (STREAMER/MANAGER)',
     message       VARCHAR(1000) NOT NULL COMMENT '메시지',
     emojis        JSON          NULL COMMENT '이모지',
     data          TEXT          NULL COMMENT '원본 데이터',

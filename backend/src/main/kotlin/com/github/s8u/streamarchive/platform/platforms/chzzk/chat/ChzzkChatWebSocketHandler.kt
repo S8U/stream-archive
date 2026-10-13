@@ -72,6 +72,7 @@ class ChzzkChatWebSocketHandler(
                         val profile = objectMapper.readTree(profileJson)
 
                         val nickname = profile.path("nickname").asText()
+                        val userRole = ChzzkChatUserRoleCode.fromValue(profile.path("userRoleCode").asText())?.userRole
                         val msg = node.path("msg").asText()
                         val emojis = getEmojis(node)
                             .filter { msg.contains(it.placeholder) }
@@ -83,6 +84,7 @@ class ChzzkChatWebSocketHandler(
                             recordId = recordId,
                             videoId = videoId,
                             username = nickname,
+                            userRole = userRole,
                             message = msg,
                             emojis = emojis,
                             offsetMillis = offsetMillis,

@@ -4,6 +4,7 @@ import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
+import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -136,6 +137,7 @@ class TwitchChatWebSocketHandler(
                 recordId = recordId,
                 videoId = videoId,
                 username = username,
+                userRole = getUserRole(tags),
                 message = chatText,
                 emojis = emojis,
                 offsetMillis = offsetMillis,
@@ -166,6 +168,24 @@ class TwitchChatWebSocketHandler(
                 parts[0] to unescapeTagValue(parts[1])
             }
             .toMap()
+    }
+
+    /**
+     * IRC 태그로 작성자 역할을 구한다.
+     *
+     * 방송인이 mod 태그도 받는지는 문서에 없어서 방송인 배지를 먼저 본다.
+     * https://dev.twitch.tv/docs/chat/irc/#privmsg-tags
+     */
+    private fun getUserRole(tags: Map<String, String>): PlatformChatUserRole? {
+        val badges = tags["badges"].orEmpty()
+            .split(",")
+            .map { it.substringBefore("/") }
+
+        return when {
+            "broadcaster" in badges -> PlatformChatUserRole.STREAMER
+            tags["mod"] == "1" -> PlatformChatUserRole.MANAGER
+            else -> null
+        }
     }
 
     private fun unescapeTagValue(value: String): String {

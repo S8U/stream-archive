@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.video.controller.dto.response
 
+import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import com.github.s8u.streamarchive.video.usecase.dto.result.VideoChatHistorySearchResult
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -7,6 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class VideoChatHistorySearchResponse(
     @field:Schema(description = "사용자명")
     val username: String,
+
+    @field:Schema(description = "작성자 역할 (없으면 일반 시청자)", example = "MANAGER")
+    val userRole: PlatformChatUserRole?,
 
     @field:Schema(description = "메시지")
     val message: String,
@@ -22,6 +26,7 @@ data class VideoChatHistorySearchResponse(
         fun from(result: VideoChatHistorySearchResult): VideoChatHistorySearchResponse {
             return VideoChatHistorySearchResponse(
                 username = result.username,
+                userRole = result.userRole,
                 message = result.message,
                 emojis = result.emojis.map { VideoChatEmojiSearchResponse.from(it) },
                 offsetMillis = result.offsetMillis

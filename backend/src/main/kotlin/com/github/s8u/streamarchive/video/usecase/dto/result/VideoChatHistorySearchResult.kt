@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.video.usecase.dto.result
 
+import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import com.github.s8u.streamarchive.video.entity.VideoChatHistory
 
 /**
@@ -7,6 +8,7 @@ import com.github.s8u.streamarchive.video.entity.VideoChatHistory
  */
 data class VideoChatHistorySearchResult(
     val username: String,
+    val userRole: PlatformChatUserRole?,
     val message: String,
     val emojis: List<VideoChatEmojiSearchResult>,
     val offsetMillis: Long
@@ -19,6 +21,7 @@ data class VideoChatHistorySearchResult(
         ): VideoChatHistorySearchResult {
             return VideoChatHistorySearchResult(
                 username = chatHistory.username,
+                userRole = chatHistory.userRole,
                 message = chatHistory.message,
                 emojis = emojis,
                 offsetMillis = chatHistory.offsetMillis

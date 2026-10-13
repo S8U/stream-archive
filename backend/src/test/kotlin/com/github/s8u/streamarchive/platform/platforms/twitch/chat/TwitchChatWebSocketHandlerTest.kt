@@ -3,9 +3,11 @@ package com.github.s8u.streamarchive.platform.platforms.twitch.chat
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.enums.PlatformChatRawFormat
+import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import io.mockk.mockk
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.web.socket.TextMessage
@@ -77,6 +79,42 @@ class TwitchChatWebSocketHandlerTest {
             val actual = messages.single()
             assertEquals("일반 채팅", actual.message)
             assertEquals(emptyList(), actual.emojis)
+        }
+
+        @Test
+        fun `방송인 배지가 있으면 스트리머로 본다`() {
+            val messages = mutableListOf<PlatformChatMessageDto>()
+            val handler = twitchChatWebSocketHandler(messages)
+            val line = "@badges=broadcaster/1,subscriber/0;display-name=test-channel;id=message-1;mod=0 " +
+                ":test-channel!test-channel@test-channel.tmi.twitch.tv PRIVMSG #test-channel :방송인 채팅"
+
+            handler.handleMessage(session, TextMessage(line))
+
+            assertEquals(PlatformChatUserRole.STREAMER, messages.single().userRole)
+        }
+
+        @Test
+        fun `mod 태그가 1이면 매니저로 본다`() {
+            val messages = mutableListOf<PlatformChatMessageDto>()
+            val handler = twitchChatWebSocketHandler(messages)
+            val line = "@badges=moderator/1;display-name=test-mod;id=message-1;mod=1 " +
+                ":test-mod!test-mod@test-mod.tmi.twitch.tv PRIVMSG #test-channel :매니저 채팅"
+
+            handler.handleMessage(session, TextMessage(line))
+
+            assertEquals(PlatformChatUserRole.MANAGER, messages.single().userRole)
+        }
+
+        @Test
+        fun `역할 배지나 mod 태그가 없으면 역할을 비운다`() {
+            val messages = mutableListOf<PlatformChatMessageDto>()
+            val handler = twitchChatWebSocketHandler(messages)
+            val line = "@badges=subscriber/12;display-name=test-user;id=message-1;mod=0 " +
+                ":test-user!test-user@test-user.tmi.twitch.tv PRIVMSG #test-channel :일반 채팅"
+
+            handler.handleMessage(session, TextMessage(line))
+
+            assertNull(messages.single().userRole)
         }
 
         @Test

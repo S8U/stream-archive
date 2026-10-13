@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.video.entity
 
 import com.github.s8u.streamarchive.global.entity.base.BaseTimeEntity
+import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import jakarta.persistence.*
 import org.hibernate.annotations.Comment
 import java.time.LocalDateTime
@@ -23,6 +24,11 @@ class VideoChatHistory(
     @Column(nullable = false, length = 255)
     @Comment("사용자명")
     val username: String,
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    @Comment("작성자 역할 (STREAMER/MANAGER)")
+    val userRole: PlatformChatUserRole? = null,
 
     @Column(nullable = false, length = 1000)
     @Comment("메시지")

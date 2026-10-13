@@ -17,8 +17,8 @@ class VideoChatHistoryBulkRepository(
 
         val sql = """
             INSERT INTO video_chat_histories
-            (video_id, username, message, emojis, data, offset_millis, created_at)
-            VALUES (?, ?, ?, ?, NULL, ?, ?)
+            (video_id, username, user_role, message, emojis, data, offset_millis, created_at)
+            VALUES (?, ?, ?, ?, ?, NULL, ?, ?)
         """.trimIndent()
 
         jdbcTemplate.batchUpdate(sql, object : BatchPreparedStatementSetter {
@@ -26,10 +26,11 @@ class VideoChatHistoryBulkRepository(
                 val item = items[i]
                 ps.setLong(1, item.videoId)
                 ps.setString(2, item.username.take(255)) // 최대 길이
-                ps.setString(3, item.message.take(1000)) // 최대 길이
-                ps.setString(4, item.emojis)
-                ps.setLong(5, item.offsetMillis)
-                ps.setTimestamp(6, Timestamp.valueOf(item.createdAt))
+                ps.setString(3, item.userRole?.name)
+                ps.setString(4, item.message.take(1000)) // 최대 길이
+                ps.setString(5, item.emojis)
+                ps.setLong(6, item.offsetMillis)
+                ps.setTimestamp(7, Timestamp.valueOf(item.createdAt))
             }
 
             override fun getBatchSize(): Int = items.size
