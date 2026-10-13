@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Eye, EyeOff, MoreVertical } from 'lucide-react';
+import { Crown, Eye, EyeOff, MoreVertical, Wrench, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -11,8 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useGetVideoChatHistory } from '@/lib/api/endpoints/video/video';
 import type { VideoChatHistorySearchResponse } from '@/lib/api/models/videoChatHistorySearchResponse';
+import type { VideoChatHistorySearchResponseUserRole } from '@/lib/api/models/videoChatHistorySearchResponseUserRole';
+import { cn } from '@/lib/utils';
 
 interface ChatHistoryProps {
     videoUuid: string;
@@ -57,6 +60,12 @@ function getUsernameColor(username: string): string {
     const index = hash % colors.length;
     return colors[index];
 }
+
+// 역할이 있는 작성자는 채팅이 빠르게 흘러도 눈에 띄도록 아이콘과 배경으로 구분한다
+const USER_ROLE_DISPLAYS: Record<VideoChatHistorySearchResponseUserRole, { label: string; icon: LucideIcon }> = {
+    STREAMER: { label: '스트리머', icon: Crown },
+    MANAGER: { label: '매니저', icon: Wrench },
+};
 
 function escapeRegExp(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -290,10 +299,15 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat, index) => {
                             const isLast = index === displayedChats.length - 1;
+                            const roleDisplay = chat.userRole ? USER_ROLE_DISPLAYS[chat.userRole] : null;
                             return (
                                 <div
                                     key={`${chat.offsetMillis}-${index}`}
-                                    className="flex w-full flex-wrap items-baseline gap-x-2 leading-relaxed"
+                                    className={cn(
+                                        'flex flex-wrap items-baseline gap-x-2 leading-relaxed',
+                                        // 배경을 글자 바깥으로 넓혀도 글자 위치는 다른 채팅과 맞춘다
+                                        roleDisplay ? '-mx-2 rounded-lg bg-muted px-2 py-1' : 'w-full'
+                                    )}
                                     ref={isLast ? lastChatRef : null}
                                 >
                                     {showTimeline && (
@@ -304,6 +318,17 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                         </>
                                     )}
                                     <span className={`font-semibold ${getUsernameColor(chat.username)}`}>
+                                        {roleDisplay && (
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <roleDisplay.icon
+                                                        className="mr-1 inline-block h-3.5 w-3.5 cursor-default align-[-2px] text-foreground"
+                                                        aria-label={roleDisplay.label}
+                                                    />
+                                                </TooltipTrigger>
+                                                <TooltipContent className="rounded-full">{roleDisplay.label}</TooltipContent>
+                                            </Tooltip>
+                                        )}
                                         {chat.username}
                                     </span>
                                     <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">

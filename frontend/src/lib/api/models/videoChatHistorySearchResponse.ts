@@ -5,6 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { VideoChatHistorySearchResponseUserRole } from "./videoChatHistorySearchResponseUserRole";
 import type { VideoChatEmojiSearchResponse } from "./videoChatEmojiSearchResponse";
 
 /**
@@ -13,6 +14,8 @@ import type { VideoChatEmojiSearchResponse } from "./videoChatEmojiSearchRespons
 export interface VideoChatHistorySearchResponse {
   /** 사용자명 */
   username: string;
+  /** 작성자 역할 (없으면 일반 시청자) */
+  userRole?: VideoChatHistorySearchResponseUserRole;
   /** 메시지 */
   message: string;
   /** 이모지 목록 */
