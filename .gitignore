@@ -23,3 +23,6 @@ docker-compose.override.yml
 docs/architecture.md
 docs/architecture-report.html
 docs/refactoring-plan.md
+
+# 작업 기록 (공개 리포에 올리지 않음)
+docs/worklogs/
