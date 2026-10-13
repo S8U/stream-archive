@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Crown, Eye, EyeOff, MoreVertical, Wrench, type LucideIcon } from 'lucide-react';
+import { Crown, Eye, EyeOff, HandCoins, MoreVertical, Wrench, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useGetVideoChatHistory } from '@/lib/api/endpoints/video/video';
 import type { VideoChatHistorySearchResponse } from '@/lib/api/models/videoChatHistorySearchResponse';
+import { VideoChatHistorySearchResponseMessageType } from '@/lib/api/models/videoChatHistorySearchResponseMessageType';
 import type { VideoChatHistorySearchResponseUserRole } from '@/lib/api/models/videoChatHistorySearchResponseUserRole';
 import { cn } from '@/lib/utils';
 
@@ -66,6 +67,27 @@ const USER_ROLE_DISPLAYS: Record<VideoChatHistorySearchResponseUserRole, { label
     STREAMER: { label: '스트리머', icon: Crown },
     MANAGER: { label: '매니저', icon: Wrench },
 };
+
+function ChatUsername({ chat }: { chat: VideoChatHistorySearchResponse }) {
+    const roleDisplay = chat.userRole ? USER_ROLE_DISPLAYS[chat.userRole] : null;
+
+    return (
+        <span className={`font-semibold ${getUsernameColor(chat.username)}`}>
+            {roleDisplay && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <roleDisplay.icon
+                            className="mr-1 inline-block h-3.5 w-3.5 cursor-default align-[-2px] text-foreground"
+                            aria-label={roleDisplay.label}
+                        />
+                    </TooltipTrigger>
+                    <TooltipContent className="rounded-full">{roleDisplay.label}</TooltipContent>
+                </Tooltip>
+            )}
+            {chat.username}
+        </span>
+    );
+}
 
 function escapeRegExp(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -299,6 +321,40 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat, index) => {
                             const isLast = index === displayedChats.length - 1;
+                            const timeline = showTimeline && (
+                                <span className="text-muted-foreground text-xs">
+                                    [{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]
+                                </span>
+                            );
+
+                            if (chat.messageType === VideoChatHistorySearchResponseMessageType.DONATION) {
+                                // 후원은 금액이 먼저 보이도록 금액 줄과 메시지를 카드로 묶는다
+                                // 지금은 치지직 후원만 저장하므로 금액 단위는 치즈다
+                                return (
+                                    <div
+                                        key={`${chat.offsetMillis}-${index}`}
+                                        className="-mx-2 rounded-xl bg-muted px-3 py-2 leading-relaxed"
+                                        ref={isLast ? lastChatRef : null}
+                                    >
+                                        <div className="flex flex-wrap items-center gap-x-2">
+                                            {timeline}
+                                            <span className="flex items-center gap-1 font-semibold">
+                                                <HandCoins className="h-4 w-4" aria-hidden />
+                                                {(chat.donationAmount ?? 0).toLocaleString()}치즈
+                                            </span>
+                                        </div>
+                                        <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
+                                            <ChatUsername chat={chat} />
+                                            {chat.message && (
+                                                <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">
+                                                    {renderChatMessage(chat)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            }
+
                             const roleDisplay = chat.userRole ? USER_ROLE_DISPLAYS[chat.userRole] : null;
                             return (
                                 <div
@@ -310,27 +366,8 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                     )}
                                     ref={isLast ? lastChatRef : null}
                                 >
-                                    {showTimeline && (
-                                        <>
-                                            <span className="text-muted-foreground text-xs">
-                                                [{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]
-                                            </span>
-                                        </>
-                                    )}
-                                    <span className={`font-semibold ${getUsernameColor(chat.username)}`}>
-                                        {roleDisplay && (
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <roleDisplay.icon
-                                                        className="mr-1 inline-block h-3.5 w-3.5 cursor-default align-[-2px] text-foreground"
-                                                        aria-label={roleDisplay.label}
-                                                    />
-                                                </TooltipTrigger>
-                                                <TooltipContent className="rounded-full">{roleDisplay.label}</TooltipContent>
-                                            </Tooltip>
-                                        )}
-                                        {chat.username}
-                                    </span>
+                                    {timeline}
+                                    <ChatUsername chat={chat} />
                                     <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">
                                         {renderChatMessage(chat)}
                                     </span>

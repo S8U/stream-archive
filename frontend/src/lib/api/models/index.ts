@@ -175,6 +175,7 @@ export * from "./videoChapterGetResponse";
 export * from "./videoChatAnalysisGetResponse";
 export * from "./videoChatEmojiSearchResponse";
 export * from "./videoChatHistorySearchResponse";
+export * from "./videoChatHistorySearchResponseMessageType";
 export * from "./videoChatHistorySearchResponseUserRole";
 export * from "./videoGetResponse";
 export * from "./videoInfo";
