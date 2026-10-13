@@ -1,10 +1,12 @@
 package com.github.s8u.streamarchive.platform.platforms.youtube.client
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeChannelsResponse
+import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessagesFetchResult
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessagesResponse
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubePlaylistItemsResponse
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeVideosResponse
@@ -27,14 +29,15 @@ class YoutubeApiClient(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
+    private val objectMapper = ObjectMapper().apply {
+        registerKotlinModule()
+        propertyNamingStrategy = PropertyNamingStrategies.LOWER_CAMEL_CASE
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    }
+
     private val restClient: RestClient = RestClient.builder()
         .requestFactory(platformApiClientRequestFactory)
         .messageConverters { converters ->
-            val objectMapper = ObjectMapper().apply {
-                registerKotlinModule()
-                propertyNamingStrategy = PropertyNamingStrategies.LOWER_CAMEL_CASE
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
             converters.removeIf { it is MappingJackson2HttpMessageConverter }
             converters.add(MappingJackson2HttpMessageConverter(objectMapper))
         }
@@ -144,12 +147,12 @@ class YoutubeApiClient(
     fun getLiveChatMessages(
         liveChatId: String,
         pageToken: String?
-    ): YoutubeLiveChatMessagesResponse? {
+    ): YoutubeLiveChatMessagesFetchResult? {
         return execute(
             operation = "getLiveChatMessages",
             context = "liveChatId=$liveChatId"
         ) {
-            restClient.get()
+            val rawBody = restClient.get()
                 .uri("https://www.googleapis.com/youtube/v3/liveChat/messages") { uriBuilder ->
                     uriBuilder
                         .queryParam("part", "snippet,authorDetails")
@@ -160,7 +163,21 @@ class YoutubeApiClient(
                     uriBuilder.build()
                 }
                 .retrieve()
-                .body(YoutubeLiveChatMessagesResponse::class.java)
+                .body(String::class.java)
+                ?: return@execute null
+
+            // 응답 형식이 바뀌어 파싱이 깨져도 원본은 남길 수 있게 본문을 함께 돌려준다
+            val response = try {
+                objectMapper.readValue(rawBody, YoutubeLiveChatMessagesResponse::class.java)
+            } catch (e: JsonProcessingException) {
+                logger.warn("YoutubeApiClient: Failed to parse live chat messages: liveChatId={}", liveChatId, e)
+                null
+            }
+
+            YoutubeLiveChatMessagesFetchResult(
+                response = response,
+                rawBody = rawBody
+            )
         }
     }
 

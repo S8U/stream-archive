@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.platform.platforms.soop.chat
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
 import com.github.s8u.streamarchive.platform.platforms.soop.service.SoopChatEmoticonResolveService
 import org.slf4j.LoggerFactory
@@ -31,6 +32,7 @@ class SoopChatWebSocketHandler(
     platformChannelId: String,
     recordStartedAt: LocalDateTime,
     onChat: (chatMessageDto: PlatformChatMessageDto) -> Unit,
+    onRaw: (rawMessageDto: PlatformChatRawMessageDto) -> Unit,
     onConnectionClosed: () -> Unit
 ) : PlatformChatWebSocketHandler(
     recordId,
@@ -38,6 +40,7 @@ class SoopChatWebSocketHandler(
     platformChannelId,
     recordStartedAt,
     onChat,
+    onRaw,
     onConnectionClosed
 ), SubProtocolCapable {
 
@@ -51,7 +54,7 @@ class SoopChatWebSocketHandler(
         startKeepAlive(session)
     }
 
-    override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
+    override fun handlePlatformMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
         if (message !is BinaryMessage) return
 
         val bytes = ByteArray(message.payload.remaining())

@@ -9,6 +9,7 @@ import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.Youtub
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessage
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessageAuthorDetails
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessageSnippet
+import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessagesFetchResult
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessagesResponse
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatTextMessageDetails
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveStreamingDetails
@@ -52,11 +53,14 @@ class YoutubeChatStrategyTest {
             every { apiClient.getVideos(listOf(VIDEO_ID)) } returns YoutubeVideosResponse(
                 items = listOf(liveVideo())
             )
-            every { apiClient.getLiveChatMessages(LIVE_CHAT_ID, null) } returns YoutubeLiveChatMessagesResponse(
-                nextPageToken = "next-token",
-                pollingIntervalMillis = 1000,
-                offlineAt = "2026-05-13T11:01:00Z",
-                items = listOf(youtubeChatMessage())
+            every { apiClient.getLiveChatMessages(LIVE_CHAT_ID, null) } returns YoutubeLiveChatMessagesFetchResult(
+                response = YoutubeLiveChatMessagesResponse(
+                    nextPageToken = "next-token",
+                    pollingIntervalMillis = 1000,
+                    offlineAt = "2026-05-13T11:01:00Z",
+                    items = listOf(youtubeChatMessage())
+                ),
+                rawBody = "{}"
             )
 
             val latch = CountDownLatch(1)
@@ -70,6 +74,7 @@ class YoutubeChatStrategyTest {
                     messages.add(it)
                     latch.countDown()
                 },
+                onRaw = {},
                 onClosed = {}
             )
 

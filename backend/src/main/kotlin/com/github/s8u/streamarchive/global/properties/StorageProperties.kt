@@ -43,6 +43,14 @@ class StorageProperties {
         return getVideoEmojiDirectoryPath(videoId).resolve(filename)
     }
 
+    fun getVideoChatRawPath(videoId: Long): Path {
+        return getVideoPath(videoId).resolve("chat-raw.jsonl")
+    }
+
+    fun getVideoChatRawCompressedPath(videoId: Long): Path {
+        return getVideoPath(videoId).resolve("chat-raw.jsonl.gz")
+    }
+
     fun getVideoPlaylistPath(videoId: Long): Path {
         return getVideoPath(videoId).resolve("playlist.m3u8")
     }

@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.platform.platforms.twitch.chat
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.CloseStatus
@@ -23,6 +24,7 @@ class TwitchChatWebSocketHandler(
     platformChannelId: String,
     recordStartedAt: LocalDateTime,
     onChat: (chatMessageDto: PlatformChatMessageDto) -> Unit,
+    onRaw: (rawMessageDto: PlatformChatRawMessageDto) -> Unit,
     onConnectionClosed: () -> Unit
 ) : PlatformChatWebSocketHandler(
     recordId,
@@ -30,6 +32,7 @@ class TwitchChatWebSocketHandler(
     platformChannelId,
     recordStartedAt,
     onChat,
+    onRaw,
     onConnectionClosed
 ) {
 
@@ -53,7 +56,7 @@ class TwitchChatWebSocketHandler(
         logger.debug("TwitchChatWebSocketHandler: Twitch chat channel joined (recordId: {}, channel: {})", recordId, platformChannelId)
     }
 
-    override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
+    override fun handlePlatformMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
         val rawMessage = message.payload.toString()
         logger.debug("TwitchChatWebSocketHandler: Twitch chat handle message (recordId: {}, payload: {})", recordId, rawMessage)
 

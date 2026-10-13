@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.platform.platforms.twitch.strategy
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketConnection
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketStrategy
 import com.github.s8u.streamarchive.platform.enums.PlatformType
@@ -23,6 +24,7 @@ class TwitchChatStrategy : PlatformChatWebSocketStrategy() {
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatWebSocketConnection {
         return PlatformChatWebSocketConnection(
@@ -33,6 +35,7 @@ class TwitchChatStrategy : PlatformChatWebSocketStrategy() {
                 platformChannelId = platformChannelId,
                 recordStartedAt = recordStartedAt,
                 onChat = onChat,
+                onRaw = onRaw,
                 onConnectionClosed = onClosed
             )
         )

@@ -11,6 +11,7 @@ import com.github.s8u.streamarchive.recording.manager.RecordingVideoTitleChangeD
 import com.github.s8u.streamarchive.recording.manager.RecordingVideoViewerChangeDetectManager
 import com.github.s8u.streamarchive.video.entity.Video
 import com.github.s8u.streamarchive.video.repository.VideoRepository
+import com.github.s8u.streamarchive.video.service.VideoChatRawCompressService
 import com.github.s8u.streamarchive.video.service.VideoDeleteService
 import com.github.s8u.streamarchive.video.service.VideoMetadataCalculateService
 import com.github.s8u.streamarchive.video.service.VideoThumbnailSaveService
@@ -19,6 +20,7 @@ import com.github.s8u.streamarchive.video.service.VideoViewerHistoryGetService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -37,6 +39,7 @@ class RecordingEndUseCaseTest {
     private val videoMetadataCalculateService = mockk<VideoMetadataCalculateService>(relaxed = true)
     private val videoThumbnailSaveService = mockk<VideoThumbnailSaveService>(relaxed = true)
     private val videoDeleteService = mockk<VideoDeleteService>(relaxed = true)
+    private val videoChatRawCompressService = mockk<VideoChatRawCompressService>(relaxed = true)
     private val viewerHistoryGetService = mockk<VideoViewerHistoryGetService>(relaxed = true)
     private val titleHistoryGetService = mockk<VideoTitleHistoryGetService>(relaxed = true)
     private val recordingVideoViewerChangeDetectManager = mockk<RecordingVideoViewerChangeDetectManager>(relaxed = true)
@@ -56,6 +59,7 @@ class RecordingEndUseCaseTest {
         videoMetadataCalculateService = videoMetadataCalculateService,
         videoThumbnailSaveService = videoThumbnailSaveService,
         videoDeleteService = videoDeleteService,
+        videoChatRawCompressService = videoChatRawCompressService,
         viewerHistoryGetService = viewerHistoryGetService,
         titleHistoryGetService = titleHistoryGetService,
         recordingVideoViewerChangeDetectManager = recordingVideoViewerChangeDetectManager,
@@ -134,6 +138,33 @@ class RecordingEndUseCaseTest {
             every { videoMetadataCalculateService.calculateFileSize(VIDEO_ID) } throws RuntimeException("계산 실패")
 
             // 예외가 전파되지 않고 종료 확정은 이미 이뤄졌다
+            recordingEndUseCase.end(RECORD_ID)
+
+            verify { record.end(false) }
+            verify { recordRepository.save(record) }
+        }
+
+        @Test
+        fun `종료를 확정하기 전에 채팅 원본을 압축한다`() {
+            val record = activeRecord(durationSeconds = 60)
+            every { recordRepository.findById(RECORD_ID) } returns Optional.of(record)
+            every { videoRepository.findById(VIDEO_ID) } returns Optional.of(mockk<Video>(relaxed = true))
+
+            recordingEndUseCase.end(RECORD_ID)
+
+            verifyOrder {
+                recordingChatCollectManager.stopCollecting(RECORD_ID)
+                videoChatRawCompressService.compress(VIDEO_ID)
+                record.end(false)
+            }
+        }
+
+        @Test
+        fun `채팅 원본 압축이 실패해도 종료를 확정한다`() {
+            val record = activeRecord(durationSeconds = 60)
+            every { recordRepository.findById(RECORD_ID) } returns Optional.of(record)
+            every { videoChatRawCompressService.compress(VIDEO_ID) } throws RuntimeException("압축 실패")
+
             recordingEndUseCase.end(RECORD_ID)
 
             verify { record.end(false) }

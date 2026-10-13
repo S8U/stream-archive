@@ -2,10 +2,13 @@ package com.github.s8u.streamarchive.platform.platforms.soop.chat
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
+import com.github.s8u.streamarchive.platform.enums.PlatformChatRawFormat
 import com.github.s8u.streamarchive.platform.platforms.soop.service.SoopChatEmoticonResolveService
 import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDateTime
+import java.util.Base64
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.web.socket.BinaryMessage
@@ -45,6 +48,42 @@ class SoopChatWebSocketHandlerTest {
         val actual = messages.single()
         assertEquals("sample-nickname", actual.username)
         assertEquals("테스트 채팅", actual.message)
+    }
+
+    @Test
+    fun `바이너리 프레임은 Base64 원본으로 넘기고 채팅 변환에도 그대로 쓴다`() {
+        every { soopChatEmoticonResolveService.resolve(any()) } returns emptyList()
+        val messages = mutableListOf<PlatformChatMessageDto>()
+        val rawMessages = mutableListOf<PlatformChatRawMessageDto>()
+        val handler = soopChatWebSocketHandler(
+            messages = messages,
+            rawMessages = rawMessages
+        )
+        val packet = SoopChatPacketUtils.makePacket(
+            commandType = SoopChatCommandType.CHAT_MESSAGE,
+            body = listOf(
+                SoopChatPacketUtils.FORM_FEED,
+                "테스트 채팅",
+                SoopChatPacketUtils.FORM_FEED,
+                "sample-user",
+                SoopChatPacketUtils.FORM_FEED,
+                "0",
+                SoopChatPacketUtils.FORM_FEED,
+                "0",
+                SoopChatPacketUtils.FORM_FEED,
+                "0",
+                SoopChatPacketUtils.FORM_FEED,
+                "sample-nickname",
+                SoopChatPacketUtils.FORM_FEED
+            )
+        )
+
+        handler.handleMessage(session, BinaryMessage(packet))
+
+        val actual = rawMessages.single()
+        assertEquals(PlatformChatRawFormat.BINARY, actual.format)
+        assertEquals(Base64.getEncoder().encodeToString(packet), actual.payload)
+        assertEquals("테스트 채팅", messages.single().message)
     }
 
     @Test
@@ -147,7 +186,8 @@ class SoopChatWebSocketHandlerTest {
     }
 
     private fun soopChatWebSocketHandler(
-        messages: MutableList<PlatformChatMessageDto>
+        messages: MutableList<PlatformChatMessageDto>,
+        rawMessages: MutableList<PlatformChatRawMessageDto> = mutableListOf()
     ): SoopChatWebSocketHandler {
         return SoopChatWebSocketHandler(
             chatRoomNo = "12345",
@@ -158,6 +198,7 @@ class SoopChatWebSocketHandlerTest {
             platformChannelId = "test-channel",
             recordStartedAt = LocalDateTime.now().minusSeconds(1),
             onChat = { messages.add(it) },
+            onRaw = { rawMessages.add(it) },
             onConnectionClosed = {}
         )
     }

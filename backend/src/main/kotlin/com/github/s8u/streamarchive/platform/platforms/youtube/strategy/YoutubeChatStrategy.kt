@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.platform.platforms.youtube.strategy
 import com.github.s8u.streamarchive.platform.chat.PlatformChatCollectionSession
 import com.github.s8u.streamarchive.platform.chat.PlatformChatStrategy
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import com.github.s8u.streamarchive.platform.platforms.youtube.chat.YoutubeChatCollectionSession
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.YoutubeApiClient
@@ -36,6 +37,7 @@ class YoutubeChatStrategy(
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatCollectionSession? {
         // 라이브 동영상은 감지 단계에서 캐싱돼 있어 추가 조회 비용이 거의 없다
@@ -50,6 +52,7 @@ class YoutubeChatStrategy(
             liveChatId = liveChatId,
             recordStartedAt = recordStartedAt,
             onChat = onChat,
+            onRaw = onRaw,
             onClosed = onClosed
         )
         session.start()

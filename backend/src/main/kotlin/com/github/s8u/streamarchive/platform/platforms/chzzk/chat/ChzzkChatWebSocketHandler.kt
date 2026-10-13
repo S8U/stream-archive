@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.CloseStatus
@@ -22,6 +23,7 @@ class ChzzkChatWebSocketHandler(
     platformChannelId: String,
     recordStartedAt: LocalDateTime,
     onChat: (chatMessageDto: PlatformChatMessageDto) -> Unit,
+    onRaw: (rawMessageDto: PlatformChatRawMessageDto) -> Unit,
     onConnectionClosed: () -> Unit
 ) : PlatformChatWebSocketHandler(
     recordId,
@@ -29,6 +31,7 @@ class ChzzkChatWebSocketHandler(
     platformChannelId,
     recordStartedAt,
     onChat,
+    onRaw,
     onConnectionClosed
 ) {
 
@@ -42,7 +45,7 @@ class ChzzkChatWebSocketHandler(
         sendConnectPacket(session)
     }
 
-    override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
+    override fun handlePlatformMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
         logger.debug(
             "ChzzkChatWebSocketHandler: Chzzk chat handle message (recordId: {}, payload: {})",
             recordId,

@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.platform.chat
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import java.time.LocalDateTime
 
@@ -21,6 +22,7 @@ interface PlatformChatStrategy {
      * 채팅 수집을 시작하고 세션을 반환한다.
      *
      * 채팅 접속 정보를 찾을 수 없으면 null을 반환한다.
+     * [onRaw]는 플랫폼에서 받은 응답을 가공하지 않고 넘길 때 호출된다.
      * [onClosed]는 연결이 끊겼을 때 호출된다(재연결 여부는 호출자가 정한다).
      */
     fun startCollecting(
@@ -29,6 +31,7 @@ interface PlatformChatStrategy {
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatCollectionSession?
 

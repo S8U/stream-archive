@@ -1,6 +1,8 @@
 package com.github.s8u.streamarchive.platform.platforms.twitch.chat
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
+import com.github.s8u.streamarchive.platform.enums.PlatformChatRawFormat
 import io.mockk.mockk
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
@@ -77,10 +79,48 @@ class TwitchChatWebSocketHandlerTest {
             assertEquals(emptyList(), actual.emojis)
         }
 
+        @Test
+        fun `받은 프레임을 가공하지 않고 원본 메시지로 넘긴다`() {
+            val rawMessages = mutableListOf<PlatformChatRawMessageDto>()
+            val handler = twitchChatWebSocketHandler(
+                messages = mutableListOf(),
+                rawMessages = rawMessages
+            )
+            val line = "@display-name=test-user;id=message-1 " +
+                ":test-user!test-user@test-user.tmi.twitch.tv PRIVMSG #test-channel :일반 채팅"
+
+            handler.handleMessage(session, TextMessage(line))
+
+            val actual = rawMessages.single()
+            assertEquals(PlatformChatRawFormat.TEXT, actual.format)
+            assertEquals(line, actual.payload)
+        }
+
+        @Test
+        fun `원본 메시지 전달이 실패해도 채팅은 변환한다`() {
+            val messages = mutableListOf<PlatformChatMessageDto>()
+            val handler = TwitchChatWebSocketHandler(
+                recordId = RECORD_ID,
+                videoId = VIDEO_ID,
+                platformChannelId = "test-channel",
+                recordStartedAt = LocalDateTime.now().minusSeconds(1),
+                onChat = { messages.add(it) },
+                onRaw = { throw IllegalStateException("원본 기록 실패") },
+                onConnectionClosed = {}
+            )
+            val line = "@display-name=test-user;id=message-1 " +
+                ":test-user!test-user@test-user.tmi.twitch.tv PRIVMSG #test-channel :일반 채팅"
+
+            handler.handleMessage(session, TextMessage(line))
+
+            assertEquals("일반 채팅", messages.single().message)
+        }
+
     }
 
     private fun twitchChatWebSocketHandler(
-        messages: MutableList<PlatformChatMessageDto>
+        messages: MutableList<PlatformChatMessageDto>,
+        rawMessages: MutableList<PlatformChatRawMessageDto> = mutableListOf()
     ): TwitchChatWebSocketHandler {
         return TwitchChatWebSocketHandler(
             recordId = RECORD_ID,
@@ -88,6 +128,7 @@ class TwitchChatWebSocketHandlerTest {
             platformChannelId = "test-channel",
             recordStartedAt = LocalDateTime.now().minusSeconds(1),
             onChat = { messages.add(it) },
+            onRaw = { rawMessages.add(it) },
             onConnectionClosed = {}
         )
     }

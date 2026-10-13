@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.platform.platforms.soop.strategy
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketConnection
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketStrategy
 import com.github.s8u.streamarchive.platform.enums.PlatformType
@@ -37,6 +38,7 @@ class SoopChatStrategy(
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatWebSocketConnection? {
         val channel = soopApiClient.getLiveDetail(platformChannelId)?.channel
@@ -76,6 +78,7 @@ class SoopChatStrategy(
                 platformChannelId = platformChannelId,
                 recordStartedAt = recordStartedAt,
                 onChat = onChat,
+                onRaw = onRaw,
                 onConnectionClosed = onClosed
             ),
             binary = true

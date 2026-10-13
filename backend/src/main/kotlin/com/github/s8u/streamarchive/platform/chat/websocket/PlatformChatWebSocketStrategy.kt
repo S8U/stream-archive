@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.platform.chat.websocket
 import com.github.s8u.streamarchive.platform.chat.PlatformChatCollectionSession
 import com.github.s8u.streamarchive.platform.chat.PlatformChatStrategy
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import jakarta.websocket.ContainerProvider
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.WebSocketHttpHeaders
@@ -26,6 +27,7 @@ abstract class PlatformChatWebSocketStrategy : PlatformChatStrategy {
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatWebSocketConnection?
 
@@ -35,6 +37,7 @@ abstract class PlatformChatWebSocketStrategy : PlatformChatStrategy {
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatCollectionSession? {
         val connection = createConnection(
@@ -43,6 +46,7 @@ abstract class PlatformChatWebSocketStrategy : PlatformChatStrategy {
             platformChannelId = platformChannelId,
             recordStartedAt = recordStartedAt,
             onChat = onChat,
+            onRaw = onRaw,
             onClosed = onClosed
         ) ?: return null
 

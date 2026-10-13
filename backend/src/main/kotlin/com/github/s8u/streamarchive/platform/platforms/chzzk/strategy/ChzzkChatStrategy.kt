@@ -1,6 +1,7 @@
 package com.github.s8u.streamarchive.platform.platforms.chzzk.strategy
 
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketConnection
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketStrategy
 import com.github.s8u.streamarchive.platform.enums.PlatformType
@@ -29,6 +30,7 @@ class ChzzkChatStrategy(
         platformChannelId: String,
         recordStartedAt: LocalDateTime,
         onChat: (PlatformChatMessageDto) -> Unit,
+        onRaw: (PlatformChatRawMessageDto) -> Unit,
         onClosed: () -> Unit
     ): PlatformChatWebSocketConnection? {
         // 채팅 접속 정보 조회
@@ -70,6 +72,7 @@ class ChzzkChatStrategy(
                 platformChannelId = platformChannelId,
                 recordStartedAt = recordStartedAt,
                 onChat = onChat,
+                onRaw = onRaw,
                 onConnectionClosed = onClosed
             )
         )

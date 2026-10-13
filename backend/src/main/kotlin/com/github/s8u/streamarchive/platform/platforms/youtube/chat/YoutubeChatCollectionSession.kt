@@ -2,6 +2,8 @@ package com.github.s8u.streamarchive.platform.platforms.youtube.chat
 
 import com.github.s8u.streamarchive.platform.chat.PlatformChatCollectionSession
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
+import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
+import com.github.s8u.streamarchive.platform.enums.PlatformChatRawFormat
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.YoutubeApiClient
 import com.github.s8u.streamarchive.platform.platforms.youtube.client.dto.YoutubeLiveChatMessage
 import org.slf4j.LoggerFactory
@@ -22,6 +24,7 @@ class YoutubeChatCollectionSession(
     private val liveChatId: String,
     private val recordStartedAt: LocalDateTime,
     private val onChat: (PlatformChatMessageDto) -> Unit,
+    private val onRaw: (PlatformChatRawMessageDto) -> Unit,
     private val onClosed: () -> Unit
 ) : PlatformChatCollectionSession {
 
@@ -56,10 +59,19 @@ class YoutubeChatCollectionSession(
         try {
             while (isRunning.get()) {
                 // 응답을 못 받으면 일시적 끊김으로 보고 재연결을 맡긴다
-                val response = apiClient.getLiveChatMessages(
+                val fetchResult = apiClient.getLiveChatMessages(
                     liveChatId = liveChatId,
                     pageToken = pageToken
                 )
+                if (fetchResult == null) {
+                    notifyClosed()
+                    return
+                }
+
+                passRaw(fetchResult.rawBody)
+
+                // 본문을 해석하지 못하면 일시적 끊김으로 보고 재연결을 맡긴다
+                val response = fetchResult.response
                 if (response == null) {
                     notifyClosed()
                     return
@@ -130,6 +142,23 @@ class YoutubeChatCollectionSession(
             offsetMillis = offsetMillis,
             createdAt = time
         )
+    }
+
+    // 원본 보관이 실패해도 채팅 수집은 계속한다
+    private fun passRaw(rawBody: String) {
+        try {
+            val receivedAt = LocalDateTime.now()
+            onRaw(
+                PlatformChatRawMessageDto(
+                    format = PlatformChatRawFormat.TEXT,
+                    payload = rawBody,
+                    offsetMillis = Duration.between(recordStartedAt, receivedAt).toMillis(),
+                    receivedAt = receivedAt
+                )
+            )
+        } catch (e: Exception) {
+            logger.warn("YoutubeChatCollectionSession: Failed to pass chat raw message: recordId={}", recordId, e)
+        }
     }
 
     // 끊김을 호출자에게 알린다 (재연결 여부는 호출자가 정한다)

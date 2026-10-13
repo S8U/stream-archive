@@ -10,6 +10,7 @@ import com.github.s8u.streamarchive.recording.manager.RecordingVideoTitleChangeD
 import com.github.s8u.streamarchive.recording.manager.RecordingVideoViewerChangeDetectManager
 import com.github.s8u.streamarchive.record.repository.RecordRepository
 import com.github.s8u.streamarchive.video.repository.VideoRepository
+import com.github.s8u.streamarchive.video.service.VideoChatRawCompressService
 import com.github.s8u.streamarchive.video.service.VideoDeleteService
 import com.github.s8u.streamarchive.video.service.VideoMetadataCalculateService
 import com.github.s8u.streamarchive.video.service.VideoThumbnailSaveService
@@ -23,7 +24,7 @@ import java.time.Duration
 /**
  * 녹화 종료
  *
- * 녹화 프로세스가 끝났거나 사용자가 취소하면 채팅 수집을 멈춘다.
+ * 녹화 프로세스가 끝났거나 사용자가 취소하면 채팅 수집을 멈추고 채팅 원본을 압축한다.
  * 녹화 기록을 종료 처리한다.
  * 너무 짧은 녹화는 동영상을 지운다.
  * 그 외에는 최고 시청자 시점 메타데이터와 파일 정보를 확정한다.
@@ -38,6 +39,7 @@ class RecordingEndUseCase(
     private val videoMetadataCalculateService: VideoMetadataCalculateService,
     private val videoThumbnailSaveService: VideoThumbnailSaveService,
     private val videoDeleteService: VideoDeleteService,
+    private val videoChatRawCompressService: VideoChatRawCompressService,
     private val viewerHistoryGetService: VideoViewerHistoryGetService,
     private val titleHistoryGetService: VideoTitleHistoryGetService,
     private val recordingVideoViewerChangeDetectManager: RecordingVideoViewerChangeDetectManager,
@@ -77,6 +79,10 @@ class RecordingEndUseCase(
             // 채팅 수집 종료
             recordingChatCollectManager.stopCollecting(recordId)
 
+            // 종료 확정보다 먼저 압축한다
+            // 압축 도중 서버가 꺼지면 녹화가 미종료로 남고, 부팅 때 정리 러너가 이 경로를 다시 밟아 압축을 마친다
+            compressChatRaw(recordId)
+
             // 메타데이터 변경 감지 상태 정리
             recordingVideoViewerChangeDetectManager.clear(recordId)
             recordingVideoTitleChangeDetectManager.clear(recordId)
@@ -94,6 +100,20 @@ class RecordingEndUseCase(
             finalizeVideoMetadata(ended.videoId)
         } finally {
             recordingEndStateManager.unmarkEnding(recordId)
+        }
+    }
+
+    /**
+     * 녹화 중 이어 쓴 채팅 원본을 압축한다.
+     *
+     * 실패해도 평문 파일이 남으므로 녹화 종료는 계속한다.
+     */
+    private fun compressChatRaw(recordId: Long) {
+        try {
+            val record = recordRepository.findById(recordId).orElse(null) ?: return
+            videoChatRawCompressService.compress(record.videoId)
+        } catch (e: Exception) {
+            logger.error("RecordingEndUseCase: Failed to compress chat raw: recordId={}", recordId, e)
         }
     }
 
