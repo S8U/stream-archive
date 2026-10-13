@@ -49,9 +49,11 @@ class RecordingChatFlushUseCase(
 
         return VideoChatHistory(
             videoId = item.videoId,
+            messageType = item.messageType,
             username = item.username,
             userRole = item.userRole,
             message = item.message,
+            donationAmount = item.donationAmount,
             emojis = emojis,
             offsetMillis = item.offsetMillis,
             createdAt = item.createdAt

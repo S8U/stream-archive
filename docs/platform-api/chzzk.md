@@ -207,3 +207,6 @@ wss://kr-ss{serverId}.chat.naver.com/chat
 | `extras.payType` | 결제 수단. 실측은 `CURRENCY`만 확인 |
 | `extras.isAnonymous` | 익명 후원 여부. 익명이면 `profile`이 `null`이다 |
 | `extras.donationType` | 후원 종류. 실측은 `CHAT`, `VIDEO`만 확인 |
+
+같은 명령으로 다른 `msgTypeCode`도 온다고 라이브러리에 나와 있다(`11` 구독, `12` 구독권 선물, `30` 시스템 메시지).
+실측에서는 확인하지 못했다.

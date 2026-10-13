@@ -1,12 +1,15 @@
 package com.github.s8u.streamarchive.platform.platforms.chzzk.chat
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.MissingNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatEmojiDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatMessageDto
 import com.github.s8u.streamarchive.platform.chat.dto.PlatformChatRawMessageDto
 import com.github.s8u.streamarchive.platform.chat.websocket.PlatformChatWebSocketHandler
+import com.github.s8u.streamarchive.platform.enums.PlatformChatMessageType
+import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import org.slf4j.LoggerFactory
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -68,29 +71,19 @@ class ChzzkChatWebSocketHandler(
                 val bdy = root.path("bdy")
                 if (bdy.isArray) {
                     for (node in bdy) {
-                        val profileJson = node.path("profile").asText()
-                        val profile = objectMapper.readTree(profileJson)
+                        onChat(toChatMessage(node))
+                    }
+                }
+            }
 
-                        val nickname = profile.path("nickname").asText()
-                        val userRole = ChzzkChatUserRoleCode.fromValue(profile.path("userRoleCode").asText())?.userRole
-                        val msg = node.path("msg").asText()
-                        val emojis = getEmojis(node)
-                            .filter { msg.contains(it.placeholder) }
-
-                        val time = LocalDateTime.now()
-                        val offsetMillis = Duration.between(recordStartedAt, time).toMillis()
-
-                        val chatMessageDto = PlatformChatMessageDto(
-                            recordId = recordId,
-                            videoId = videoId,
-                            username = nickname,
-                            userRole = userRole,
-                            message = msg,
-                            emojis = emojis,
-                            offsetMillis = offsetMillis,
-                            createdAt = time
-                        )
-                        onChat(chatMessageDto)
+            // 후원
+            // 같은 명령으로 구독 알림 등도 오지만 지금은 후원만 남긴다 (나머지는 채팅 원본에 남아 있다)
+            ChzzkChatCommandType.DONATION.value -> {
+                val bdy = root.path("bdy")
+                if (bdy.isArray) {
+                    for (node in bdy) {
+                        if (node.path("msgTypeCode").asInt() != ChzzkChatMessageTypeCode.DONATION.value) continue
+                        onChat(toDonationMessage(node))
                     }
                 }
             }
@@ -175,6 +168,65 @@ class ChzzkChatWebSocketHandler(
         session.sendMessage(TextMessage(message))
     }
 
+    private fun toChatMessage(node: JsonNode): PlatformChatMessageDto {
+        val profile = readNestedJson(node, "profile")
+        val msg = node.path("msg").asText()
+        val time = LocalDateTime.now()
+
+        return PlatformChatMessageDto(
+            recordId = recordId,
+            videoId = videoId,
+            username = profile.path("nickname").asText(),
+            userRole = getUserRole(profile),
+            message = msg,
+            emojis = getEmojis(node).filter { msg.contains(it.placeholder) },
+            offsetMillis = Duration.between(recordStartedAt, time).toMillis(),
+            createdAt = time
+        )
+    }
+
+    /**
+     * 후원 메시지를 공통 채팅 DTO로 바꾼다.
+     *
+     * 익명 후원은 프로필이 null로 와서 닉네임 대신 고정 이름을 쓰고 역할을 남기지 않는다.
+     */
+    private fun toDonationMessage(node: JsonNode): PlatformChatMessageDto {
+        val profile = readNestedJson(node, "profile")
+        val extras = readNestedJson(node, "extras")
+        val msg = node.path("msg").asText()
+        val time = LocalDateTime.now()
+
+        val isAnonymous = extras.path("isAnonymous").asBoolean() || !profile.isObject
+
+        return PlatformChatMessageDto(
+            recordId = recordId,
+            videoId = videoId,
+            messageType = PlatformChatMessageType.DONATION,
+            username = if (isAnonymous) ANONYMOUS_DONOR_NAME else profile.path("nickname").asText(),
+            userRole = if (isAnonymous) null else getUserRole(profile),
+            message = msg,
+            donationAmount = extras.path("payAmount").asInt(),
+            emojis = getEmojis(node).filter { msg.contains(it.placeholder) },
+            offsetMillis = Duration.between(recordStartedAt, time).toMillis(),
+            createdAt = time
+        )
+    }
+
+    private fun getUserRole(profile: JsonNode): PlatformChatUserRole? {
+        return ChzzkChatUserRoleCode.fromValue(profile.path("userRoleCode").asText())?.userRole
+    }
+
+    // 치지직은 profile과 extras를 JSON 문자열로 한 번 더 감싸서 보낸다
+    private fun readNestedJson(
+        node: JsonNode,
+        fieldName: String
+    ): JsonNode {
+        val json = node.path(fieldName)
+        if (!json.isTextual || json.asText().isBlank()) return MissingNode.getInstance()
+
+        return objectMapper.readTree(json.asText())
+    }
+
     private fun getEmojis(node: JsonNode): List<PlatformChatEmojiDto> {
         val extrasJson = node.path("extras").asText()
         if (extrasJson.isBlank()) return emptyList()
@@ -206,6 +258,10 @@ class ChzzkChatWebSocketHandler(
             )
             emptyList()
         }
+    }
+
+    companion object {
+        private const val ANONYMOUS_DONOR_NAME = "익명의 후원자"
     }
 
 }
