@@ -328,7 +328,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                             );
 
                             if (chat.messageType === VideoChatHistorySearchResponseMessageType.DONATION) {
-                                // 후원은 금액이 먼저 보이도록 금액 줄과 메시지를 카드로 묶는다
+                                // 치지직 채팅창과 같은 순서로 닉네임, 메시지, 금액을 한 줄씩 쌓는다
                                 // 지금은 치지직 후원만 저장하므로 금액 단위는 치즈다
                                 return (
                                     <div
@@ -336,20 +336,18 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                         className="-mx-2 rounded-xl bg-muted px-3 py-2 leading-relaxed"
                                         ref={isLast ? lastChatRef : null}
                                     >
-                                        <div className="flex flex-wrap items-center gap-x-2">
+                                        <div className="flex flex-wrap items-baseline gap-x-2">
                                             {timeline}
-                                            <span className="flex items-center gap-1 font-semibold">
-                                                <HandCoins className="h-4 w-4" aria-hidden />
-                                                {(chat.donationAmount ?? 0).toLocaleString()}치즈
-                                            </span>
-                                        </div>
-                                        <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
                                             <ChatUsername chat={chat} />
-                                            {chat.message && (
-                                                <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">
-                                                    {renderChatMessage(chat)}
-                                                </span>
-                                            )}
+                                        </div>
+                                        {chat.message && (
+                                            <div className="break-words [overflow-wrap:anywhere]">
+                                                {renderChatMessage(chat)}
+                                            </div>
+                                        )}
+                                        <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-0.5 font-semibold">
+                                            <HandCoins className="h-4 w-4" aria-hidden />
+                                            {(chat.donationAmount ?? 0).toLocaleString()}치즈
                                         </div>
                                     </div>
                                 );
