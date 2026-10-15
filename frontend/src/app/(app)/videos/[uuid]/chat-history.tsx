@@ -68,11 +68,11 @@ const USER_ROLE_DISPLAYS: Record<VideoChatHistorySearchResponseUserRole, { label
     MANAGER: { label: '매니저', icon: Wrench },
 };
 
-function ChatUsername({ chat }: { chat: VideoChatHistorySearchResponse }) {
+function ChatUsername({ chat, className }: { chat: VideoChatHistorySearchResponse; className?: string }) {
     const roleDisplay = chat.userRole ? USER_ROLE_DISPLAYS[chat.userRole] : null;
 
     return (
-        <span className={`font-semibold ${getUsernameColor(chat.username)}`}>
+        <span className={cn('font-semibold', getUsernameColor(chat.username), className)}>
             {roleDisplay && (
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -321,8 +321,10 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat, index) => {
                             const isLast = index === displayedChats.length - 1;
+                            // 채팅 한 줄은 flex가 아닌 인라인 흐름으로 쌓는다
+                            // flex 아이템이면 긴 메시지가 닉네임 옆에 다 들어가지 않을 때 통째로 다음 줄로 넘어가기 때문이다
                             const timeline = showTimeline && (
-                                <span className="text-muted-foreground text-xs">
+                                <span className="mr-2 text-muted-foreground text-xs">
                                     [{formatTime(chat.offsetMillis + chatSyncOffsetMillis)}]
                                 </span>
                             );
@@ -336,7 +338,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                         className="-mx-2 rounded-xl bg-muted px-3 py-2 leading-relaxed"
                                         ref={isLast ? lastChatRef : null}
                                     >
-                                        <div className="flex flex-wrap items-baseline gap-x-2">
+                                        <div>
                                             {timeline}
                                             <ChatUsername chat={chat} />
                                         </div>
@@ -358,15 +360,15 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                 <div
                                     key={`${chat.offsetMillis}-${index}`}
                                     className={cn(
-                                        'flex flex-wrap items-baseline gap-x-2 leading-relaxed',
+                                        'leading-relaxed',
                                         // 배경을 글자 바깥으로 넓혀도 글자 위치는 다른 채팅과 맞춘다
-                                        roleDisplay ? '-mx-2 rounded-lg bg-muted px-2 py-1' : 'w-full'
+                                        roleDisplay && '-mx-2 rounded-lg bg-muted px-2 py-1'
                                     )}
                                     ref={isLast ? lastChatRef : null}
                                 >
                                     {timeline}
-                                    <ChatUsername chat={chat} />
-                                    <span className="font-normal min-w-0 break-words [overflow-wrap:anywhere]">
+                                    <ChatUsername chat={chat} className="mr-2" />
+                                    <span className="font-normal break-words [overflow-wrap:anywhere]">
                                         {renderChatMessage(chat)}
                                     </span>
                                 </div>
