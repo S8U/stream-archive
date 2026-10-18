@@ -24,6 +24,10 @@ interface ChatHistoryProps {
     chatSyncOffsetMillis: number;
 }
 
+// 응답에 채팅 고유 ID가 없어서 받을 때 번호를 붙인다
+// 오래된 채팅을 지울 때 index를 key로 쓰면 남은 줄이 전부 다시 그려지므로 이 번호를 key로 쓴다
+type DisplayChat = VideoChatHistorySearchResponse & { localId: number };
+
 // 시간 포맷팅 (ms -> MM:SS)
 function formatTime(milliseconds: number): string {
     const seconds = Math.floor(milliseconds / 1000);
@@ -130,6 +134,9 @@ const CHAT_LOAD_MILLIS = 3000;
 const LOAD_BEFORE_CHAT_MILLIS = 60000;
 // 채팅 최대 개수
 const MAX_NUMBER_OF_CHAT = 300;
+// 위로 올려 보는 동안 쌓아 둘 최대 채팅 수
+// 끝없이 쌓이면 휴대폰에서 버벅이므로 이만큼 차면 새 채팅은 맨 아래로 돌아올 때까지 버퍼에 남겨 둔다
+const MAX_NUMBER_OF_CHAT_WHILE_SCROLLED_UP = 1000;
 // 재생 중 timeupdate 간격 흔들림을 시킹으로 오판하지 않기 위한 기준
 const SEEK_RELOAD_THRESHOLD_MILLIS = 1500;
 const SHOW_TIMELINE_STORAGE_KEY = 'chat-history:show-timeline';
@@ -138,14 +145,17 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     // 싱크 오프셋 적용 (음수로 적용하여 채팅이 영상보다 앞서 표시되도록)
     const currentTimeMs = rawCurrentTimeMs - chatSyncOffsetMillis;
     // 화면에 표시할 채팅
-    const [displayedChats, setDisplayedChats] = useState<VideoChatHistorySearchResponse[]>([]);
+    const [displayedChats, setDisplayedChats] = useState<DisplayChat[]>([]);
+    // 화면에 표시 중인 채팅 수 (시간 업데이트 콜백에서 읽는다)
+    const displayedChatCountRef = useRef(0);
     // 미리 불러온 채팅 버퍼
-    const chatBufferRef = useRef<VideoChatHistorySearchResponse[]>([]);
+    const chatBufferRef = useRef<DisplayChat[]>([]);
+    // 다음에 받은 채팅에 붙일 번호
+    const nextLocalIdRef = useRef(0);
     // 다음에 로딩해야하는 offset millis
     const nextLoadOffsetMillisRef = useRef(0);
     // 이전 시간
     const beforeTimeMillisRef = useRef(0);
-    const lastChatRef = useRef<HTMLDivElement>(null);
     const viewportRef = useRef<HTMLDivElement | null>(null);
     // 사용자가 맨 아래에 있는지 여부 (위로 올리면 자동 스크롤 중단)
     const isAtBottomRef = useRef(true);
@@ -169,7 +179,8 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
     // API 응답 처리
     useEffect(() => {
         if (data && fetchParams) {
-            chatBufferRef.current = [...chatBufferRef.current, ...data]
+            const receivedChats = data.map((chat) => ({ ...chat, localId: nextLocalIdRef.current++ }));
+            chatBufferRef.current = [...chatBufferRef.current, ...receivedChats]
                 .sort((a, b) => a.offsetMillis - b.offsetMillis);
             nextLoadOffsetMillisRef.current = fetchParams.offsetEnd;
             setFetchParams(null); // 요청 완료
@@ -191,6 +202,19 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
 
     // 현재 시간까지의 채팅 표시
     const addChatBeforeTimeMillis = useCallback((timeMillis: number) => {
+        const isAtBottom = isAtBottomRef.current;
+        if (!isAtBottom && displayedChatCountRef.current >= MAX_NUMBER_OF_CHAT_WHILE_SCROLLED_UP) {
+            // 맨 아래로 돌아오면 최근 MAX_NUMBER_OF_CHAT개만 남으므로 시간이 지난 채팅도 그만큼만 버퍼에 둔다
+            // 다 남기면 올려 둔 시간만큼 버퍼가 끝없이 커진다
+            const dueCount = chatBufferRef.current.filter(
+                (chat) => chat.offsetMillis <= timeMillis
+            ).length;
+            if (dueCount > MAX_NUMBER_OF_CHAT) {
+                chatBufferRef.current = chatBufferRef.current.slice(dueCount - MAX_NUMBER_OF_CHAT);
+            }
+            return;
+        }
+
         const chatsToShow = chatBufferRef.current.filter(
             (chat) => chat.offsetMillis <= timeMillis
         );
@@ -201,8 +225,9 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
         if (chatsToShow.length > 0) {
             setDisplayedChats((prev) => {
                 const newChats = [...prev, ...chatsToShow];
-                // 최대 개수 유지
-                if (newChats.length > MAX_NUMBER_OF_CHAT) {
+                // 최대 개수는 맨 아래에 있을 때만 맞춘다
+                // 위로 올려 보는 동안 위쪽 채팅을 지우면 보던 채팅이 밀려 올라간다
+                if (isAtBottom && newChats.length > MAX_NUMBER_OF_CHAT) {
                     return newChats.slice(-MAX_NUMBER_OF_CHAT);
                 }
                 return newChats;
@@ -254,12 +279,14 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
         reloadChat();
     }, [videoUuid]);
 
-    // 스크롤 위치 추적: 사용자가 맨 아래 근처에 있으면 자동 스크롤 유지, 위로 올리면 중단
+    // 스크롤 위치 추적: 사용자가 맨 아래에 있으면 자동 스크롤 유지, 위로 올리면 중단
     useEffect(() => {
         const viewport = viewportRef.current;
         if (!viewport) return;
 
-        const BOTTOM_THRESHOLD_PX = 80;
+        // 소수점 스크롤 오차만 맨 아래로 본다
+        // 조금이라도 올리면 그 자리를 유지한다
+        const BOTTOM_THRESHOLD_PX = 4;
         const handleScroll = () => {
             const distanceFromBottom =
                 viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
@@ -270,10 +297,17 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
         return () => viewport.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // 새 채팅이 추가되면 스크롤 하단으로 이동 (사용자가 맨 아래에 있을 때만)
+    // 표시 중인 채팅 수를 ref에 맞춘다
     useEffect(() => {
-        if (isAtBottomRef.current && lastChatRef.current) {
-            lastChatRef.current.scrollIntoView({ block: 'end' });
+        displayedChatCountRef.current = displayedChats.length;
+    }, [displayedChats]);
+
+    // 새 채팅이 추가되면 스크롤 하단으로 이동 (사용자가 맨 아래에 있을 때만)
+    // scrollIntoView는 페이지 같은 바깥 스크롤까지 움직이므로 채팅창만 직접 내린다
+    useEffect(() => {
+        const viewport = viewportRef.current;
+        if (isAtBottomRef.current && viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
         }
     }, [displayedChats]);
 
@@ -319,8 +353,7 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
             <div className="overflow-hidden flex-1">
                 <ScrollArea viewportRef={viewportRef} className="h-full" viewportClassName="overscroll-contain" hideScrollbar>
                     <div className="px-4 py-2 space-y-2 text-sm">
-                        {displayedChats.map((chat, index) => {
-                            const isLast = index === displayedChats.length - 1;
+                        {displayedChats.map((chat) => {
                             // 채팅 한 줄은 flex가 아닌 인라인 흐름으로 쌓는다
                             // flex 아이템이면 긴 메시지가 닉네임 옆에 다 들어가지 않을 때 통째로 다음 줄로 넘어가기 때문이다
                             const timeline = showTimeline && (
@@ -334,9 +367,8 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                                 // 지금은 치지직 후원만 저장하므로 금액 단위는 치즈다
                                 return (
                                     <div
-                                        key={`${chat.offsetMillis}-${index}`}
+                                        key={chat.localId}
                                         className="-mx-2 rounded-xl bg-muted px-3 py-2 leading-relaxed"
-                                        ref={isLast ? lastChatRef : null}
                                     >
                                         <div>
                                             {timeline}
@@ -358,13 +390,12 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
                             const roleDisplay = chat.userRole ? USER_ROLE_DISPLAYS[chat.userRole] : null;
                             return (
                                 <div
-                                    key={`${chat.offsetMillis}-${index}`}
+                                    key={chat.localId}
                                     className={cn(
                                         'leading-relaxed',
                                         // 배경을 글자 바깥으로 넓혀도 글자 위치는 다른 채팅과 맞춘다
                                         roleDisplay && '-mx-2 rounded-lg bg-muted px-2 py-1'
                                     )}
-                                    ref={isLast ? lastChatRef : null}
                                 >
                                     {timeline}
                                     <ChatUsername chat={chat} className="mr-2" />
