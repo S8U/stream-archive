@@ -351,7 +351,9 @@ export function ChatHistory({ videoUuid, currentTimeMs: rawCurrentTimeMs, chatSy
 
             {/* 채팅 목록 */}
             <div className="overflow-hidden flex-1">
-                <ScrollArea viewportRef={viewportRef} className="h-full" viewportClassName="overscroll-contain" hideScrollbar>
+                {/* 세로 스크롤만 가둔다 */}
+                {/* 가로까지 가두면 트랙패드 두 손가락 뒤로가기가 채팅 위에서 막힌다 */}
+                <ScrollArea viewportRef={viewportRef} className="h-full" viewportClassName="overscroll-y-contain" hideScrollbar>
                     <div className="px-4 py-2 space-y-2 text-sm">
                         {displayedChats.map((chat) => {
                             // 채팅 한 줄은 flex가 아닌 인라인 흐름으로 쌓는다

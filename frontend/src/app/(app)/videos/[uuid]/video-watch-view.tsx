@@ -228,9 +228,9 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
           : "flex flex-col lg:flex-row h-[calc(100dvh-4rem)] overflow-hidden"
       }
     >
-      {/* 좌측: 동영상 + 정보 */}
+      {/* 좌측: 동영상 + 정보. 스크롤은 세로만 가둔다. 가로까지 가두면 트랙패드 두 손가락 뒤로가기가 막힌다. */}
       <div
-        className={`flex-shrink-0 lg:flex-1 flex flex-col ${isWide ? "overflow-hidden" : "overflow-y-auto overscroll-contain scrollbar-hide"}`}
+        className={`flex-shrink-0 lg:flex-1 flex flex-col ${isWide ? "overflow-hidden" : "overflow-y-auto overscroll-y-contain scrollbar-hide"}`}
       >
         <VideoPlayer
           playlistUrl={currentVideo.playlistUrl}
