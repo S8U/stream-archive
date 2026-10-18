@@ -63,7 +63,7 @@ export default async function ChannelPage({ params, searchParams }: Props) {
         channel = await getChannelByUuid(uuid, requestOptions);
     } catch {
         return (
-            <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
+            <div className="flex min-h-[calc(100dvh-3.5rem)] items-center justify-center p-4">
                 <p className="text-muted-foreground">채널을 찾을 수 없습니다.</p>
             </div>
         );

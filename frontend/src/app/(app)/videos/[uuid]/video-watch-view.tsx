@@ -218,12 +218,14 @@ export function VideoWatchView({ video }: VideoWatchViewProps) {
     ],
   );
 
+  // 높이는 vh 대신 dvh로 잡는다.
+  // 모바일 브라우저는 vh를 주소창이 숨었을 때 높이로 계산해서, 주소창이 보이면 페이지가 화면보다 길어져 통째로 출렁인다.
   return (
     <div
       className={
         isWide
           ? "fixed inset-0 z-[60] bg-background flex flex-col lg:flex-row overflow-hidden"
-          : "flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-hidden"
+          : "flex flex-col lg:flex-row h-[calc(100dvh-4rem)] overflow-hidden"
       }
     >
       {/* 좌측: 동영상 + 정보 */}

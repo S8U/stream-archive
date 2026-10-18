@@ -1502,10 +1502,10 @@ export function VideoPlayer({
             ref={containerRef}
             className={`relative bg-black group ${
                 isFullscreen
-                    ? 'w-screen h-screen overflow-hidden'
+                    ? 'w-screen h-dvh overflow-hidden'
                     : isWide
-                        ? 'w-full h-screen overflow-hidden'
-                        : 'w-full aspect-video max-h-[calc(100vh-9rem)]'
+                        ? 'w-full h-dvh overflow-hidden'
+                        : 'w-full aspect-video max-h-[calc(100dvh-9rem)]'
             } touch-manipulation`}
             onMouseMove={handleContainerMouseMove}
             onMouseLeave={handleContainerMouseLeave}
