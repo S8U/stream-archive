@@ -99,14 +99,19 @@ class VideoRepositoryImpl(
         return PageImpl(results, pageable, total)
     }
 
-    override fun searchForPublic(command: VideoSearchCommand, pageable: Pageable): Page<Video> {
+    override fun searchForPublic(
+        command: VideoSearchCommand,
+        videoPrivacies: Collection<VideoContentPrivacy>,
+        channelPrivacies: Collection<ChannelContentPrivacy>,
+        pageable: Pageable
+    ): Page<Video> {
         val results = queryFactory
             .selectFrom(video)
             .leftJoin(channel).on(video.channelId.eq(channel.id)).fetchJoin()
             .leftJoin(record).on(video.id.eq(record.videoId)).fetchJoin()
             .where(
-                video.contentPrivacy.eq(VideoContentPrivacy.PUBLIC),
-                if (command.channelUuid == null) channel.contentPrivacy.eq(ChannelContentPrivacy.PUBLIC) else null,
+                video.contentPrivacy.`in`(videoPrivacies),
+                if (command.channelUuid == null) channel.contentPrivacy.`in`(channelPrivacies) else null,
                 video.isActive.eq(true),
                 videoTextContains(command.title, command.description),
                 command.channelName?.let { channel.name.containsIgnoreCase(it) },
@@ -122,8 +127,8 @@ class VideoRepositoryImpl(
             .from(video)
             .leftJoin(channel).on(video.channelId.eq(channel.id))
             .where(
-                video.contentPrivacy.eq(VideoContentPrivacy.PUBLIC),
-                if (command.channelUuid == null) channel.contentPrivacy.eq(ChannelContentPrivacy.PUBLIC) else null,
+                video.contentPrivacy.`in`(videoPrivacies),
+                if (command.channelUuid == null) channel.contentPrivacy.`in`(channelPrivacies) else null,
                 video.isActive.eq(true),
                 videoTextContains(command.title, command.description),
                 command.channelName?.let { channel.name.containsIgnoreCase(it) },
@@ -236,25 +241,25 @@ class VideoRepositoryImpl(
         return result
     }
 
-    override fun countByChannelId(channelId: Long): Long {
+    override fun countByChannelId(channelId: Long, videoPrivacies: Collection<VideoContentPrivacy>): Long {
         return queryFactory
             .select(video.count())
             .from(video)
             .where(
                 video.channelId.eq(channelId),
-                video.contentPrivacy.eq(VideoContentPrivacy.PUBLIC),
+                video.contentPrivacy.`in`(videoPrivacies),
                 video.isActive.eq(true)
             )
             .fetchOne() ?: 0L
     }
 
-    override fun sumFileSizeByChannelId(channelId: Long): Long {
+    override fun sumFileSizeByChannelId(channelId: Long, videoPrivacies: Collection<VideoContentPrivacy>): Long {
         return queryFactory
             .select(video.fileSize.sum())
             .from(video)
             .where(
                 video.channelId.eq(channelId),
-                video.contentPrivacy.eq(VideoContentPrivacy.PUBLIC),
+                video.contentPrivacy.`in`(videoPrivacies),
                 video.isActive.eq(true)
             )
             .fetchOne() ?: 0L

@@ -10,6 +10,7 @@
 -- Role: 'ADMIN', 'USER'
 -- PlatformChatUserRole: 'STREAMER', 'MANAGER'
 -- PlatformChatMessageType: 'CHAT', 'DONATION'
+-- UserSettingKey: 'SHOW_UNLISTED_CHANNELS', 'SHOW_UNLISTED_VIDEOS' (키가 늘 수 있어 ENUM이 아닌 VARCHAR로 저장)
 
 -- 1. 사용자 테이블
 CREATE TABLE users
@@ -319,3 +320,20 @@ CREATE TABLE refresh_tokens
     INDEX idx_refresh_tokens_expires_at (expires_at),
     INDEX idx_refresh_tokens_is_active (is_active)
 ) COMMENT '리프레시 토큰';
+
+-- 16. 사용자 설정 테이블
+CREATE TABLE user_settings
+(
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+    user_id       BIGINT       NOT NULL COMMENT '사용자 ID',
+    setting_key   VARCHAR(50)  NOT NULL COMMENT '설정 키 (SHOW_UNLISTED_CHANNELS/SHOW_UNLISTED_VIDEOS)',
+    setting_value VARCHAR(255) NOT NULL COMMENT '설정 값',
+    created_at    DATETIME     NOT NULL COMMENT '생성 일시',
+    updated_at    DATETIME     NOT NULL COMMENT '수정 일시',
+    created_by    BIGINT       NULL COMMENT '생성한 사용자 ID',
+    created_ip    VARCHAR(45)  NULL COMMENT '생성 시 IP',
+    updated_by    BIGINT       NULL COMMENT '수정한 사용자 ID',
+    updated_ip    VARCHAR(45)  NULL COMMENT '수정 시 IP',
+
+    UNIQUE KEY uk_user_settings_user_id_setting_key (user_id, setting_key)
+) COMMENT '사용자 설정';

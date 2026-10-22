@@ -1,6 +1,8 @@
 package com.github.s8u.streamarchive.video.controller.dto.response
 
+import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
 import com.github.s8u.streamarchive.platform.enums.PlatformType
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import com.github.s8u.streamarchive.video.usecase.dto.result.VideoSearchResult
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
@@ -24,6 +26,9 @@ data class VideoSearchResponse(
 
     @field:Schema(description = "파일 크기 (바이트)", example = "1073741824")
     val fileSize: Long,
+
+    @field:Schema(description = "콘텐츠 공개 범위 (PUBLIC/UNLISTED/PRIVATE)")
+    val contentPrivacy: VideoContentPrivacy,
 
     @field:Schema(description = "썸네일 URL")
     val thumbnailUrl: String,
@@ -53,10 +58,16 @@ data class VideoSearchResponse(
     val record: RecordInfo?
 ) {
 
+    // 다른 응답의 ChannelInfo와 스키마 이름이 겹치면 한 스키마로 합쳐져 contentPrivacy가 빠진다.
+    // 그래서 이 응답의 채널 정보에는 따로 이름을 붙인다.
+    @Schema(name = "VideoSearchResponseChannelInfo", description = "채널 정보")
     data class ChannelInfo(
         val uuid: String,
         val name: String,
-        val profileUrl: String
+        val profileUrl: String,
+
+        @field:Schema(description = "채널 공개 범위 (PUBLIC/UNLISTED/PRIVATE)")
+        val contentPrivacy: ChannelContentPrivacy
     )
 
     data class RecordInfo(
@@ -76,12 +87,14 @@ data class VideoSearchResponse(
                 channel = ChannelInfo(
                     uuid = result.channel.uuid,
                     name = result.channel.name,
-                    profileUrl = result.channel.profileUrl
+                    profileUrl = result.channel.profileUrl,
+                    contentPrivacy = result.channel.contentPrivacy
                 ),
                 title = result.title,
                 description = result.description,
                 duration = result.duration,
                 fileSize = result.fileSize,
+                contentPrivacy = result.contentPrivacy,
                 thumbnailUrl = result.thumbnailUrl,
                 playlistUrl = result.playlistUrl,
                 chatSyncOffsetMillis = result.chatSyncOffsetMillis,

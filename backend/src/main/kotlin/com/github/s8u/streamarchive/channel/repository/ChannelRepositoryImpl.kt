@@ -107,11 +107,15 @@ class ChannelRepositoryImpl(
         return PageImpl(results, pageable, total)
     }
 
-    override fun searchForPublic(command: ChannelSearchCommand, pageable: Pageable): Page<Channel> {
+    override fun searchForPublic(
+        command: ChannelSearchCommand,
+        channelPrivacies: Collection<ChannelContentPrivacy>,
+        pageable: Pageable
+    ): Page<Channel> {
         val results = queryFactory
             .selectFrom(channel)
             .where(
-                channel.contentPrivacy.eq(ChannelContentPrivacy.PUBLIC),
+                channel.contentPrivacy.`in`(channelPrivacies),
                 command.name?.let { channel.name.containsIgnoreCase(it) }
             )
             .offset(pageable.offset)
@@ -123,7 +127,7 @@ class ChannelRepositoryImpl(
             .select(channel.count())
             .from(channel)
             .where(
-                channel.contentPrivacy.eq(ChannelContentPrivacy.PUBLIC),
+                channel.contentPrivacy.`in`(channelPrivacies),
                 command.name?.let { channel.name.containsIgnoreCase(it) }
             )
             .fetchOne() ?: 0L

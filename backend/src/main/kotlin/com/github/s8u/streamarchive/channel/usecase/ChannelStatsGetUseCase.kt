@@ -4,6 +4,8 @@ import com.github.s8u.streamarchive.channel.repository.ChannelRepository
 import com.github.s8u.streamarchive.channel.service.ChannelAccessAssertService
 import com.github.s8u.streamarchive.channel.usecase.dto.result.ChannelStatsResult
 import com.github.s8u.streamarchive.global.exception.BusinessException
+import com.github.s8u.streamarchive.user.service.UserSettingLoadService
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import com.github.s8u.streamarchive.video.repository.VideoRepository
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -16,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional
 class ChannelStatsGetUseCase(
     private val channelRepository: ChannelRepository,
     private val videoRepository: VideoRepository,
-    private val channelAccessAssertService: ChannelAccessAssertService
+    private val channelAccessAssertService: ChannelAccessAssertService,
+    private val userSettingLoadService: UserSettingLoadService
 ) {
 
     @Transactional(readOnly = true)
@@ -28,8 +31,12 @@ class ChannelStatsGetUseCase(
 
         channelAccessAssertService.assertAccessible(channel.contentPrivacy)
 
-        val videoCount = videoRepository.countByChannelId(channel.id!!)
-        val totalFileSize = videoRepository.sumFileSizeByChannelId(channel.id!!)
+        // 채널 동영상 목록과 같은 공개 범위로 센다.
+        val userSetting = userSettingLoadService.load()
+        val videoPrivacies = VideoContentPrivacy.getListedPrivacies(userSetting.isShowUnlistedVideos)
+
+        val videoCount = videoRepository.countByChannelId(channel.id!!, videoPrivacies)
+        val totalFileSize = videoRepository.sumFileSizeByChannelId(channel.id!!, videoPrivacies)
 
         return ChannelStatsResult(
             videoCount = videoCount,

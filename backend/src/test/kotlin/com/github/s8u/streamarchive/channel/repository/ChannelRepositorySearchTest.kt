@@ -83,10 +83,46 @@ class ChannelRepositorySearchTest @Autowired constructor(
 
             val channels = channelRepository.searchForPublic(
                 command = ChannelSearchCommand(),
+                channelPrivacies = listOf(ChannelContentPrivacy.PUBLIC),
                 pageable = PageRequest.of(0, 10)
             )
 
             assertEquals(listOf(second.id, third.id, first.id), channels.content.map { it.id })
+        }
+
+        @Test
+        fun `넘긴 공개 범위의 채널만 조회한다`() {
+            val publicChannel = channelRepository.save(channel(uuid = "public-channel", name = "가가"))
+            val unlistedChannel = channelRepository.save(
+                channel(
+                    uuid = "unlisted-channel",
+                    name = "나나",
+                    contentPrivacy = ChannelContentPrivacy.UNLISTED
+                )
+            )
+            channelRepository.save(
+                channel(
+                    uuid = "private-channel",
+                    name = "다다",
+                    contentPrivacy = ChannelContentPrivacy.PRIVATE
+                )
+            )
+
+            val publicOnly = channelRepository.searchForPublic(
+                command = ChannelSearchCommand(),
+                channelPrivacies = listOf(ChannelContentPrivacy.PUBLIC),
+                pageable = PageRequest.of(0, 10)
+            )
+            val withUnlisted = channelRepository.searchForPublic(
+                command = ChannelSearchCommand(),
+                channelPrivacies = listOf(ChannelContentPrivacy.PUBLIC, ChannelContentPrivacy.UNLISTED),
+                pageable = PageRequest.of(0, 10)
+            )
+
+            assertEquals(listOf(publicChannel.id), publicOnly.content.map { it.id })
+            assertEquals(1L, publicOnly.totalElements)
+            assertEquals(listOf(publicChannel.id, unlistedChannel.id), withUnlisted.content.map { it.id })
+            assertEquals(2L, withUnlisted.totalElements)
         }
     }
 

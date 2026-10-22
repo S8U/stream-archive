@@ -1,7 +1,9 @@
 package com.github.s8u.streamarchive.video.usecase.dto.result
 
+import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import com.github.s8u.streamarchive.video.entity.Video
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import java.time.LocalDateTime
 
 /**
@@ -14,6 +16,7 @@ data class VideoSearchResult(
     val description: String?,
     val duration: Int,
     val fileSize: Long,
+    val contentPrivacy: VideoContentPrivacy,
     val thumbnailUrl: String,
     val playlistUrl: String,
     val chatSyncOffsetMillis: Long,
@@ -28,7 +31,8 @@ data class VideoSearchResult(
     data class ChannelInfo(
         val uuid: String,
         val name: String,
-        val profileUrl: String
+        val profileUrl: String,
+        val contentPrivacy: ChannelContentPrivacy
     )
 
     data class RecordInfo(
@@ -66,12 +70,14 @@ data class VideoSearchResult(
                 channel = ChannelInfo(
                     uuid = channel.uuid,
                     name = channel.name,
-                    profileUrl = channelProfileUrl
+                    profileUrl = channelProfileUrl,
+                    contentPrivacy = channel.contentPrivacy
                 ),
                 title = video.title,
                 description = video.description,
                 duration = video.duration,
                 fileSize = video.fileSize,
+                contentPrivacy = video.contentPrivacy,
                 thumbnailUrl = thumbnailUrl,
                 playlistUrl = playlistUrl,
                 chatSyncOffsetMillis = video.chatSyncOffsetMillis,

@@ -1,9 +1,12 @@
 package com.github.s8u.streamarchive.video.usecase
 
+import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
 import com.github.s8u.streamarchive.channel.repository.ChannelRepository
 import com.github.s8u.streamarchive.channel.service.ChannelAccessAssertService
 import com.github.s8u.streamarchive.global.exception.BusinessException
 import com.github.s8u.streamarchive.global.service.UrlService
+import com.github.s8u.streamarchive.user.service.UserSettingLoadService
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import com.github.s8u.streamarchive.video.repository.VideoMetadataViewerHistoryRepository
 import com.github.s8u.streamarchive.video.repository.VideoRepository
 import com.github.s8u.streamarchive.video.usecase.dto.command.VideoSearchCommand
@@ -25,6 +28,7 @@ class VideoSearchUseCase(
     private val viewerHistoryRepository: VideoMetadataViewerHistoryRepository,
     private val channelAccessAssertService: ChannelAccessAssertService,
     private val watchHistoryGetService: WatchHistoryGetService,
+    private val userSettingLoadService: UserSettingLoadService,
     private val urlService: UrlService
 ) {
 
@@ -38,7 +42,14 @@ class VideoSearchUseCase(
             channelAccessAssertService.assertAccessible(channel.contentPrivacy)
         }
 
-        val videos = videoRepository.searchForPublic(command, pageable)
+        // 공개 동영상만 보여주되, 관리자가 켠 설정에 따라 일부공개 채널·동영상도 넣는다.
+        val userSetting = userSettingLoadService.load()
+        val videos = videoRepository.searchForPublic(
+            command = command,
+            videoPrivacies = VideoContentPrivacy.getListedPrivacies(userSetting.isShowUnlistedVideos),
+            channelPrivacies = ChannelContentPrivacy.getListedPrivacies(userSetting.isShowUnlistedChannels),
+            pageable = pageable
+        )
         val videoIds = videos.content.mapNotNull { it.id }
 
         // 페이지 내 동영상들의 피크 시청자 수를 한 번에 조회 (N+1 방지)
