@@ -7,12 +7,11 @@
  */
 
 /**
- * 동영상 정보
+ * 채널 정보
  */
-export interface VideoInfo {
+export interface VideoAdminArchiveResponseChannelInfo {
+  id: number;
   uuid: string;
-  title: string;
-  thumbnailUrl: string;
-  playlistUrl: string;
-  duration: number;
+  name: string;
+  profileUrl: string;
 }

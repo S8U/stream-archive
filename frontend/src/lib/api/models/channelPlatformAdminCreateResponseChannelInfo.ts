@@ -9,9 +9,11 @@
 /**
  * 채널 정보
  */
-export interface ChannelInfo {
+export interface ChannelPlatformAdminCreateResponseChannelInfo {
+  /** 채널 ID */
   id: number;
-  uuid: string;
+  /** 채널 이름 */
   name: string;
+  /** 프로필 이미지 URL */
   profileUrl: string;
 }

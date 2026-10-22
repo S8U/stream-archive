@@ -5,9 +5,9 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
+import type { VideoAdminSearchResponseChannelInfo } from "./videoAdminSearchResponseChannelInfo";
 import type { VideoAdminSearchResponseContentPrivacy } from "./videoAdminSearchResponseContentPrivacy";
-import type { RecordInfo } from "./recordInfo";
+import type { VideoAdminSearchResponseRecordInfo } from "./videoAdminSearchResponseRecordInfo";
 
 /**
  * 동영상 목록 응답 (관리자)
@@ -17,7 +17,7 @@ export interface VideoAdminSearchResponse {
   id: number;
   /** 동영상 UUID */
   uuid: string;
-  channel: ChannelInfo;
+  channel: VideoAdminSearchResponseChannelInfo;
   /** 제목 */
   title: string;
   /** 설명 */
@@ -46,5 +46,5 @@ export interface VideoAdminSearchResponse {
   createdAt: string;
   /** 수정 일시 */
   updatedAt: string;
-  record?: RecordInfo;
+  record?: VideoAdminSearchResponseRecordInfo;
 }

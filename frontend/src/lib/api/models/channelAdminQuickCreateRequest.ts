@@ -7,7 +7,7 @@
  */
 import type { ChannelAdminQuickCreateRequestContentPrivacy } from "./channelAdminQuickCreateRequestContentPrivacy";
 import type { ChannelAdminQuickCreateRequestPlatformType } from "./channelAdminQuickCreateRequestPlatformType";
-import type { ScheduleRequest } from "./scheduleRequest";
+import type { ChannelAdminQuickCreateRequestScheduleRequest } from "./channelAdminQuickCreateRequestScheduleRequest";
 
 /**
  * 간편 채널 생성 요청 (관리자)
@@ -23,5 +23,5 @@ export interface ChannelAdminQuickCreateRequest {
   platformChannelId: string;
   /** 프로필 동기화 여부 */
   isSyncProfile: boolean;
-  schedule?: ScheduleRequest;
+  schedule?: ChannelAdminQuickCreateRequestScheduleRequest;
 }

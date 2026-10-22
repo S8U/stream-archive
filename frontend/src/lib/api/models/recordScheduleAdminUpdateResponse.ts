@@ -5,7 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
+import type { RecordScheduleAdminUpdateResponseChannelInfo } from "./recordScheduleAdminUpdateResponseChannelInfo";
 import type { RecordScheduleAdminUpdateResponsePlatformType } from "./recordScheduleAdminUpdateResponsePlatformType";
 import type { RecordScheduleAdminUpdateResponseScheduleType } from "./recordScheduleAdminUpdateResponseScheduleType";
 import type { RecordScheduleAdminUpdateResponseRecordQuality } from "./recordScheduleAdminUpdateResponseRecordQuality";
@@ -16,7 +16,7 @@ import type { RecordScheduleAdminUpdateResponseRecordQuality } from "./recordSch
 export interface RecordScheduleAdminUpdateResponse {
   /** 녹화 스케줄 ID */
   id: number;
-  channel: ChannelInfo;
+  channel: RecordScheduleAdminUpdateResponseChannelInfo;
   /** 플랫폼 유형 (CHZZK/SOOP/TWITCH/YOUTUBE) */
   platformType: RecordScheduleAdminUpdateResponsePlatformType;
   /** 녹화 스케줄 유형 (ONCE/ALWAYS/WEEKLY/SPECIFIC) */

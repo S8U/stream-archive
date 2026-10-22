@@ -5,8 +5,8 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
-import type { RecordInfo } from "./recordInfo";
+import type { VideoGetResponseChannelInfo } from "./videoGetResponseChannelInfo";
+import type { VideoGetResponseRecordInfo } from "./videoGetResponseRecordInfo";
 
 /**
  * 동영상 단건 응답 (공개)
@@ -14,7 +14,7 @@ import type { RecordInfo } from "./recordInfo";
 export interface VideoGetResponse {
   /** 동영상 UUID */
   uuid: string;
-  channel: ChannelInfo;
+  channel: VideoGetResponseChannelInfo;
   /** 제목 */
   title: string;
   /** 설명 */
@@ -37,5 +37,5 @@ export interface VideoGetResponse {
   peakViewerOffsetMillis?: number;
   /** 생성 일시 */
   createdAt: string;
-  record?: RecordInfo;
+  record?: VideoGetResponseRecordInfo;
 }

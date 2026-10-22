@@ -5,19 +5,19 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ScheduleRequestScheduleType } from "./scheduleRequestScheduleType";
-import type { ScheduleRequestRecordQuality } from "./scheduleRequestRecordQuality";
+import type { ChannelAdminQuickCreateRequestScheduleRequestScheduleType } from "./channelAdminQuickCreateRequestScheduleRequestScheduleType";
+import type { ChannelAdminQuickCreateRequestScheduleRequestRecordQuality } from "./channelAdminQuickCreateRequestScheduleRequestRecordQuality";
 
 /**
  * 녹화 스케줄 요청
  */
-export interface ScheduleRequest {
+export interface ChannelAdminQuickCreateRequestScheduleRequest {
   /** 녹화 스케줄 유형 (ONCE/ALWAYS/N_DAYS_OF_EVERY_WEEK/SPECIFIC_DAY) */
-  scheduleType: ScheduleRequestScheduleType;
+  scheduleType: ChannelAdminQuickCreateRequestScheduleRequestScheduleType;
   /** 스케줄 값 (요일·날짜 JSON 배열, ONCE/ALWAYS는 빈 값) */
   value: string;
   /** 녹화 화질 */
-  recordQuality: ScheduleRequestRecordQuality;
+  recordQuality: ChannelAdminQuickCreateRequestScheduleRequestRecordQuality;
   /** 우선순위 */
   priority: number;
   /** 자동 소장 여부 */

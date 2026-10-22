@@ -7,7 +7,7 @@
  */
 import type { VideoSearchResponseChannelInfo } from "./videoSearchResponseChannelInfo";
 import type { VideoSearchResponseContentPrivacy } from "./videoSearchResponseContentPrivacy";
-import type { RecordInfo } from "./recordInfo";
+import type { VideoSearchResponseRecordInfo } from "./videoSearchResponseRecordInfo";
 
 /**
  * 동영상 목록 응답 (공개)
@@ -42,5 +42,5 @@ export interface VideoSearchResponse {
   progress?: number;
   /** 생성 일시 */
   createdAt: string;
-  record?: RecordInfo;
+  record?: VideoSearchResponseRecordInfo;
 }

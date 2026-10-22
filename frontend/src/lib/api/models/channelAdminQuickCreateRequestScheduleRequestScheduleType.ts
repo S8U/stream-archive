@@ -9,11 +9,11 @@
 /**
  * 녹화 스케줄 유형 (ONCE/ALWAYS/N_DAYS_OF_EVERY_WEEK/SPECIFIC_DAY)
  */
-export type ScheduleResponseScheduleType =
-  (typeof ScheduleResponseScheduleType)[keyof typeof ScheduleResponseScheduleType];
+export type ChannelAdminQuickCreateRequestScheduleRequestScheduleType =
+  (typeof ChannelAdminQuickCreateRequestScheduleRequestScheduleType)[keyof typeof ChannelAdminQuickCreateRequestScheduleRequestScheduleType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ScheduleResponseScheduleType = {
+export const ChannelAdminQuickCreateRequestScheduleRequestScheduleType = {
   ONCE: "ONCE",
   ALWAYS: "ALWAYS",
   N_DAYS_OF_EVERY_WEEK: "N_DAYS_OF_EVERY_WEEK",

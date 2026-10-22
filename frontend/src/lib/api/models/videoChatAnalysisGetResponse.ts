@@ -5,7 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { Bucket } from "./bucket";
+import type { VideoChatAnalysisGetResponseBucket } from "./videoChatAnalysisGetResponseBucket";
 
 /**
  * 동영상 채팅 분석 응답
@@ -14,5 +14,5 @@ export interface VideoChatAnalysisGetResponse {
   /** 구간 길이 (밀리초) */
   bucketMillis: number;
   /** 구간별 채팅 분석 목록 */
-  buckets: Bucket[];
+  buckets: VideoChatAnalysisGetResponseBucket[];
 }

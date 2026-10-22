@@ -5,8 +5,8 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
-import type { VideoInfo } from "./videoInfo";
+import type { RecordAdminSearchResponseChannelInfo } from "./recordAdminSearchResponseChannelInfo";
+import type { RecordAdminSearchResponseVideoInfo } from "./recordAdminSearchResponseVideoInfo";
 import type { RecordAdminSearchResponsePlatformType } from "./recordAdminSearchResponsePlatformType";
 
 /**
@@ -15,8 +15,8 @@ import type { RecordAdminSearchResponsePlatformType } from "./recordAdminSearchR
 export interface RecordAdminSearchResponse {
   /** 녹화 기록 ID */
   id: number;
-  channel: ChannelInfo;
-  video: VideoInfo;
+  channel: RecordAdminSearchResponseChannelInfo;
+  video: RecordAdminSearchResponseVideoInfo;
   /** 플랫폼 유형 (CHZZK/SOOP/TWITCH/YOUTUBE) */
   platformType: RecordAdminSearchResponsePlatformType;
   /** 플랫폼 스트림 ID */

@@ -9,11 +9,11 @@
 /**
  * 녹화 화질
  */
-export type ScheduleResponseRecordQuality =
-  (typeof ScheduleResponseRecordQuality)[keyof typeof ScheduleResponseRecordQuality];
+export type ChannelAdminQuickCreateResponseScheduleResponseRecordQuality =
+  (typeof ChannelAdminQuickCreateResponseScheduleResponseRecordQuality)[keyof typeof ChannelAdminQuickCreateResponseScheduleResponseRecordQuality];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ScheduleResponseRecordQuality = {
+export const ChannelAdminQuickCreateResponseScheduleResponseRecordQuality = {
   BEST: "BEST",
   P2160_60: "P2160_60",
   P2160: "P2160",

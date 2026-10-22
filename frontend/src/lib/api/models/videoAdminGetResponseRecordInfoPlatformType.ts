@@ -6,14 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * 플랫폼 유형 (CHZZK/TWITCH/SOOP/YOUTUBE)
- */
-export type PlatformResponsePlatformType =
-  (typeof PlatformResponsePlatformType)[keyof typeof PlatformResponsePlatformType];
+export type VideoAdminGetResponseRecordInfoPlatformType =
+  (typeof VideoAdminGetResponseRecordInfoPlatformType)[keyof typeof VideoAdminGetResponseRecordInfoPlatformType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PlatformResponsePlatformType = {
+export const VideoAdminGetResponseRecordInfoPlatformType = {
   CHZZK: "CHZZK",
   TWITCH: "TWITCH",
   SOOP: "SOOP",

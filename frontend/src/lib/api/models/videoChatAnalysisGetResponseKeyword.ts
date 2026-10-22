@@ -9,7 +9,7 @@
 /**
  * 구간 대표 키워드
  */
-export interface Keyword {
+export interface VideoChatAnalysisGetResponseKeyword {
   /** 키워드 */
   keyword: string;
   /** 구간 내 등장 횟수 */

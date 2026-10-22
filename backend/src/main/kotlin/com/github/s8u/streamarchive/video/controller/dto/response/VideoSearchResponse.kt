@@ -58,9 +58,6 @@ data class VideoSearchResponse(
     val record: RecordInfo?
 ) {
 
-    // 다른 응답의 ChannelInfo와 스키마 이름이 겹치면 한 스키마로 합쳐져 contentPrivacy가 빠진다.
-    // 그래서 이 응답의 채널 정보에는 따로 이름을 붙인다.
-    @Schema(name = "VideoSearchResponseChannelInfo", description = "채널 정보")
     data class ChannelInfo(
         val uuid: String,
         val name: String,

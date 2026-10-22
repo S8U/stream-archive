@@ -7,10 +7,10 @@
  */
 
 /**
- * 일자별 누적 통계
+ * 채널 정보
  */
-export interface DailyStat {
-  date: string;
-  videoCount: number;
-  storageUsage: number;
+export interface WatchHistorySearchResponseChannelInfo {
+  uuid: string;
+  name: string;
+  profileUrl: string;
 }

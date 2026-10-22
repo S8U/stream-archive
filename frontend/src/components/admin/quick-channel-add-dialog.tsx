@@ -27,8 +27,8 @@ import type {
     ChannelAdminQuickCreateRequest,
     ChannelAdminQuickCreateRequestContentPrivacy,
     ChannelAdminQuickCreateRequestPlatformType,
-    ScheduleRequestScheduleType,
-    ScheduleRequestRecordQuality,
+    ChannelAdminQuickCreateRequestScheduleRequestScheduleType,
+    ChannelAdminQuickCreateRequestScheduleRequestRecordQuality,
 } from "@/lib/api/models";
 import { useResolveAdminPlatformChannel } from "@/lib/api/endpoints/platform-admin/platform-admin";
 import { cn } from "@/lib/utils";
@@ -112,8 +112,8 @@ export function QuickChannelAddDialog({
 
     // 스케줄 설정 (기본은 항상 녹화, 끄면 채널·플랫폼만 만든다)
     const [scheduleEnabled, setScheduleEnabled] = useState(true);
-    const [scheduleType, setScheduleType] = useState<ScheduleRequestScheduleType>("ALWAYS");
-    const [recordQuality, setRecordQuality] = useState<ScheduleRequestRecordQuality>("BEST");
+    const [scheduleType, setScheduleType] = useState<ChannelAdminQuickCreateRequestScheduleRequestScheduleType>("ALWAYS");
+    const [recordQuality, setRecordQuality] = useState<ChannelAdminQuickCreateRequestScheduleRequestRecordQuality>("BEST");
     const [priority, setPriority] = useState<number>(0);
     const [autoArchive, setAutoArchive] = useState<boolean>(false);
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
@@ -397,7 +397,7 @@ export function QuickChannelAddDialog({
                                                 <Label>스케줄 유형</Label>
                                                 <Select
                                                     value={scheduleType}
-                                                    onValueChange={(value) => setScheduleType(value as ScheduleRequestScheduleType)}
+                                                    onValueChange={(value) => setScheduleType(value as ChannelAdminQuickCreateRequestScheduleRequestScheduleType)}
                                                 >
                                                     <SelectTrigger className="w-full">
                                                         <SelectValue placeholder="스케줄 유형 선택" />
@@ -479,7 +479,7 @@ export function QuickChannelAddDialog({
                                                 <Label>녹화 품질</Label>
                                                 <Select
                                                     value={recordQuality}
-                                                    onValueChange={(value) => setRecordQuality(value as ScheduleRequestRecordQuality)}
+                                                    onValueChange={(value) => setRecordQuality(value as ChannelAdminQuickCreateRequestScheduleRequestRecordQuality)}
                                                 >
                                                     <SelectTrigger className="w-full">
                                                         <SelectValue placeholder="녹화 품질 선택" />

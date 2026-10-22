@@ -6,11 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type RecordInfoPlatformType =
-  (typeof RecordInfoPlatformType)[keyof typeof RecordInfoPlatformType];
+export type VideoAdminUpdateResponseRecordInfoPlatformType =
+  (typeof VideoAdminUpdateResponseRecordInfoPlatformType)[keyof typeof VideoAdminUpdateResponseRecordInfoPlatformType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const RecordInfoPlatformType = {
+export const VideoAdminUpdateResponseRecordInfoPlatformType = {
   CHZZK: "CHZZK",
   TWITCH: "TWITCH",
   SOOP: "SOOP",

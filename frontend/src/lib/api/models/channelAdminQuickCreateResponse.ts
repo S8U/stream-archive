@@ -6,8 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ChannelAdminQuickCreateResponseContentPrivacy } from "./channelAdminQuickCreateResponseContentPrivacy";
-import type { PlatformResponse } from "./platformResponse";
-import type { ScheduleResponse } from "./scheduleResponse";
+import type { ChannelAdminQuickCreateResponsePlatformResponse } from "./channelAdminQuickCreateResponsePlatformResponse";
+import type { ChannelAdminQuickCreateResponseScheduleResponse } from "./channelAdminQuickCreateResponseScheduleResponse";
 
 /**
  * 간편 채널 생성 응답 (관리자)
@@ -23,8 +23,8 @@ export interface ChannelAdminQuickCreateResponse {
   profileUrl: string;
   /** 콘텐츠 공개 범위 (PUBLIC/UNLISTED/PRIVATE) */
   contentPrivacy: ChannelAdminQuickCreateResponseContentPrivacy;
-  platform: PlatformResponse;
-  schedule?: ScheduleResponse;
+  platform: ChannelAdminQuickCreateResponsePlatformResponse;
+  schedule?: ChannelAdminQuickCreateResponseScheduleResponse;
   /** 생성 일시 */
   createdAt: string;
   /** 수정 일시 */

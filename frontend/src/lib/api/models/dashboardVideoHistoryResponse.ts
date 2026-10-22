@@ -5,12 +5,12 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { DailyStat } from "./dailyStat";
+import type { DashboardVideoHistoryResponseDailyStat } from "./dashboardVideoHistoryResponseDailyStat";
 
 /**
  * 대시보드 동영상 히스토리 응답 (관리자)
  */
 export interface DashboardVideoHistoryResponse {
   /** 일자별 누적 통계 */
-  dailyStats: DailyStat[];
+  dailyStats: DashboardVideoHistoryResponseDailyStat[];
 }

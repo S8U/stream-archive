@@ -5,7 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
+import type { ChannelPlatformAdminCreateResponseChannelInfo } from "./channelPlatformAdminCreateResponseChannelInfo";
 import type { ChannelPlatformAdminCreateResponsePlatformType } from "./channelPlatformAdminCreateResponsePlatformType";
 
 /**
@@ -14,7 +14,7 @@ import type { ChannelPlatformAdminCreateResponsePlatformType } from "./channelPl
 export interface ChannelPlatformAdminCreateResponse {
   /** 채널 플랫폼 ID */
   id: number;
-  channel: ChannelInfo;
+  channel: ChannelPlatformAdminCreateResponseChannelInfo;
   /** 플랫폼 유형 (CHZZK/TWITCH/SOOP/YOUTUBE) */
   platformType: ChannelPlatformAdminCreateResponsePlatformType;
   /** 플랫폼 채널 ID */

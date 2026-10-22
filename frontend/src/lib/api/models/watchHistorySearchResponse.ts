@@ -5,15 +5,15 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
-import type { VideoInfo } from "./videoInfo";
+import type { WatchHistorySearchResponseChannelInfo } from "./watchHistorySearchResponseChannelInfo";
+import type { WatchHistorySearchResponseVideoInfo } from "./watchHistorySearchResponseVideoInfo";
 
 /**
  * 시청 기록 목록 응답
  */
 export interface WatchHistorySearchResponse {
-  channel: ChannelInfo;
-  video: VideoInfo;
+  channel: WatchHistorySearchResponseChannelInfo;
+  video: WatchHistorySearchResponseVideoInfo;
   /** 마지막 재생 위치 (초) */
   lastPosition: number;
   /** 진행률 (%) */
