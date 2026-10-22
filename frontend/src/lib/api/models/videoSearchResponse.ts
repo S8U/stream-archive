@@ -5,7 +5,8 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChannelInfo } from "./channelInfo";
+import type { VideoSearchResponseChannelInfo } from "./videoSearchResponseChannelInfo";
+import type { VideoSearchResponseContentPrivacy } from "./videoSearchResponseContentPrivacy";
 import type { RecordInfo } from "./recordInfo";
 
 /**
@@ -14,7 +15,7 @@ import type { RecordInfo } from "./recordInfo";
 export interface VideoSearchResponse {
   /** 동영상 UUID */
   uuid: string;
-  channel: ChannelInfo;
+  channel: VideoSearchResponseChannelInfo;
   /** 제목 */
   title: string;
   /** 설명 */
@@ -23,6 +24,8 @@ export interface VideoSearchResponse {
   duration: number;
   /** 파일 크기 (바이트) */
   fileSize: number;
+  /** 콘텐츠 공개 범위 (PUBLIC/UNLISTED/PRIVATE) */
+  contentPrivacy: VideoSearchResponseContentPrivacy;
   /** 썸네일 URL */
   thumbnailUrl: string;
   /** HLS 플레이리스트 URL */

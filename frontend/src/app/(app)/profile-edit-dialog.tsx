@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useGetUserMe, useUpdateUserMe, useUpdateUserPassword } from "@/lib/api/endpoints/user/user";
+import { cn } from '@/lib/utils';
+import { ProfileSettingsTab } from './profile-settings-tab';
 
 interface ProfileEditDialogProps {
   open: boolean;
@@ -25,6 +27,8 @@ interface ProfileEditDialogProps {
 export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps) {
   const queryClient = useQueryClient();
   const { data: user } = useGetUserMe();
+  // 지금 있는 설정이 모두 관리자 전용이라 설정 탭은 관리자에게만 보여준다.
+  const isAdmin = user?.role === 'ADMIN';
   
   // 프로필 수정 폼
   const [name, setName] = useState('');
@@ -92,14 +96,17 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
         <DialogHeader>
           <DialogTitle>내 정보</DialogTitle>
           <DialogDescription>
-            프로필 정보를 수정하거나 비밀번호를 변경할 수 있습니다.
+            {isAdmin
+              ? '프로필과 비밀번호, 설정을 관리할 수 있습니다.'
+              : '프로필 정보를 수정하거나 비밀번호를 변경할 수 있습니다.'}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={cn('grid w-full', isAdmin ? 'grid-cols-3' : 'grid-cols-2')}>
             <TabsTrigger value="profile">프로필</TabsTrigger>
             <TabsTrigger value="password">비밀번호</TabsTrigger>
+            {isAdmin && <TabsTrigger value="settings">설정</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4 mt-4">
@@ -158,6 +165,12 @@ export function ProfileEditDialog({ open, onOpenChange }: ProfileEditDialogProps
               비밀번호 변경
             </Button>
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="settings" className="space-y-4 mt-4">
+              <ProfileSettingsTab onSaved={() => onOpenChange(false)} />
+            </TabsContent>
+          )}
         </Tabs>
       </DialogContent>
     </Dialog>

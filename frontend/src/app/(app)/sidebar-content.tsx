@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Clock, HomeIcon } from "lucide-react";
+import { Clock, HomeIcon, LinkIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SheetClose } from "@/components/ui/sheet";
@@ -102,7 +102,19 @@ export function SidebarContent({ channels, isSheet = false, collapsed = false }:
                                     <AvatarFallback>{channel.name[0]}</AvatarFallback>
                                 </Avatar>
                             </span>
-                            {!collapsed && <span>{channel.name}</span>}
+                            {!collapsed && (
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                    <span>{channel.name}</span>
+                                    {/* 일부공개 채널 표시. 관리자가 일부공개 채널 보기를 켰을 때만 목록에 나온다. */}
+                                    {channel.contentPrivacy === "UNLISTED" && (
+                                        <LinkIcon
+                                            className="size-3.5 shrink-0 text-muted-foreground"
+                                            role="img"
+                                            aria-label="일부공개 채널"
+                                        />
+                                    )}
+                                </span>
+                            )}
                         </LinkWrapper>
                     );
 

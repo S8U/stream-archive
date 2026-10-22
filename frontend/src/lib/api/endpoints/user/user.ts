@@ -24,6 +24,9 @@ import type {
 import type {
   UserGetResponse,
   UserPasswordUpdateRequest,
+  UserSettingGetResponse,
+  UserSettingUpdateRequest,
+  UserSettingUpdateResponse,
   UserUpdateRequest,
   UserUpdateResponse,
 } from "../../models";
@@ -249,6 +252,246 @@ export const useUpdateUserMe = <TError = unknown, TContext = unknown>(
   TContext
 > => {
   const mutationOptions = getUpdateUserMeMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary 내 설정 조회
+ */
+export const getUserMeSettings = (
+  options?: SecondParameter<typeof customAxiosInstance>,
+  signal?: AbortSignal,
+) => {
+  return customAxiosInstance<UserSettingGetResponse>(
+    { url: `/users/me/settings`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getGetUserMeSettingsQueryKey = () => {
+  return [`/users/me/settings`] as const;
+};
+
+export const getGetUserMeSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUserMeSettings>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getUserMeSettings>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserMeSettingsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getUserMeSettings>>
+  > = ({ signal }) => getUserMeSettings(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUserMeSettings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetUserMeSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getUserMeSettings>>
+>;
+export type GetUserMeSettingsQueryError = unknown;
+
+export function useGetUserMeSettings<
+  TData = Awaited<ReturnType<typeof getUserMeSettings>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getUserMeSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserMeSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getUserMeSettings>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetUserMeSettings<
+  TData = Awaited<ReturnType<typeof getUserMeSettings>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getUserMeSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getUserMeSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getUserMeSettings>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetUserMeSettings<
+  TData = Awaited<ReturnType<typeof getUserMeSettings>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getUserMeSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary 내 설정 조회
+ */
+
+export function useGetUserMeSettings<
+  TData = Awaited<ReturnType<typeof getUserMeSettings>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getUserMeSettings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetUserMeSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary 내 설정 수정
+ */
+export const updateUserMeSettings = (
+  userSettingUpdateRequest: UserSettingUpdateRequest,
+  options?: SecondParameter<typeof customAxiosInstance>,
+) => {
+  return customAxiosInstance<UserSettingUpdateResponse>(
+    {
+      url: `/users/me/settings`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: userSettingUpdateRequest,
+    },
+    options,
+  );
+};
+
+export const getUpdateUserMeSettingsMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateUserMeSettings>>,
+    TError,
+    { data: UserSettingUpdateRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customAxiosInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateUserMeSettings>>,
+  TError,
+  { data: UserSettingUpdateRequest },
+  TContext
+> => {
+  const mutationKey = ["updateUserMeSettings"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateUserMeSettings>>,
+    { data: UserSettingUpdateRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateUserMeSettings(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateUserMeSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateUserMeSettings>>
+>;
+export type UpdateUserMeSettingsMutationBody = UserSettingUpdateRequest;
+export type UpdateUserMeSettingsMutationError = unknown;
+
+/**
+ * @summary 내 설정 수정
+ */
+export const useUpdateUserMeSettings = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateUserMeSettings>>,
+      TError,
+      { data: UserSettingUpdateRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customAxiosInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateUserMeSettings>>,
+  TError,
+  { data: UserSettingUpdateRequest },
+  TContext
+> => {
+  const mutationOptions = getUpdateUserMeSettingsMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

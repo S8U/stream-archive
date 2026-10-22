@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>내 정보: 설정 탭</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+/* Stream Archive 화면 설계. 색과 크기는 frontend/src/app/globals.css 토큰과 components/ui(shadcn) 클래스 값을 옮긴 것이다.
+   색은 밝게를 :root에, 어둡게를 아래 두 곳에 같게 적는다. 기기 설정을 따르되 ?theme=로 강제할 수 있게 하려는 것이다. */
+:root{--background:oklch(1 0 0);--foreground:oklch(0.145 0 0);--primary:oklch(0.205 0 0);--primary-foreground:oklch(0.985 0 0);--secondary:oklch(0.97 0 0);--muted:oklch(0.97 0 0);--muted-foreground:oklch(0.556 0 0);--border:oklch(0.922 0 0);--input:oklch(0.922 0 0);--input-bg:transparent;--tab-text:var(--foreground);--tab-on-bg:var(--background);--tab-on-border:transparent;--switch-thumb-on:var(--background)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--background:oklch(0.145 0 0);--foreground:oklch(0.985 0 0);--primary:oklch(0.922 0 0);--primary-foreground:oklch(0.205 0 0);--secondary:oklch(0.269 0 0);--muted:oklch(0.269 0 0);--muted-foreground:oklch(0.708 0 0);--border:oklch(0.275 0 0);--input:oklch(0.325 0 0);--input-bg:oklch(0.325 0 0 / 0.3);--tab-text:var(--muted-foreground);--tab-on-bg:oklch(0.325 0 0 / 0.3);--tab-on-border:var(--input);--switch-thumb-on:var(--primary-foreground)}
+  :root:not([data-theme="light"]) .sun{display:none}
+  :root:not([data-theme="light"]) .moon{display:block}
+}
+:root[data-theme="dark"]{--background:oklch(0.145 0 0);--foreground:oklch(0.985 0 0);--primary:oklch(0.922 0 0);--primary-foreground:oklch(0.205 0 0);--secondary:oklch(0.269 0 0);--muted:oklch(0.269 0 0);--muted-foreground:oklch(0.708 0 0);--border:oklch(0.275 0 0);--input:oklch(0.325 0 0);--input-bg:oklch(0.325 0 0 / 0.3);--tab-text:var(--muted-foreground);--tab-on-bg:oklch(0.325 0 0 / 0.3);--tab-on-border:var(--input);--switch-thumb-on:var(--primary-foreground)}
+:root[data-theme="dark"] .sun{display:none}
+:root[data-theme="dark"] .moon{display:block}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--background);color:var(--foreground);font-family:Pretendard,system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+svg{display:block;flex:none}
+h3,h4,p{margin:0;font-weight:inherit}
+.moon{display:none}
+/* 화면 틀은 고정 px다. 헤드리스 Chrome은 창 폭을 500보다 좁게 만들지 못해 100%로 두면 휴대폰 화면이 500 폭으로 배치된다. */
+.scr{position:relative;overflow:hidden;background:var(--background)}
+.scr.web{width:1440px;height:900px}
+.scr.mweb{width:393px;height:852px}
+
+/* 헤더 (app/(app)/layout.tsx) */
+.hdr{position:absolute;top:0;left:0;right:0;height:56px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--background);z-index:1}
+.hdr-l{display:flex;align-items:center;gap:8px;flex:none}
+.web .hdr-l{padding-left:4px}
+.hdr-r{display:flex;align-items:center;gap:8px;flex:none}
+.mweb .hdr-r{gap:4px}
+.ib{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;flex:none}
+.ib.lg{width:40px;height:40px}
+.ib.round{border-radius:9999px;font-size:14px;line-height:20px}
+.logo{font-size:20px;line-height:28px;font-weight:700;color:var(--primary);white-space:nowrap}
+.mweb .logo{font-size:18px}
+.search{flex:1;max-width:384px;height:40px;display:flex;border:1px solid var(--input);border-radius:9999px;overflow:hidden}
+.search span{flex:1;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--input-bg);font-size:14px;color:var(--muted-foreground)}
+.search i{width:36px;display:grid;place-items:center;background:var(--secondary)}
+.av{width:32px;height:32px;border-radius:9999px;background:var(--muted);display:grid;place-items:center;flex:none;overflow:hidden}
+.av.lg{width:36px;height:36px}
+
+/* 사이드바 (sidebar-content.tsx). PC는 w-60 고정, 휴대폰은 왼쪽 시트(w-64) 안에 같은 내용 */
+.side{position:absolute;top:56px;left:0;bottom:0;width:240px;padding:16px 12px;display:flex;flex-direction:column}
+.nav{margin-bottom:16px}
+.it{display:flex;align-items:center;gap:12px;padding:6px 8px;border-radius:10px}
+.it.on{background:var(--secondary)}
+.slot{width:40px;height:32px;display:grid;place-items:center;flex:none}
+.sep{height:1px;background:var(--border);margin-bottom:16px;flex:none}
+.side h3{margin-bottom:8px;padding:0 8px;font-size:14px;line-height:20px;font-weight:600;color:var(--muted-foreground)}
+.ch{display:flex;align-items:center;gap:6px;min-width:0}
+.mark{color:var(--muted-foreground)}
+
+/* 동영상 목록 (page.tsx, components/video-card.tsx) */
+.main{position:absolute;top:56px;left:240px;right:0;bottom:0;padding:16px}
+.mweb .main{left:0}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.mweb .grid{grid-template-columns:minmax(0,1fr)}
+.card{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.mweb .card{margin-bottom:16px}
+.th{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden}
+.bd{position:absolute;right:8px;bottom:8px;padding:2px 8px;border:1px solid transparent;border-radius:4px;background:rgba(0,0,0,.7);color:#fff;font-size:12px;line-height:16px;font-weight:500}
+.bd.live{background:oklch(0.577 0.245 27.325)}
+.pg{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.3)}
+.pg i{display:block;height:100%;background:oklch(0.577 0.245 27.325)}
+.info{display:flex;gap:12px}
+.txt{display:flex;flex-direction:column;min-width:0}
+.ttl{font-size:16px;line-height:24px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bm{display:inline-block;margin-left:4px;vertical-align:-1px;color:var(--muted-foreground);opacity:.5}
+.sub{font-size:14px;line-height:20px;color:var(--muted-foreground)}
+/* 일부공개 표시는 그 대상 옆에 붙인다. 채널은 채널 이름 뒤 링크 아이콘(사이드바와 같다), 동영상은 날짜 뒤 12px 띄워 링크 아이콘과 글자(점 구분자 없음) */
+.chn{display:flex;align-items:center;gap:6px}
+.when{display:flex;align-items:center;gap:12px}
+.unl{display:inline-flex;align-items:center;gap:4px}
+
+/* 모달과 시트 (components/ui/dialog.tsx, sheet.tsx) */
+.dim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:2}
+.dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;width:448px;display:flex;flex-direction:column;gap:16px;padding:24px;border:1px solid var(--border);border-radius:10px;background:var(--background);box-shadow:0 1px 3px 0 hsl(0 0% 0% / .1),0 4px 6px -1px hsl(0 0% 0% / .1)}
+.mweb .dlg{width:361px}
+.x{position:absolute;top:16px;right:16px;opacity:.7}
+.dh{display:flex;flex-direction:column;gap:8px}
+.mweb .dh{text-align:center}
+.dt{font-size:18px;line-height:1;font-weight:600}
+.dd{font-size:14px;line-height:20px;color:var(--muted-foreground)}
+.tabs{display:flex;flex-direction:column;gap:8px}
+.tl{display:grid;height:36px;padding:3px;border-radius:10px;background:var(--muted)}
+.tl.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tl.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tt{height:calc(100% - 1px);display:flex;align-items:center;justify-content:center;padding:4px 8px;border:1px solid transparent;border-radius:8px;font-size:14px;line-height:20px;font-weight:500;color:var(--tab-text);white-space:nowrap}
+.tt.on{background:var(--tab-on-bg);border-color:var(--tab-on-border);color:var(--foreground);box-shadow:0 1px 3px 0 hsl(0 0% 0% / .1),0 1px 2px -1px hsl(0 0% 0% / .1)}
+.tc{margin-top:16px;display:flex;flex-direction:column;gap:16px}
+.fld{display:flex;flex-direction:column;gap:8px}
+.lb{font-size:14px;line-height:1;font-weight:500}
+.in{height:36px;display:flex;align-items:center;padding:4px 12px;border:1px solid var(--input);border-radius:8px;background:var(--input-bg);font-size:14px;box-shadow:0 1px 3px 0 hsl(0 0% 0% / .05)}
+.mweb .in{font-size:16px}
+.btn{height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:var(--primary);color:var(--primary-foreground);font-size:14px;line-height:20px;font-weight:500}
+.sheet{position:absolute;top:0;left:0;bottom:0;width:256px;z-index:3;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--background);box-shadow:0 1px 3px 0 hsl(0 0% 0% / .1),0 4px 6px -1px hsl(0 0% 0% / .1)}
+.sheet .side{position:relative;top:auto;width:auto;flex:1}
+
+/* 설정 탭: 묶음 소제목 아래에 설정 줄을 쌓는다. 설정이 늘면 줄을, 성격이 다른 설정이면 묶음을 더한다 */
+.grp{display:flex;flex-direction:column;gap:12px}
+.rows{display:flex;flex-direction:column;gap:16px}
+.grp-t{font-size:12px;line-height:16px;font-weight:500;color:var(--muted-foreground)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.row-t{display:flex;flex-direction:column;gap:4px}
+/* 한국어 설명이 단어 중간(표시합/니다)에서 끊기지 않게 한다. 구현은 break-keep */
+.row-t .dd{word-break:keep-all}
+.sw{width:32px;height:18.4px;flex:none;display:flex;align-items:center;border:1px solid transparent;border-radius:9999px;background:var(--primary);box-shadow:0 1px 3px 0 hsl(0 0% 0% / .05)}
+.sw i{width:16px;height:16px;border-radius:9999px;background:var(--switch-thumb-on);transform:translateX(14px)}
+</style>
+<script src="../screen.js"></script>
+</head>
+<body>
+<div class="scr mweb">
+<header class="hdr"><div class="hdr-l"><span class="ib"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M4 18h16"/><path d="M4 6h16"/></svg></span><span class="logo">StreamArchive</span></div><div class="hdr-r"><span class="ib"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></span><span class="ib round"><span class="av">관</span></span></div></header><main class="main"><div class="grid"><div class="card"><div class="th" style="background:linear-gradient(135deg,#d6d3d1,#a8a29e)"><span class="bd live">LIVE</span></div><div class="info"><span class="av lg">하</span><div class="txt"><h4 class="ttl">저녁 저챗</h4><span class="sub chn"><span>하루 방송</span></span><p class="sub when"><span>2시간 전</span></p></div></div></div><div class="card"><div class="th" style="background:linear-gradient(135deg,#a1a1aa,#52525b)"><span class="bd">3:12:45</span></div><div class="info"><span class="av lg">모</span><div class="txt"><h4 class="ttl">새벽 게임 방송</h4><span class="sub chn"><span>모래성</span><svg role="img" aria-label="일부공개 채널" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><p class="sub when"><span>5시간 전</span></p></div></div></div><div class="card"><div class="th" style="background:linear-gradient(135deg,#e4e4e7,#a1a1aa)"><span class="bd">4:05:10</span><span class="pg"><i style="width:40%"></i></span></div><div class="info"><span class="av lg">밤</span><div class="txt"><h4 class="ttl">합방 다시보기</h4><span class="sub chn"><span>밤하늘</span></span><p class="sub when"><span>1일 전</span></p></div></div></div><div class="card"><div class="th" style="background:linear-gradient(135deg,#78716c,#292524)"><span class="bd">2:30:00</span></div><div class="info"><span class="av lg">코</span><div class="txt"><h4 class="ttl">노래 방송</h4><span class="sub chn"><span>코코넛</span></span><p class="sub when"><span>1일 전</span><span class="unl"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>일부공개</span></p></div></div></div></div></main><div class="dim"></div><div class="dlg" role="dialog" aria-label="내 정보"><span class="x"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span><div class="dh"><h2 class="dt" style="margin:0">내 정보</h2><p class="dd">프로필과 비밀번호, 설정을 관리할 수 있습니다.</p></div><div class="tabs"><div class="tl c3"><span class="tt">프로필</span><span class="tt">비밀번호</span><span class="tt on">설정</span></div><div class="tc"><div class="grp"><p class="grp-t">관리자 전용</p><div class="rows"><div class="row"><div class="row-t"><span class="lb">일부공개 채널 보기</span><p class="dd">사이드바와 홈·검색에 일부공개 채널과 그 채널의 동영상도 표시합니다.</p></div><span class="sw" role="switch" aria-checked="true" aria-label="일부공개 채널 보기"><i></i></span></div><div class="row"><div class="row-t"><span class="lb">일부공개 동영상 보기</span><p class="dd">홈·검색·채널 동영상 목록에 일부공개 동영상도 표시합니다.</p></div><span class="sw" role="switch" aria-checked="true" aria-label="일부공개 동영상 보기"><i></i></span></div></div></div><span class="btn">저장</span></div></div></div>
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, LinkIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { VideoPreview } from '@/components/video-preview';
@@ -17,10 +17,12 @@ interface VideoCardProps {
     isArchived?: boolean;
     /** 현재 사용자의 시청 진행률 (%). 비로그인·미시청이면 생략 */
     progress?: number | null;
+    contentPrivacy: 'PUBLIC' | 'UNLISTED' | 'PRIVATE';
     channel: {
         uuid: string;
         name: string;
         profileUrl: string;
+        contentPrivacy: 'PUBLIC' | 'UNLISTED' | 'PRIVATE';
     };
     record?: {
         isEnded: boolean;
@@ -63,7 +65,7 @@ function formatTimeAgo(dateString: string): string {
     return '방금 전';
 }
 
-export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, createdAt, isArchived, progress, channel, record }: VideoCardProps) {
+export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, createdAt, isArchived, progress, contentPrivacy, channel, record }: VideoCardProps) {
     const [hoveredVideoUuid, setHoveredVideoUuid] = useState<string | null>(null);
 
     const isLive = record?.isEnded === false;
@@ -113,10 +115,22 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                             <Bookmark size={13} className="ml-1 inline-block flex-shrink-0 text-muted-foreground opacity-50" fill="currentColor" />
                         )}
                     </h3>
-                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 text-sm text-muted-foreground hover:text-foreground">
-                        {channel.name}
+                    {/* 일부공개 표시. 관리자가 일부공개 보기를 켰을 때만 목록에 섞여 나온다. */}
+                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+                        <span>{channel.name}</span>
+                        {channel.contentPrivacy === 'UNLISTED' && (
+                            <LinkIcon className="size-3.5 shrink-0" role="img" aria-label="일부공개 채널" />
+                        )}
                     </Link>
-                    <p className="text-sm text-muted-foreground">{formatTimeAgo(createdAt)}</p>
+                    <p className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span>{formatTimeAgo(createdAt)}</span>
+                        {contentPrivacy === 'UNLISTED' && (
+                            <span className="inline-flex items-center gap-1">
+                                <LinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                                일부공개
+                            </span>
+                        )}
+                    </p>
                 </div>
             </div>
         </div>

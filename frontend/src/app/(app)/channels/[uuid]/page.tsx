@@ -106,6 +106,7 @@ export default async function ChannelPage({ params, searchParams }: Props) {
                                     createdAt={video.createdAt}
                                     isArchived={video.isArchived}
                                     progress={video.progress}
+                                    contentPrivacy={video.contentPrivacy}
                                     channel={video.channel}
                                     record={video.record}
                                 />
