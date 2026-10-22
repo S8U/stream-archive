@@ -66,7 +66,9 @@ class UserSettingUpdateUseCaseTest {
             val newSetting = slot<UserSetting>()
             every { currentUserService.getCurrentUserId() } returns USER_ID
             every { currentUserService.isAdmin() } returns true
-            every { userSettingRepository.findAllByUserId(USER_ID) } returns listOf(savedSetting)
+            every {
+                userSettingRepository.findAllByUserIdAndSettingKeyIn(USER_ID, UserSettingKey.entries)
+            } returns listOf(savedSetting)
             every { userSettingRepository.save(capture(newSetting)) } answers { newSetting.captured }
             every { userSettingLoadService.load() } returns UserSettingLoadResult(
                 isShowUnlistedChannels = true,
@@ -89,7 +91,9 @@ class UserSettingUpdateUseCaseTest {
         fun `요청에 없는 설정은 건드리지 않는다`() {
             every { currentUserService.getCurrentUserId() } returns USER_ID
             every { currentUserService.isAdmin() } returns true
-            every { userSettingRepository.findAllByUserId(USER_ID) } returns emptyList()
+            every {
+                userSettingRepository.findAllByUserIdAndSettingKeyIn(USER_ID, UserSettingKey.entries)
+            } returns emptyList()
             every { userSettingRepository.save(any()) } answers { firstArg() }
             every { userSettingLoadService.load() } returns UserSettingLoadResult(
                 isShowUnlistedChannels = false,

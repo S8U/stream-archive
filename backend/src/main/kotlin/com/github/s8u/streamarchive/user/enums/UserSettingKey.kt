@@ -4,7 +4,7 @@ package com.github.s8u.streamarchive.user.enums
  * 사용자 설정 키
  *
  * 값은 문자열로 저장한다.
- * 키를 없애려면 그 키로 저장된 행을 먼저 지워야 한다.
+ * 키를 없애도 그 키로 저장된 행은 읽지 않는다. 남은 행은 따로 지운다.
  */
 enum class UserSettingKey(
     val defaultValue: String,

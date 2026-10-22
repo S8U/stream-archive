@@ -27,7 +27,7 @@ class UserSettingLoadService(
         val isAdmin = currentUserService.isAdmin()
 
         val savedValues = userId
-            ?.let { userSettingRepository.findAllByUserId(it) }
+            ?.let { userSettingRepository.findAllByUserIdAndSettingKeyIn(it, UserSettingKey.entries) }
             .orEmpty()
             .associate { it.settingKey to it.settingValue }
 

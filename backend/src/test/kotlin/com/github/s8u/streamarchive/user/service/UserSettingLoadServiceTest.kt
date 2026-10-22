@@ -29,14 +29,16 @@ class UserSettingLoadServiceTest {
             val result = userSettingLoadService.load()
 
             assertEquals(UserSettingLoadResult(isShowUnlistedChannels = false, isShowUnlistedVideos = false), result)
-            verify(exactly = 0) { userSettingRepository.findAllByUserId(any()) }
+            verify(exactly = 0) { userSettingRepository.findAllByUserIdAndSettingKeyIn(any(), any()) }
         }
 
         @Test
         fun `관리자는 저장한 값을 쓰고 저장하지 않은 설정은 기본값을 쓴다`() {
             every { currentUserService.getCurrentUserId() } returns USER_ID
             every { currentUserService.isAdmin() } returns true
-            every { userSettingRepository.findAllByUserId(USER_ID) } returns listOf(
+            every {
+                userSettingRepository.findAllByUserIdAndSettingKeyIn(USER_ID, UserSettingKey.entries)
+            } returns listOf(
                 setting(UserSettingKey.SHOW_UNLISTED_VIDEOS, "true")
             )
 
@@ -49,7 +51,9 @@ class UserSettingLoadServiceTest {
         fun `관리자가 아니면 저장한 관리자 전용 설정도 기본값을 쓴다`() {
             every { currentUserService.getCurrentUserId() } returns USER_ID
             every { currentUserService.isAdmin() } returns false
-            every { userSettingRepository.findAllByUserId(USER_ID) } returns listOf(
+            every {
+                userSettingRepository.findAllByUserIdAndSettingKeyIn(USER_ID, UserSettingKey.entries)
+            } returns listOf(
                 setting(UserSettingKey.SHOW_UNLISTED_CHANNELS, "true"),
                 setting(UserSettingKey.SHOW_UNLISTED_VIDEOS, "true")
             )

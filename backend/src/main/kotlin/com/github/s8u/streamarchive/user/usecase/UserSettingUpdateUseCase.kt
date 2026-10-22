@@ -4,6 +4,7 @@ import com.github.s8u.streamarchive.auth.security.service.CurrentUserService
 import com.github.s8u.streamarchive.global.exception.BusinessException
 import com.github.s8u.streamarchive.global.util.RequestUtils
 import com.github.s8u.streamarchive.user.entity.UserSetting
+import com.github.s8u.streamarchive.user.enums.UserSettingKey
 import com.github.s8u.streamarchive.user.repository.UserSettingRepository
 import com.github.s8u.streamarchive.user.service.UserSettingLoadService
 import com.github.s8u.streamarchive.user.usecase.dto.command.UserSettingUpdateCommand
@@ -41,7 +42,8 @@ class UserSettingUpdateUseCase(
 
         // 없으면 생성, 있으면 수정
         val clientIp = RequestUtils.getClientIp()
-        val savedSettings = userSettingRepository.findAllByUserId(userId).associateBy { it.settingKey }
+        val savedSettings = userSettingRepository.findAllByUserIdAndSettingKeyIn(userId, UserSettingKey.entries)
+            .associateBy { it.settingKey }
         changedValues.forEach { (key, value) ->
             val setting = savedSettings[key]
             if (setting == null) {
