@@ -36,7 +36,8 @@ class VideoAutoDeletePreviewUseCaseTest {
     inner class Preview {
 
         @Test
-        fun `전체 채널 대상을 최근 생성순으로 합쳐 페이징한다`() {
+        fun `전체 채널 대상을 최신 ID순으로 합쳐 페이징한다`() {
+            // ID 순서와 생성 순서를 다르게 두어, 생성 시각이 아니라 ID로 정렬하는지 확인한다
             val oldVideo = video(id = 1L, channelId = 1L, createdAt = BASE_TIME.minusDays(30))
             val newestVideo = video(id = 2L, channelId = 2L, createdAt = BASE_TIME.minusDays(10))
             val middleVideo = video(id = 3L, channelId = 1L, createdAt = BASE_TIME.minusDays(20))
@@ -65,12 +66,12 @@ class VideoAutoDeletePreviewUseCaseTest {
             )
 
             assertEquals(3, result.totalElements)
-            assertEquals(listOf(2L, 3L), result.content.map { it.id })
-            assertEquals(listOf("두 번째 채널", "첫 번째 채널"), result.content.map { it.channelName })
-            assertEquals(listOf("/thumbnail/video-2", "/thumbnail/video-3"), result.content.map { it.thumbnailUrl })
-            assertEquals(listOf(10, 20), result.content.map { it.ageDays })
+            assertEquals(listOf(3L, 2L), result.content.map { it.id })
+            assertEquals(listOf("첫 번째 채널", "두 번째 채널"), result.content.map { it.channelName })
+            assertEquals(listOf("/thumbnail/video-3", "/thumbnail/video-2"), result.content.map { it.thumbnailUrl })
+            assertEquals(listOf(20, 10), result.content.map { it.ageDays })
             // overDays = ageDays - deleteAfterDays (음수면 아직 기준일 전, 정책보다 일찍 잡힌 대상)
-            assertEquals(listOf(-4, 13), result.content.map { it.overDays })
+            assertEquals(listOf(13, -4), result.content.map { it.overDays })
         }
 
         @Test
