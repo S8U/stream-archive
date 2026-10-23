@@ -23,6 +23,10 @@ repositories {
     mavenCentral()
 }
 
+// Spring Boot 3.5.6이 정한 Testcontainers 1.21.3은 Docker Engine 29에 붙지 못한다 (지원 API 버전이 너무 낮다고 거부한다).
+// 1.21.4가 이를 고친 버전이다. Spring Boot를 올려 이 버전 이상이 되면 지운다.
+extra["testcontainers.version"] = "1.21.4"
+
 dependencies {
     // Kotlin 지원
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -38,6 +42,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     runtimeOnly("org.postgresql:postgresql")
+
+    // DB 마이그레이션 (MariaDB 지원은 flyway-mysql에 있다)
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-mysql")
 
     // QueryDSL
     implementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
@@ -65,6 +73,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:mariadb")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testRuntimeOnly("com.h2database:h2")
 }

@@ -51,8 +51,7 @@
 | `video_chat_histories.donation_amount` | 후원 금액. 후원이 아니면 null |
 
 운영 테이블은 행이 많아서, 기존 행을 고치지 않고 바로 추가되도록 nullable이거나 기본값이 있는 컬럼으로 추가하고 인덱스는 두지 않는다.
-`ddl-auto: update`는 없는 컬럼만 추가하고 기존 ENUM 정의는 바꾸지 않는다.
-역할이나 메시지 종류 값을 추가하면 운영 DB에 `ALTER TABLE`을 직접 실행해야 한다.
+`message_type`과 `user_role`은 enum 이름을 담는 문자열 컬럼이라, 역할이나 메시지 종류 값을 더해도 DB를 고치지 않는다.
 
 ## 관련 코드
 

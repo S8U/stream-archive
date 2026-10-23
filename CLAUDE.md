@@ -25,7 +25,7 @@ This is a full-stack application with the following structure:
 - **Location**: `frontend/` directory
 
 ### Database Schema
-The complete database schema is documented in `docs/schema.sql` with the following key entities:
+The schema is managed by Flyway migrations in `backend/src/main/resources/db/migration` (rules: `docs/architecture.md` principle 15). Key entities:
 - **Channels**: User-created channels that can be linked to multiple streaming platforms
 - **Channel Platforms**: Links between channels and streaming platform IDs
 - **Record Schedules**: Configurable recording schedules (once, always, weekly, specific dates)

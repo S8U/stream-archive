@@ -20,12 +20,22 @@ spring:
   # JPA 설정
   jpa:
     hibernate:
-      ddl-auto: update
+      # 스키마는 Flyway 마이그레이션(db/migration)으로만 바꾼다. Hibernate는 엔티티와 스키마가 맞는지 확인만 한다.
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
         format_sql: true
+
+  # DB 마이그레이션 설정
+  flyway:
+    # Flyway를 넣기 전부터 테이블이 있던 DB(개발, 운영)는 V1을 실행하지 않고 버전 1로 표시만 한다.
+    baseline-on-migrate: true
+    baseline-version: 1
+    # 이름 규칙(V<버전>__<설명>.sql)에 맞지 않는 파일이 있으면 기동을 멈춘다.
+    # 기본값은 그 파일을 실행하지 않고 말없이 넘어간다.
+    validate-migration-naming: true
 
 # 서버 설정
 server:
