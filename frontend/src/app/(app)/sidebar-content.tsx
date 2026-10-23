@@ -103,12 +103,12 @@ export function SidebarContent({ channels, isSheet = false, collapsed = false }:
                                 </Avatar>
                             </span>
                             {!collapsed && (
-                                <span className="flex min-w-0 items-center gap-1.5">
+                                <span className="flex min-w-0 items-center gap-1">
                                     <span>{channel.name}</span>
                                     {/* 일부공개 채널 표시. 관리자가 일부공개 채널 보기를 켰을 때만 목록에 나온다. */}
                                     {channel.contentPrivacy === "UNLISTED" && (
                                         <LinkIcon
-                                            className="size-3.5 shrink-0 text-muted-foreground"
+                                            className="size-3 shrink-0 text-muted-foreground"
                                             role="img"
                                             aria-label="일부공개 채널"
                                         />

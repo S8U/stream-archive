@@ -109,28 +109,28 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     </Avatar>
                 </Link>
                 <div className="flex flex-col min-w-0">
-                    <h3 className="text-md font-medium line-clamp-2">
-                        {title}
-                        {isArchived && (
-                            <Bookmark size={13} className="ml-1 inline-block flex-shrink-0 text-muted-foreground opacity-50" fill="currentColor" />
-                        )}
-                    </h3>
-                    {/* 일부공개 표시. 관리자가 일부공개 보기를 켰을 때만 목록에 섞여 나온다. */}
-                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-                        <span>{channel.name}</span>
-                        {channel.contentPrivacy === 'UNLISTED' && (
-                            <LinkIcon className="size-3.5 shrink-0" role="img" aria-label="일부공개 채널" />
-                        )}
-                    </Link>
-                    <p className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <span>{formatTimeAgo(createdAt)}</span>
-                        {contentPrivacy === 'UNLISTED' && (
-                            <span className="inline-flex items-center gap-1">
-                                <LinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                                일부공개
+                    {/* 제목 뒤 아이콘은 제목 글자와 따로 둔다. 제목이 두 줄을 넘어 말줄임돼도 아이콘은 첫 줄 오른쪽에 남는다. */}
+                    <h3 className="flex items-start gap-1 text-md font-medium">
+                        <span className="line-clamp-2">{title}</span>
+                        {(contentPrivacy === 'UNLISTED' || isArchived) && (
+                            <span className="flex h-6 shrink-0 items-center gap-1 text-muted-foreground">
+                                {/* 일부공개 표시. 관리자가 일부공개 보기를 켰을 때만 목록에 섞여 나온다. */}
+                                {contentPrivacy === 'UNLISTED' && (
+                                    <LinkIcon size={13} role="img" aria-label="일부공개 동영상" />
+                                )}
+                                {isArchived && (
+                                    <Bookmark size={13} className="opacity-50" fill="currentColor" />
+                                )}
                             </span>
                         )}
-                    </p>
+                    </h3>
+                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+                        <span>{channel.name}</span>
+                        {channel.contentPrivacy === 'UNLISTED' && (
+                            <LinkIcon className="size-3 shrink-0" role="img" aria-label="일부공개 채널" />
+                        )}
+                    </Link>
+                    <p className="text-sm text-muted-foreground">{formatTimeAgo(createdAt)}</p>
                 </div>
             </div>
         </div>
