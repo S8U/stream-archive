@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Bookmark, LinkIcon } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { ChannelAvatar } from '@/components/channel-avatar';
 import { VideoPreview } from '@/components/video-preview';
 
 interface VideoCardProps {
@@ -103,10 +103,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
             </div>
             <div className="flex gap-3">
                 <Link href={`/channels/${channel.uuid}`} className="relative z-20">
-                    <Avatar className="w-9 h-9">
-                        <AvatarImage src={channel.profileUrl} />
-                        <AvatarFallback>{channel.name[0]}</AvatarFallback>
-                    </Avatar>
+                    <ChannelAvatar channel={channel} className="w-9 h-9" />
                 </Link>
                 <div className="flex flex-col min-w-0">
                     {/* 제목 뒤 아이콘은 제목 글자와 따로 둔다. 제목이 두 줄을 넘어 말줄임돼도 아이콘은 첫 줄 오른쪽에 남는다. */}
@@ -124,11 +121,8 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                             </span>
                         )}
                     </h3>
-                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-                        <span>{channel.name}</span>
-                        {channel.contentPrivacy === 'UNLISTED' && (
-                            <LinkIcon className="size-3 shrink-0" role="img" aria-label="일부공개 채널" />
-                        )}
+                    <Link href={`/channels/${channel.uuid}`} className="relative z-20 text-sm text-muted-foreground hover:text-foreground">
+                        {channel.name}
                     </Link>
                     <p className="text-sm text-muted-foreground">{formatTimeAgo(createdAt)}</p>
                 </div>
