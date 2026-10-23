@@ -1,5 +1,7 @@
 package com.github.s8u.streamarchive.watchhistory.controller.dto.response
 
+import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import com.github.s8u.streamarchive.watchhistory.usecase.dto.result.WatchHistorySearchResult
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDateTime
@@ -25,7 +27,10 @@ data class WatchHistorySearchResponse(
     data class ChannelInfo(
         val uuid: String,
         val name: String,
-        val profileUrl: String
+        val profileUrl: String,
+
+        @field:Schema(description = "채널 공개 범위 (PUBLIC/UNLISTED/PRIVATE)")
+        val contentPrivacy: ChannelContentPrivacy
     )
 
     data class VideoInfo(
@@ -33,7 +38,13 @@ data class WatchHistorySearchResponse(
         val title: String,
         val thumbnailUrl: String,
         val playlistUrl: String,
-        val duration: Int
+        val duration: Int,
+
+        @field:Schema(description = "콘텐츠 공개 범위 (PUBLIC/UNLISTED/PRIVATE)")
+        val contentPrivacy: VideoContentPrivacy,
+
+        @field:Schema(description = "소장 여부")
+        val isArchived: Boolean
     )
 
     companion object {
@@ -42,14 +53,17 @@ data class WatchHistorySearchResponse(
                 channel = ChannelInfo(
                     uuid = result.channel.uuid,
                     name = result.channel.name,
-                    profileUrl = result.channel.profileUrl
+                    profileUrl = result.channel.profileUrl,
+                    contentPrivacy = result.channel.contentPrivacy
                 ),
                 video = VideoInfo(
                     uuid = result.video.uuid,
                     title = result.video.title,
                     thumbnailUrl = result.video.thumbnailUrl,
                     playlistUrl = result.video.playlistUrl,
-                    duration = result.video.duration
+                    duration = result.video.duration,
+                    contentPrivacy = result.video.contentPrivacy,
+                    isArchived = result.video.isArchived
                 ),
                 lastPosition = result.lastPosition,
                 progress = result.progress,

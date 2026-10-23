@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ChannelAvatar } from '@/components/channel-avatar';
 import { PlatformBadge } from '@/components/common/platform-badge';
 import { useGetChannelPlatforms, useGetChannelStats } from '@/lib/api/endpoints/channel/channel';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,10 +27,8 @@ export function ChannelHeader({ channel }: ChannelHeaderProps) {
 
     return (
         <div className="flex items-center gap-4 sm:gap-6">
-            <Avatar className="w-20 h-20 sm:w-32 sm:h-32 shrink-0">
-                <AvatarImage src={channel.profileUrl} />
-                <AvatarFallback className="text-4xl">{channel.name[0]}</AvatarFallback>
-            </Avatar>
+            {/* 글자 크기는 프로필 사진이 없을 때 나오는 첫 글자에 쓰인다. */}
+            <ChannelAvatar channel={channel} className="w-20 h-20 sm:w-32 sm:h-32 text-4xl" />
             <div>
                 <h1 className="text-2xl sm:text-3xl font-bold mb-1.5">{channel.name}</h1>
                 <div className="flex flex-col gap-y-1.5 text-sm sm:text-base text-muted-foreground">

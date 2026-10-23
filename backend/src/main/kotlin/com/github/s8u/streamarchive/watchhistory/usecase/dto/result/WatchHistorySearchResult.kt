@@ -1,6 +1,8 @@
 package com.github.s8u.streamarchive.watchhistory.usecase.dto.result
 
+import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
 import com.github.s8u.streamarchive.video.entity.Video
+import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import com.github.s8u.streamarchive.watchhistory.entity.UserVideoWatchHistory
 import java.time.LocalDateTime
 
@@ -18,7 +20,8 @@ data class WatchHistorySearchResult(
     data class ChannelInfo(
         val uuid: String,
         val name: String,
-        val profileUrl: String
+        val profileUrl: String,
+        val contentPrivacy: ChannelContentPrivacy
     )
 
     data class VideoInfo(
@@ -26,7 +29,9 @@ data class WatchHistorySearchResult(
         val title: String,
         val thumbnailUrl: String,
         val playlistUrl: String,
-        val duration: Int
+        val duration: Int,
+        val contentPrivacy: VideoContentPrivacy,
+        val isArchived: Boolean
     )
 
     companion object {
@@ -48,14 +53,17 @@ data class WatchHistorySearchResult(
                 channel = ChannelInfo(
                     uuid = channel.uuid,
                     name = channel.name,
-                    profileUrl = channelProfileUrl
+                    profileUrl = channelProfileUrl,
+                    contentPrivacy = channel.contentPrivacy
                 ),
                 video = VideoInfo(
                     uuid = video.uuid,
                     title = video.title,
                     thumbnailUrl = videoThumbnailUrl,
                     playlistUrl = videoPlaylistUrl,
-                    duration = video.duration
+                    duration = video.duration,
+                    contentPrivacy = video.contentPrivacy,
+                    isArchived = video.isArchived
                 ),
                 lastPosition = history.lastPosition,
                 progress = progress,

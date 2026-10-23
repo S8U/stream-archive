@@ -31,7 +31,7 @@ class SwaggerConfigTest @Autowired constructor(
 
             assertFalse(schemas.has("ChannelInfo"))
             assertEquals(
-                listOf("name", "profileUrl", "uuid"),
+                listOf("contentPrivacy", "name", "profileUrl", "uuid"),
                 getPropertyNames(schemas, "VideoGetResponseChannelInfo")
             )
             assertEquals(

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import {useRouter} from 'next/navigation';
 import {useQueryClient} from '@tanstack/react-query';
-import {Avatar, AvatarFallback, AvatarImage} from '@/components/ui/avatar';
+import {ChannelAvatar} from '@/components/channel-avatar';
 import {PlatformBadge} from '@/components/common/platform-badge';
 import {VideoFormDialog} from '@/components/admin/video-form-dialog';
 import {Button} from '@/components/ui/button';
@@ -337,10 +337,7 @@ export function VideoInfo({ video, isAdmin = false, onTimestampClick, isLive = f
                         href={`/channels/${video.channel.uuid}`}
                         className="inline-flex min-w-0 max-w-full items-center gap-3"
                     >
-                        <Avatar className="w-10 h-10">
-                            <AvatarImage src={video.channel.profileUrl} />
-                            <AvatarFallback>{video.channel.name[0]}</AvatarFallback>
-                        </Avatar>
+                        <ChannelAvatar channel={video.channel} className="w-10 h-10" />
                         <div className="min-w-0">
                             <p className="truncate font-medium">{video.channel.name}</p>
                         </div>

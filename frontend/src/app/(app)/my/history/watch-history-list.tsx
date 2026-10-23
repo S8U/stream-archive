@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { toast } from "sonner";
 import { Trash2, MoreVertical } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -13,6 +12,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ChannelAvatar } from "@/components/channel-avatar";
+import { VideoCardTitle } from "@/components/video-card-title";
 import { VideoPreview } from "@/components/video-preview";
 import { CustomPagination } from "@/components/common/custom-pagination";
 import {
@@ -202,14 +203,15 @@ function WatchHistoryCard({ item, onDelete }: WatchHistoryCardProps) {
 
             <div className="flex gap-3">
                 <Link href={`/channels/${channel.uuid}`} className="relative z-20">
-                    <Avatar className="w-9 h-9">
-                        <AvatarImage src={channel.profileUrl} />
-                        <AvatarFallback>{channel.name[0]}</AvatarFallback>
-                    </Avatar>
+                    <ChannelAvatar channel={channel} className="w-9 h-9" />
                 </Link>
                 <div className="flex flex-1 min-w-0 gap-1">
                     <div className="flex flex-col min-w-0">
-                        <h3 className="text-md font-medium line-clamp-2">{video.title}</h3>
+                        <VideoCardTitle
+                            title={video.title}
+                            contentPrivacy={video.contentPrivacy}
+                            isArchived={video.isArchived}
+                        />
                         <Link
                             href={`/channels/${channel.uuid}`}
                             className="relative z-20 text-sm text-muted-foreground hover:text-foreground"

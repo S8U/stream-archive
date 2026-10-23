@@ -1,5 +1,6 @@
 package com.github.s8u.streamarchive.video.controller.dto.response
 
+import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import com.github.s8u.streamarchive.video.usecase.dto.result.VideoGetResult
 import io.swagger.v3.oas.annotations.media.Schema
@@ -53,7 +54,10 @@ data class VideoGetResponse(
     data class ChannelInfo(
         val uuid: String,
         val name: String,
-        val profileUrl: String
+        val profileUrl: String,
+
+        @field:Schema(description = "채널 공개 범위 (PUBLIC/UNLISTED/PRIVATE)")
+        val contentPrivacy: ChannelContentPrivacy
     )
 
     data class RecordInfo(
@@ -73,7 +77,8 @@ data class VideoGetResponse(
                 channel = ChannelInfo(
                     uuid = result.channel.uuid,
                     name = result.channel.name,
-                    profileUrl = result.channel.profileUrl
+                    profileUrl = result.channel.profileUrl,
+                    contentPrivacy = result.channel.contentPrivacy
                 ),
                 title = result.title,
                 description = result.description,

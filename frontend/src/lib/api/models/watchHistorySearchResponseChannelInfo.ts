@@ -5,6 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { WatchHistorySearchResponseChannelInfoContentPrivacy } from "./watchHistorySearchResponseChannelInfoContentPrivacy";
 
 /**
  * 채널 정보
@@ -13,4 +14,6 @@ export interface WatchHistorySearchResponseChannelInfo {
   uuid: string;
   name: string;
   profileUrl: string;
+  /** 채널 공개 범위 (PUBLIC/UNLISTED/PRIVATE) */
+  contentPrivacy: WatchHistorySearchResponseChannelInfoContentPrivacy;
 }

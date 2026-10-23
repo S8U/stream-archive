@@ -5,6 +5,7 @@
  * 멀티 플랫폼 스트리밍 녹화 시스템 API
  * OpenAPI spec version: 1.0.0
  */
+import type { WatchHistorySearchResponseVideoInfoContentPrivacy } from "./watchHistorySearchResponseVideoInfoContentPrivacy";
 
 /**
  * 동영상 정보
@@ -15,4 +16,8 @@ export interface WatchHistorySearchResponseVideoInfo {
   thumbnailUrl: string;
   playlistUrl: string;
   duration: number;
+  /** 콘텐츠 공개 범위 (PUBLIC/UNLISTED/PRIVATE) */
+  contentPrivacy: WatchHistorySearchResponseVideoInfoContentPrivacy;
+  /** 소장 여부 */
+  isArchived: boolean;
 }

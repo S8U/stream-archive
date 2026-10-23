@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bookmark, LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ChannelAvatar } from '@/components/channel-avatar';
+import { VideoCardTitle } from '@/components/video-card-title';
 import { VideoPreview } from '@/components/video-preview';
 
 interface VideoCardProps {
@@ -106,21 +106,7 @@ export function VideoCard({ uuid, title, thumbnailUrl, playlistUrl, duration, cr
                     <ChannelAvatar channel={channel} className="w-9 h-9" />
                 </Link>
                 <div className="flex flex-col min-w-0">
-                    {/* 제목 뒤 아이콘은 제목 글자와 따로 둔다. 제목이 두 줄을 넘어 말줄임돼도 아이콘은 첫 줄 오른쪽에 남는다. */}
-                    <h3 className="flex items-start gap-1 text-md font-medium">
-                        <span className="line-clamp-2">{title}</span>
-                        {(contentPrivacy === 'UNLISTED' || isArchived) && (
-                            <span className="flex h-6 shrink-0 items-center gap-1 text-muted-foreground">
-                                {/* 일부공개 표시. 관리자가 일부공개 보기를 켰을 때만 목록에 섞여 나온다. */}
-                                {contentPrivacy === 'UNLISTED' && (
-                                    <LinkIcon size={13} role="img" aria-label="일부공개 동영상" />
-                                )}
-                                {isArchived && (
-                                    <Bookmark size={13} className="opacity-50" fill="currentColor" />
-                                )}
-                            </span>
-                        )}
-                    </h3>
+                    <VideoCardTitle title={title} contentPrivacy={contentPrivacy} isArchived={isArchived} />
                     <Link href={`/channels/${channel.uuid}`} className="relative z-20 text-sm text-muted-foreground hover:text-foreground">
                         {channel.name}
                     </Link>
