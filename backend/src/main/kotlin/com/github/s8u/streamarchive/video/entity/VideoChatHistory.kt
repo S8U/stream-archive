@@ -1,6 +1,8 @@
 package com.github.s8u.streamarchive.video.entity
 
 import com.github.s8u.streamarchive.global.entity.base.BaseTimeEntity
+import com.github.s8u.streamarchive.platform.converter.PlatformChatMessageTypeConverter
+import com.github.s8u.streamarchive.platform.converter.PlatformChatUserRoleConverter
 import com.github.s8u.streamarchive.platform.enums.PlatformChatMessageType
 import com.github.s8u.streamarchive.platform.enums.PlatformChatUserRole
 import jakarta.persistence.*
@@ -24,8 +26,8 @@ class VideoChatHistory(
     val videoId: Long,
 
     // 기존 행이 많은 테이블에 추가한 컬럼이라 기본값을 두어 행 갱신 없이 추가되게 한다
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = PlatformChatMessageTypeConverter::class)
+    @Column(nullable = false, length = 50)
     @ColumnDefault("'CHAT'")
     @Comment("메시지 종류 (CHAT/DONATION)")
     val messageType: PlatformChatMessageType,
@@ -34,8 +36,8 @@ class VideoChatHistory(
     @Comment("사용자명")
     val username: String,
 
-    @Enumerated(EnumType.STRING)
-    @Column
+    @Convert(converter = PlatformChatUserRoleConverter::class)
+    @Column(length = 50)
     @Comment("작성자 역할 (STREAMER/MANAGER)")
     val userRole: PlatformChatUserRole?,
 

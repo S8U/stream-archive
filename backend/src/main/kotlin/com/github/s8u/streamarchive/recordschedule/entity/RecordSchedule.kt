@@ -2,13 +2,15 @@ package com.github.s8u.streamarchive.recordschedule.entity
 
 import com.github.s8u.streamarchive.channel.entity.Channel
 import com.github.s8u.streamarchive.global.entity.base.BaseSoftDeleteEntity
+import com.github.s8u.streamarchive.platform.converter.PlatformTypeConverter
 import com.github.s8u.streamarchive.platform.enums.PlatformType
+import com.github.s8u.streamarchive.record.converter.RecordQualityConverter
 import com.github.s8u.streamarchive.record.enums.RecordQuality
+import com.github.s8u.streamarchive.recordschedule.converter.RecordScheduleTypeConverter
 import com.github.s8u.streamarchive.recordschedule.enums.RecordScheduleType
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
@@ -44,14 +46,14 @@ class RecordSchedule(
     autoArchive: Boolean = false
 ) : BaseSoftDeleteEntity() {
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = PlatformTypeConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("플랫폼 유형")
     var platformType: PlatformType = platformType
         protected set
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = RecordScheduleTypeConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("녹화 스케줄 유형")
     var scheduleType: RecordScheduleType = scheduleType
         protected set
@@ -62,8 +64,8 @@ class RecordSchedule(
     var value: String = value
         protected set
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = RecordQualityConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("녹화 화질")
     var recordQuality: RecordQuality = recordQuality
         protected set

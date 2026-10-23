@@ -3,11 +3,11 @@ package com.github.s8u.streamarchive.video.entity
 import com.github.s8u.streamarchive.channel.entity.Channel
 import com.github.s8u.streamarchive.global.entity.base.BaseSoftDeleteEntity
 import com.github.s8u.streamarchive.record.entity.Record
+import com.github.s8u.streamarchive.video.converter.VideoContentPrivacyConverter
 import com.github.s8u.streamarchive.video.enums.VideoContentPrivacy
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
@@ -82,8 +82,8 @@ class Video(
     var fileSize: Long = 0
         protected set
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = VideoContentPrivacyConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("콘텐츠 공개 범위")
     var contentPrivacy: VideoContentPrivacy = contentPrivacy
         protected set

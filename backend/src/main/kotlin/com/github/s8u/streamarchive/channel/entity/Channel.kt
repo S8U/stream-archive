@@ -1,11 +1,11 @@
 package com.github.s8u.streamarchive.channel.entity
 
-import com.github.s8u.streamarchive.global.entity.base.BaseSoftDeleteEntity
+import com.github.s8u.streamarchive.channel.converter.ChannelContentPrivacyConverter
 import com.github.s8u.streamarchive.channel.enums.ChannelContentPrivacy
+import com.github.s8u.streamarchive.global.entity.base.BaseSoftDeleteEntity
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Index
 import jakarta.persistence.Table
 import org.hibernate.annotations.Comment
@@ -36,8 +36,8 @@ class Channel(
     var name: String = name
         protected set
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "content_privacy", nullable = false)
+    @Convert(converter = ChannelContentPrivacyConverter::class)
+    @Column(name = "content_privacy", nullable = false, length = 50)
     @Comment("콘텐츠 공개 범위")
     var contentPrivacy: ChannelContentPrivacy = contentPrivacy
         protected set

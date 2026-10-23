@@ -23,7 +23,6 @@ class UserSetting(
     @Comment("사용자 ID")
     val userId: Long,
 
-    // 키를 추가해도 저장할 수 있게 @Enumerated 대신 변환기로 문자열 컬럼에 저장한다 (이유는 UserSettingKeyConverter)
     @Convert(converter = UserSettingKeyConverter::class)
     @Column(nullable = false, length = 50)
     @Comment("설정 키 (SHOW_UNLISTED_CHANNELS/SHOW_UNLISTED_VIDEOS)")

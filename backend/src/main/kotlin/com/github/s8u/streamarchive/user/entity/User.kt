@@ -1,11 +1,11 @@
 package com.github.s8u.streamarchive.user.entity
 
 import com.github.s8u.streamarchive.global.entity.base.BaseSoftDeleteEntity
+import com.github.s8u.streamarchive.user.converter.RoleConverter
 import com.github.s8u.streamarchive.user.enums.Role
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.Index
 import jakarta.persistence.Table
 import org.hibernate.annotations.Comment
@@ -47,8 +47,8 @@ class User(
     var password: String = password
         protected set
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = RoleConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("역할")
     var role: Role = role
         protected set

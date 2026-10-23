@@ -2,11 +2,11 @@ package com.github.s8u.streamarchive.channelplatform.entity
 
 import com.github.s8u.streamarchive.channel.entity.Channel
 import com.github.s8u.streamarchive.global.entity.base.BaseSoftDeleteEntity
+import com.github.s8u.streamarchive.platform.converter.PlatformTypeConverter
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
@@ -31,8 +31,8 @@ class ChannelPlatform(
     @Comment("채널")
     val channel: Channel? = null,
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = PlatformTypeConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("플랫폼 유형")
     val platformType: PlatformType,
 

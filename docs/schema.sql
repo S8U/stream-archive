@@ -1,7 +1,8 @@
 -- Stream Archive Database Schema
 -- 기준: backend/src/main/kotlin/com/github/s8u/streamarchive/**/entity
 
--- Enum 타입들
+-- enum 값 목록
+-- enum 컬럼은 모두 VARCHAR(50)에 enum 이름을 저장한다. 값을 더해도 DB를 고치지 않는다 (docs/migrations/2026-10-23-enum-columns-to-varchar.sql)
 -- PlatformType: 'CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE'
 -- ChannelContentPrivacy: 'PUBLIC', 'UNLISTED', 'PRIVATE'
 -- VideoContentPrivacy: 'PUBLIC', 'UNLISTED', 'PRIVATE'
@@ -10,7 +11,7 @@
 -- Role: 'ADMIN', 'USER'
 -- PlatformChatUserRole: 'STREAMER', 'MANAGER'
 -- PlatformChatMessageType: 'CHAT', 'DONATION'
--- UserSettingKey: 'SHOW_UNLISTED_CHANNELS', 'SHOW_UNLISTED_VIDEOS' (키가 늘 수 있어 ENUM이 아닌 VARCHAR로 저장)
+-- UserSettingKey: 'SHOW_UNLISTED_CHANNELS', 'SHOW_UNLISTED_VIDEOS'
 
 -- 1. 사용자 테이블
 CREATE TABLE users
@@ -20,7 +21,7 @@ CREATE TABLE users
     username      VARCHAR(100)               NOT NULL UNIQUE COMMENT '사용자명',
     name          VARCHAR(100)               NOT NULL COMMENT '이름',
     password      VARCHAR(255)               NOT NULL COMMENT '비밀번호',
-    role          ENUM ('ADMIN', 'USER')     NOT NULL COMMENT '역할',
+    role          VARCHAR(50)                NOT NULL COMMENT '역할',
     last_login_at DATETIME                   NULL COMMENT '마지막 로그인 일시',
     is_active     BOOLEAN                    NOT NULL COMMENT '활성 상태',
     deleted_at    DATETIME                   NULL COMMENT '삭제 일시',
@@ -44,7 +45,7 @@ CREATE TABLE channels
     id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
     uuid            VARCHAR(36)                            NOT NULL UNIQUE COMMENT '채널 UUID',
     name            VARCHAR(255)                           NOT NULL COMMENT '채널 이름',
-    content_privacy ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE') NOT NULL COMMENT '콘텐츠 공개 범위',
+    content_privacy VARCHAR(50)                            NOT NULL COMMENT '콘텐츠 공개 범위',
     is_active       BOOLEAN                                NOT NULL COMMENT '활성 상태',
     deleted_at      DATETIME                               NULL COMMENT '삭제 일시',
     deleted_by      BIGINT                                 NULL COMMENT '삭제한 사용자 ID',
@@ -66,7 +67,7 @@ CREATE TABLE channel_platforms
 (
     id                  BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
     channel_id          BIGINT                                      NOT NULL COMMENT '채널',
-    platform_type       ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE') NOT NULL COMMENT '플랫폼 유형',
+    platform_type       VARCHAR(50)                                 NOT NULL COMMENT '플랫폼 유형',
     platform_channel_id VARCHAR(255)                                NOT NULL COMMENT '플랫폼 채널 ID',
     is_sync_profile     BOOLEAN                                     NOT NULL COMMENT '프로필 동기화 여부',
     is_active           BOOLEAN                                     NOT NULL COMMENT '활성 상태',
@@ -90,10 +91,10 @@ CREATE TABLE record_schedules
 (
     id             BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
     channel_id     BIGINT                                      NOT NULL COMMENT '채널',
-    platform_type  ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE') NOT NULL COMMENT '플랫폼 유형',
-    schedule_type  ENUM ('ONCE', 'ALWAYS', 'N_DAYS_OF_EVERY_WEEK', 'SPECIFIC_DAY') NOT NULL COMMENT '녹화 스케줄 유형',
+    platform_type  VARCHAR(50)                                 NOT NULL COMMENT '플랫폼 유형',
+    schedule_type  VARCHAR(50)                                 NOT NULL COMMENT '녹화 스케줄 유형',
     value          TEXT                                        NOT NULL COMMENT '스케줄 값',
-    record_quality ENUM ('BEST', 'P2160_60', 'P2160', 'P1440_60', 'P1440', 'P1080_60', 'P1080', 'P720_60', 'P720', 'P480', 'P240', 'P144', 'WORST') NOT NULL COMMENT '녹화 화질',
+    record_quality VARCHAR(50)                                 NOT NULL COMMENT '녹화 화질',
     priority       INT                                         NOT NULL COMMENT '우선순위',
     auto_archive   BOOLEAN                                     NOT NULL COMMENT '자동 소장 여부',
     is_active      BOOLEAN                                     NOT NULL COMMENT '활성 상태',
@@ -125,7 +126,7 @@ CREATE TABLE videos
     description             TEXT                                   NULL COMMENT '설명',
     duration                INT                                    NOT NULL COMMENT '재생 시간 (초)',
     file_size               BIGINT                                 NOT NULL COMMENT '파일 크기 (바이트)',
-    content_privacy         ENUM ('PUBLIC', 'UNLISTED', 'PRIVATE') NOT NULL COMMENT '콘텐츠 공개 범위',
+    content_privacy         VARCHAR(50)                            NOT NULL COMMENT '콘텐츠 공개 범위',
     chat_sync_offset_millis BIGINT                                 NOT NULL COMMENT '채팅 싱크 오프셋 (밀리초)',
     is_archived             BOOLEAN                                NOT NULL COMMENT '소장 여부',
     archived_at             DATETIME                               NULL COMMENT '소장 처리 일시',
@@ -205,7 +206,7 @@ CREATE TABLE records
     id                 BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
     channel_id         BIGINT                                      NOT NULL COMMENT '채널 ID',
     video_id           BIGINT                                      NOT NULL COMMENT '동영상 ID',
-    platform_type      ENUM ('CHZZK', 'TWITCH', 'SOOP', 'YOUTUBE') NOT NULL COMMENT '플랫폼 유형',
+    platform_type      VARCHAR(50)                                 NOT NULL COMMENT '플랫폼 유형',
     platform_stream_id VARCHAR(255)                                NOT NULL COMMENT '플랫폼 스트림 ID',
     record_quality     VARCHAR(50)                                 NOT NULL COMMENT '녹화 화질',
     is_ended           BOOLEAN                                     NOT NULL COMMENT '종료 여부',
@@ -227,9 +228,9 @@ CREATE TABLE video_chat_histories
 (
     id            BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
     video_id      BIGINT        NOT NULL COMMENT '동영상 ID',
-    message_type  ENUM ('CHAT', 'DONATION') NOT NULL DEFAULT 'CHAT' COMMENT '메시지 종류 (CHAT/DONATION)',
+    message_type  VARCHAR(50)   NOT NULL DEFAULT 'CHAT' COMMENT '메시지 종류 (CHAT/DONATION)',
     username      VARCHAR(255)  NOT NULL COMMENT '사용자명',
-    user_role     ENUM ('STREAMER', 'MANAGER') NULL COMMENT '작성자 역할 (STREAMER/MANAGER)',
+    user_role     VARCHAR(50)   NULL COMMENT '작성자 역할 (STREAMER/MANAGER)',
     message       VARCHAR(1000) NOT NULL COMMENT '메시지',
     donation_amount INT         NULL COMMENT '후원 금액',
     emojis        JSON          NULL COMMENT '이모지',

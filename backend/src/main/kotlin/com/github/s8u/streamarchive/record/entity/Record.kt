@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.record.entity
 
 import com.github.s8u.streamarchive.channel.entity.Channel
 import com.github.s8u.streamarchive.global.entity.base.BaseTimeEntity
+import com.github.s8u.streamarchive.platform.converter.PlatformTypeConverter
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import com.github.s8u.streamarchive.video.entity.Video
 import jakarta.persistence.*
@@ -38,8 +39,8 @@ class Record(
     @Comment("동영상")
     val video: Video? = null,
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = PlatformTypeConverter::class)
+    @Column(nullable = false, length = 50)
     @Comment("플랫폼 유형")
     val platformType: PlatformType,
 
