@@ -1,6 +1,5 @@
 import Axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+import { API_BASE_URL } from './api-base-url';
 
 export const AXIOS_INSTANCE = Axios.create({
   baseURL: API_BASE_URL,
