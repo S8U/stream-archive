@@ -1,14 +1,23 @@
-<h2 align="center">StreamArchive</h2>
+<div align="center">
+  <h2 align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-white.svg">
+      <img src="docs/images/logo-black.svg" alt="StreamArchive 로고" width="64">
+    </picture>
+    <br>
+    StreamArchive
+  </h2>
 
-<p align="center">
-  <b>그날의 라이브를, 그날 그대로.</b>
-</p>
+  <p align="center">
+    <b>그날의 라이브를, 그날 그대로.</b>
+  </p>
 
-<p align="center">
-  보고 싶었던 방송을 놓쳤거나, 다시보기가 사라져 아쉬웠던 적 있으신가요?<br/>
-  StreamArchive는 라이브 방송을 자동으로 녹화하고 채팅까지 함께 보관해,<br/>
-  좋아하는 순간을 내 서버에 소장할 수 있는 개인 스트리밍 아카이브입니다.
-</p>
+  <p align="center">
+    보고 싶었던 방송을 놓쳤거나, 다시보기가 사라져 아쉬웠던 적 있으신가요?<br/>
+    StreamArchive는 라이브 방송을 자동으로 녹화하고 채팅까지 함께 보관해,<br/>
+    좋아하는 순간을 내 서버에 소장할 수 있는 개인 스트리밍 아카이브입니다.
+  </p>
+</div>
 
 ---
 
