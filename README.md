@@ -1,12 +1,12 @@
 <div align="center">
-  <h2 align="center">
+  <p align="center">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-white.svg">
       <img src="docs/images/logo-black.svg" alt="StreamArchive 로고" width="64">
     </picture>
-    <br>
-    StreamArchive
-  </h2>
+  </p>
+
+  <h2 align="center">StreamArchive</h2>
 
   <p align="center">
     <b>그날의 라이브를, 그날 그대로.</b>
