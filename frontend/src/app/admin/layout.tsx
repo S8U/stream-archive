@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { LogoWithName } from "@/components/common/logo";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -166,14 +167,12 @@ export default function AdminLayout({
         <SidebarProvider>
             <Sidebar>
                 <SidebarHeader>
-                    <Link href="/admin" className="flex items-center gap-2 px-2 py-4">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                            <Video className="h-5 w-5" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-sm font-semibold">Stream Archive</span>
-                            <span className="text-xs text-muted-foreground">관리자</span>
-                        </div>
+                    {/*
+                      오른쪽 상단 바(h-16)와 같은 줄에 오도록, SidebarHeader 위아래 여백(8px)을 빼고 남은 48px 가운데에 둔다.
+                      메인 헤더 PC 크기(20px)는 14px 메뉴 옆에서 너무 커 보여서, 메인 헤더 모바일 크기(18px)로 고정한다.
+                    */}
+                    <Link href="/admin" className="flex h-12 items-center px-2">
+                        <LogoWithName className="md:text-lg" />
                     </Link>
                 </SidebarHeader>
                 <SidebarContent>

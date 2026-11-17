@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3.5 3.8 25 25">
+  <!--
+    탭의 16px 칸을 가로로 꽉 채우게 viewBox를 도형 너비(25)의 정사각형으로 잘랐다.
+    색은 globals.css의 primary 토큰과 같다.
+  -->
+  <style>
+    path { fill: #171717; }
+    @media (prefers-color-scheme: dark) { path { fill: #e5e5e5; } }
+  </style>
+  <path fill-opacity="0.44" d="M3.5 8.6C3.5 7.38 4.48 6.4 5.7 6.4H13.1C13.85 6.4 14.55 6.76 14.98 7.37L17.44 10.8V12H3.5Z"/>
+  <path fill-rule="evenodd" d="M6.7 10H25.3Q28.5 10 28.5 13.2V23Q28.5 26.2 25.3 26.2H6.7Q3.5 26.2 3.5 23V13.2Q3.5 10 6.7 10ZM13.64 14.36L19.58 17.64Q20.41 18.1 19.58 18.56L13.64 21.84Q12.81 22.3 12.81 21.35L12.81 14.85Q12.81 13.9 13.64 14.36Z"/>
+</svg>

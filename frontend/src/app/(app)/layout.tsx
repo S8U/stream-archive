@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { searchChannels } from "@/lib/api/endpoints/channel/channel";
 import { ModeToggle } from "@/components/common/mode-toggle";
+import { LogoWithName } from "@/components/common/logo";
 import { SearchBar, MobileSearchButton } from "./search-bar";
 import { UserMenu } from "./user-menu";
 import { MobileSidebar } from "./mobile-sidebar";
@@ -47,8 +48,8 @@ export default async function AppLayout({
                             {/* 모바일 사이드바 */}
                             <MobileSidebar channels={channels} />
 
-                            <Link href="/" className="text-lg md:text-xl font-bold text-primary whitespace-nowrap">
-                                StreamArchive
+                            <Link href="/" className="flex">
+                                <LogoWithName />
                             </Link>
                         </div>
 
