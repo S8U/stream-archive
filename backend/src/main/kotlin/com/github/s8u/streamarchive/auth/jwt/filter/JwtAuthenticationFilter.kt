@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -27,10 +28,10 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val accessToken = extractAccessTokenFromCookie(request)
+        val accessToken = extractAccessToken(request)
 
-        // Access Token이 유효하면 인증 설정
-        // 유효하지 않으면 인증 없이 진행 → Spring Security가 401/403 반환
+        // 액세스 토큰이 유효할 때만 인증을 설정한다
+        // 없거나 유효하지 않으면 인증 없이 넘기고, 보호된 API라면 Spring Security가 401이나 403을 돌려준다
         if (accessToken != null && jwtTokenService.validateToken(accessToken)) {
             setAuthentication(accessToken, request)
         }
@@ -38,10 +39,18 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun extractAccessTokenFromCookie(request: HttpServletRequest): String? {
-        return request.cookies?.find {
-            it.name == jwtProperties.cookie.accessTokenName
-        }?.value
+    // 쿠키 우선, 없으면 Authorization 헤더에서 액세스 토큰을 읽는다
+    // 브라우저는 쿠키로 보내고, 모바일 앱과 Swagger는 Bearer 헤더로 보낸다
+    // 인증 방식 이름(Bearer)은 대소문자를 가리지 않는다(RFC 7235)
+    private fun extractAccessToken(request: HttpServletRequest): String? {
+        val cookieToken = request.cookies
+            ?.find { it.name == jwtProperties.cookie.accessTokenName }
+            ?.value
+        val headerToken = request.getHeader(HttpHeaders.AUTHORIZATION)
+            ?.takeIf { it.startsWith(BEARER_PREFIX, ignoreCase = true) }
+            ?.substring(BEARER_PREFIX.length)
+
+        return cookieToken ?: headerToken
     }
 
     private fun setAuthentication(token: String, request: HttpServletRequest) {
@@ -56,6 +65,10 @@ class JwtAuthenticationFilter(
         authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
         SecurityContextHolder.getContext().authentication = authentication
         logger.debug("JwtAuthenticationFilter: Set authentication for user: $username")
+    }
+
+    companion object {
+        private const val BEARER_PREFIX = "Bearer "
     }
 
 }
