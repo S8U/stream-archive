@@ -45,10 +45,10 @@ data class VideoSearchResponse(
     @field:Schema(description = "최고 시청자 수", example = "1234")
     val peakViewerCount: Int?,
 
-    @field:Schema(description = "현재 사용자의 마지막 재생 위치 (초). 비로그인·미시청이면 null", example = "120")
+    @field:Schema(description = "현재 사용자의 마지막 재생 위치 (초). 비로그인이거나 시청하지 않았으면 null", example = "120")
     val lastPosition: Int?,
 
-    @field:Schema(description = "현재 사용자의 시청 진행률 (%). 비로그인·미시청이면 null", example = "50")
+    @field:Schema(description = "현재 사용자의 시청 진행률 (%). 비로그인이거나 시청하지 않았으면 null", example = "50")
     val progress: Int?,
 
     @field:Schema(description = "생성 일시")
