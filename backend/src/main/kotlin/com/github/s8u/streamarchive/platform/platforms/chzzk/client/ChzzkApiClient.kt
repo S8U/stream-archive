@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.github.s8u.streamarchive.platform.platforms.chzzk.properties.ChzzkProperties
 import org.slf4j.LoggerFactory
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.http.HttpHeaders
 import org.springframework.http.client.ClientHttpRequestFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.stereotype.Component
@@ -14,7 +16,8 @@ import org.springframework.web.client.RestClientResponseException
 
 @Component
 class ChzzkApiClient(
-    private val platformApiClientRequestFactory: ClientHttpRequestFactory
+    private val platformApiClientRequestFactory: ClientHttpRequestFactory,
+    private val chzzkProperties: ChzzkProperties
 ) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -72,12 +75,19 @@ class ChzzkApiClient(
     }
 
     private fun RestClient.RequestHeadersSpec<*>.chzzkHeaders(): RestClient.RequestHeadersSpec<*> {
-        return this
+        val spec = this
             .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
             .header("Accept", "application/json, text/plain, */*")
             .header("Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
             .header("Origin", "https://chzzk.naver.com")
             .header("Referer", "https://chzzk.naver.com/")
+
+        // 연령 제한 방송은 로그인하지 않으면 썸네일과 채팅 채널을 주지 않아서, 네이버 로그인 쿠키가 있으면 붙인다
+        if (chzzkProperties.hasLoginCookie()) {
+            spec.header("Cookie", "NID_AUT=${chzzkProperties.nidAut}; NID_SES=${chzzkProperties.nidSes}")
+        }
+
+        return spec
     }
 
     private fun <T> execute(block: () -> T?): T? {
@@ -86,7 +96,8 @@ class ChzzkApiClient(
         } catch (e: RestClientResponseException) {
             logger.error("ChzzkApiClient: Chzzk API call failed")
             logger.error("Status: ${e.statusCode.value()} ${e.statusText}")
-            logger.error("Headers: ${e.responseHeaders}")
+            // 로그인 쿠키로 요청하므로 응답이 내려준 세션 쿠키는 남기지 않는다
+            logger.error("Headers: ${e.responseHeaders?.filterKeys { !it.equals(HttpHeaders.SET_COOKIE, ignoreCase = true) }}")
             logger.error("Response Body: ${e.responseBodyAsString}")
 
             throw e

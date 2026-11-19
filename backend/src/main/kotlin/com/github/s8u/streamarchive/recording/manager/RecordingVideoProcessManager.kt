@@ -53,13 +53,13 @@ class RecordingVideoProcessManager(
             val segmentPattern = storageProperties.getVideoSegmentPattern(videoId)
 
             // Streamlink
-            val streamlinkCommand = mutableListOf(
+            val streamlinkBaseCommand = listOf(
                 "streamlink",
                 streamUrl,
                 quality,
                 "-O"
             )
-            streamlinkCommand.addAll(streamlinkArgs)
+            val streamlinkCommand = streamlinkBaseCommand + streamlinkArgs
 
             // FFmpeg
             val ffmpegCommand = listOf(
@@ -77,7 +77,12 @@ class RecordingVideoProcessManager(
                 playlistPath.toString()
             )
 
-            logger.debug("RecordingVideoProcessManager: Streamlink command: {}", streamlinkCommand.joinToString(" "))
+            // 플랫폼별 인자에는 토큰과 로그인 쿠키가 들어 있어서 값은 남기지 않는다
+            logger.debug(
+                "RecordingVideoProcessManager: Streamlink command: {} (platform arg count: {})",
+                streamlinkBaseCommand.joinToString(" "),
+                streamlinkArgs.size
+            )
             logger.debug("RecordingVideoProcessManager: FFmpeg command: {}", ffmpegCommand.joinToString(" "))
             
             // 녹화 프로세스 시작

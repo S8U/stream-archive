@@ -5,6 +5,7 @@ import com.github.s8u.streamarchive.platform.platforms.chzzk.client.ChzzkChannel
 import com.github.s8u.streamarchive.platform.platforms.chzzk.client.ChzzkLiveDetailDto
 import com.github.s8u.streamarchive.platform.platforms.chzzk.client.ChzzkResponseDto
 import com.github.s8u.streamarchive.platform.enums.PlatformType
+import com.github.s8u.streamarchive.platform.platforms.chzzk.properties.ChzzkProperties
 import com.github.s8u.streamarchive.platform.platforms.chzzk.strategy.ChzzkStrategy
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.Test
 class ChzzkStrategyTest {
 
     private val apiClient = mockk<ChzzkApiClient>()
-    private val chzzkStrategy = ChzzkStrategy(apiClient)
+    private val chzzkStrategy = ChzzkStrategy(apiClient, ChzzkProperties(nidAut = "", nidSes = ""))
 
     @Test
     fun `스트림 URL을 생성하면 치지직 도메인을 포함한다`() {
@@ -26,6 +27,29 @@ class ChzzkStrategyTest {
 
         assertTrue(streamUrl.contains("chzzk.naver.com"))
         assertTrue(streamUrl.contains(CHANNEL_ID))
+    }
+
+    @Nested
+    inner class GetStreamlinkArgs {
+
+        @Test
+        fun `로그인 쿠키가 있으면 streamlink에 쿠키 인자를 넘긴다`() {
+            val strategy = ChzzkStrategy(apiClient, ChzzkProperties(nidAut = "aut-value", nidSes = "ses-value"))
+
+            val args = strategy.getStreamlinkArgs()
+
+            assertEquals(listOf("--http-cookie=NID_AUT=aut-value", "--http-cookie=NID_SES=ses-value"), args)
+        }
+
+        @Test
+        fun `로그인 쿠키가 하나라도 비어 있으면 인자를 넘기지 않는다`() {
+            val strategy = ChzzkStrategy(apiClient, ChzzkProperties(nidAut = "aut-value", nidSes = ""))
+
+            val args = strategy.getStreamlinkArgs()
+
+            assertTrue(args.isEmpty())
+        }
+
     }
 
     @Nested

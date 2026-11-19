@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.platform.platforms.chzzk.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.github.s8u.streamarchive.platform.config.PlatformApiClientConfig
+import com.github.s8u.streamarchive.platform.platforms.chzzk.properties.ChzzkProperties
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -13,7 +14,10 @@ import org.junit.jupiter.api.Test
 @Tag("external")
 class ChzzkApiClientTest {
 
-    private val chzzkApiClient = ChzzkApiClient(PlatformApiClientConfig().platformApiClientRequestFactory())
+    private val chzzkApiClient = ChzzkApiClient(
+        PlatformApiClientConfig().platformApiClientRequestFactory(),
+        ChzzkProperties(nidAut = "", nidSes = "")
+    )
 
     private val objectMapper = ObjectMapper().apply {
         enable(SerializationFeature.INDENT_OUTPUT)

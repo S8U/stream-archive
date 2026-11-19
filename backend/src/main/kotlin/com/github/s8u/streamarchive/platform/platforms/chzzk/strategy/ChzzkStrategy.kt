@@ -2,6 +2,7 @@ package com.github.s8u.streamarchive.platform.platforms.chzzk.strategy
 
 import com.github.s8u.streamarchive.platform.platforms.chzzk.client.ChzzkApiClient
 import com.github.s8u.streamarchive.platform.enums.PlatformType
+import com.github.s8u.streamarchive.platform.platforms.chzzk.properties.ChzzkProperties
 import com.github.s8u.streamarchive.platform.strategy.dto.PlatformChannelDto
 import com.github.s8u.streamarchive.platform.strategy.PlatformStrategy
 import com.github.s8u.streamarchive.platform.strategy.dto.PlatformStreamDto
@@ -11,7 +12,8 @@ import java.time.format.DateTimeFormatter
 
 @Component
 class ChzzkStrategy(
-    private val apiClient: ChzzkApiClient
+    private val apiClient: ChzzkApiClient,
+    private val chzzkProperties: ChzzkProperties
 ) : PlatformStrategy {
 
     override val platformType: PlatformType
@@ -24,6 +26,18 @@ class ChzzkStrategy(
     override fun parseChannelId(url: String): String? {
         val match = CHANNEL_ID_REGEX.find(url) ?: return null
         return match.groupValues[1]
+    }
+
+    override fun getStreamlinkArgs(): List<String> {
+        // 연령 제한 방송은 로그인하지 않으면 영상 주소를 주지 않아서, 네이버 로그인 쿠키가 있으면 넘긴다
+        if (!chzzkProperties.hasLoginCookie()) {
+            return emptyList()
+        }
+
+        return listOf(
+            "--http-cookie=NID_AUT=${chzzkProperties.nidAut}",
+            "--http-cookie=NID_SES=${chzzkProperties.nidSes}"
+        )
     }
 
     override fun getChannel(username: String): PlatformChannelDto? {

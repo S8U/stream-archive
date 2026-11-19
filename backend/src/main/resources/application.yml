@@ -58,7 +58,7 @@ jwt:
     path: /
     access-token-name: AT
     refresh-token-name: RT
-    # secure·domain은 프로필별로 덮어쓴다 (로컬은 http, 운영은 https)
+    # secure, domain은 프로필별로 덮어쓴다 (로컬은 http, 운영은 https)
     secure: false
     domain: ${COOKIE_DOMAIN:localhost}
 
@@ -68,6 +68,10 @@ platform:
     app-client-id: ${TWITCH_APP_CLIENT_ID:your_client_id}
     app-client-secret: ${TWITCH_APP_CLIENT_SECRET:your_client_secret}
     personal-oauth-token: ${TWITCH_PERSONAL_OAUTH_TOKEN:}
+  chzzk:
+    # 연령 제한 방송을 녹화하려면 네이버 로그인 쿠키가 필요하다 (비우면 로그인 없이 받는다)
+    nid-aut: ${CHZZK_NID_AUT:}
+    nid-ses: ${CHZZK_NID_SES:}
   youtube:
     api-key: ${YOUTUBE_API_KEY:}
 
