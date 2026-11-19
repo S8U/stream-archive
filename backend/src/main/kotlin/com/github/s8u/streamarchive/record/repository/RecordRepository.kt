@@ -3,6 +3,7 @@ package com.github.s8u.streamarchive.record.repository
 import com.github.s8u.streamarchive.platform.enums.PlatformType
 import com.github.s8u.streamarchive.record.entity.Record
 import org.springframework.data.jpa.repository.JpaRepository
+import java.time.LocalDateTime
 
 interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom {
 
@@ -19,10 +20,11 @@ interface RecordRepository : JpaRepository<Record, Long>, RecordRepositoryCustom
         isCancelled: Boolean
     ): Boolean
 
-    fun countByPlatformTypeAndPlatformStreamIdAndIsFailed(
+    fun countByPlatformTypeAndPlatformStreamIdAndIsFailedAndCreatedAtAfter(
         platformType: PlatformType,
         platformStreamId: String,
-        isFailed: Boolean
+        isFailed: Boolean,
+        createdAt: LocalDateTime
     ): Long
 
     fun findByPlatformTypeAndPlatformStreamIdAndIsEndedAndIsCancelled(

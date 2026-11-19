@@ -103,6 +103,8 @@ docker compose up -d --build
 | `TWITCH_APP_CLIENT_ID` | Twitch API Client ID | - |
 | `TWITCH_APP_CLIENT_SECRET` | Twitch API Client Secret | - |
 | `TWITCH_PERSONAL_OAUTH_TOKEN` | Twitch OAuth Token | - |
+| `CHZZK_NID_AUT` | 치지직 로그인 쿠키 `NID_AUT` (연령 제한 방송 녹화용) | - |
+| `CHZZK_NID_SES` | 치지직 로그인 쿠키 `NID_SES` (연령 제한 방송 녹화용) | - |
 | `YOUTUBE_API_KEY` | YouTube Data API Key | - |
 
 #### Frontend (`frontend/.env`)

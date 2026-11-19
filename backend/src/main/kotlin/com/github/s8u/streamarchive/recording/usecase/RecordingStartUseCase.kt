@@ -24,13 +24,15 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.UUID
 
 /**
  * 녹화 시작
  *
  * 동영상과 녹화 기록을 만들고 녹화 프로세스와 채팅 수집을 시작한다.
- * 수동 취소된 스트림, 이미 녹화 중인 스트림, 연속 시작 실패가 많은 스트림은 시작하지 않는다.
+ * 수동 취소된 스트림, 이미 녹화 중인 스트림, 최근에 시작 실패가 많은 스트림은 시작하지 않는다.
  */
 @Service
 class RecordingStartUseCase(
@@ -54,8 +56,10 @@ class RecordingStartUseCase(
     private val logger = LoggerFactory.getLogger(javaClass)
 
     companion object {
-        // 같은 스트림이 이 횟수만큼 연속 시작 실패하면 재녹화를 중단 (폭주 방지)
+        // 같은 스트림이 최근 FAILED_ATTEMPT_WINDOW 안에 이 횟수만큼 시작 실패하면 잠시 쉬었다가 다시 시도한다 (폭주 방지)
+        // 영구 중단하면 로그인 쿠키 갱신처럼 원인이 풀려도 그 방송을 다시 녹화하지 않아서, 기간을 두고 센다
         private const val MAX_FAILED_ATTEMPTS = 3L
+        private val FAILED_ATTEMPT_WINDOW: Duration = Duration.ofMinutes(5)
     }
 
     @Transactional
@@ -89,16 +93,17 @@ class RecordingStartUseCase(
             return null
         }
 
-        // 연속 시작 실패 폭주 방지: 같은 스트림이 일정 횟수 이상 실패하면 재녹화 중단
-        val failedCount = recordRepository.countByPlatformTypeAndPlatformStreamIdAndIsFailed(
+        // 시작 실패 폭주 방지: 같은 스트림이 최근에 일정 횟수 이상 실패했으면 이번 감지는 건너뛴다
+        val failedCount = recordRepository.countByPlatformTypeAndPlatformStreamIdAndIsFailedAndCreatedAtAfter(
             platformType = stream.platformType,
             platformStreamId = stream.id,
-            isFailed = true
+            isFailed = true,
+            createdAt = LocalDateTime.now().minus(FAILED_ATTEMPT_WINDOW)
         )
 
         if (failedCount >= MAX_FAILED_ATTEMPTS) {
             logger.warn(
-                "RecordingStartUseCase: Stream exceeded max failed attempts, skipping: platformType={}, streamId={}, failedCount={}",
+                "RecordingStartUseCase: Stream exceeded max recent failed attempts, skipping: platformType={}, streamId={}, failedCount={}",
                 stream.platformType, stream.id, failedCount
             )
             return null

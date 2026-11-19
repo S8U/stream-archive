@@ -26,12 +26,16 @@ import com.github.s8u.streamarchive.video.service.VideoTitleHistoryAppendService
 import com.github.s8u.streamarchive.video.service.VideoViewerHistoryAppendService
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.Duration
+import java.time.LocalDateTime
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class RecordingStartUseCaseTest {
 
@@ -109,13 +113,30 @@ class RecordingStartUseCaseTest {
         }
 
         @Test
-        fun `연속 시작 실패가 한도를 넘으면 녹화를 시작하지 않는다`() {
+        fun `최근 시작 실패가 한도를 넘으면 녹화를 시작하지 않는다`() {
             stubGuards(wasCancelled = false, isAlreadyRecording = false, failedCount = 3)
 
             val result = recordingStartUseCase.start(command())
 
             assertNull(result)
             verify(exactly = 0) { videoRepository.save(any()) }
+        }
+
+        @Test
+        fun `시작 실패는 최근 5분 안에 만든 녹화 기록만 센다`() {
+            stubGuards(wasCancelled = false, isAlreadyRecording = false, failedCount = 0)
+            stubStartSuccess()
+            val createdAtAfter = slot<LocalDateTime>()
+            every {
+                recordRepository.countByPlatformTypeAndPlatformStreamIdAndIsFailedAndCreatedAtAfter(any(), any(), true, capture(createdAtAfter))
+            } returns 0
+
+            val startedAt = LocalDateTime.now()
+            recordingStartUseCase.start(command())
+            val endedAt = LocalDateTime.now()
+
+            val window = Duration.ofMinutes(5)
+            assertTrue(createdAtAfter.captured in startedAt.minus(window)..endedAt.minus(window))
         }
 
         @Test
@@ -184,7 +205,9 @@ class RecordingStartUseCaseTest {
         every {
             recordRepository.existsByPlatformTypeAndPlatformStreamIdAndIsEndedAndIsCancelled(any(), any(), false, false)
         } returns isAlreadyRecording
-        every { recordRepository.countByPlatformTypeAndPlatformStreamIdAndIsFailed(any(), any(), true) } returns failedCount
+        every {
+            recordRepository.countByPlatformTypeAndPlatformStreamIdAndIsFailedAndCreatedAtAfter(any(), any(), true, any())
+        } returns failedCount
     }
 
     private fun stubStartSuccess() {
